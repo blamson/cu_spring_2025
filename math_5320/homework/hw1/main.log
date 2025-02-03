@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  3 FEB 2025 13:18
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  3 FEB 2025 15:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -215,29 +215,29 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 pstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-)) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/u
-pdmap/pdftex.map}
+)) (./1.1.tex) (./1.2.tex) (./1.3.tex) [1{/opt/homebrew/Cellar/texlive/20240312
+/share/texmf-dist/fonts/map/pdftex/updmap/pdftex.map}
 
-] (./2.5.3.tex) [2]
+]
+(./2.5.3.tex) [2]
 \openout2 = `2.5.6.aux'.
 
  (./2.5.6.tex [3
 
-] [4])
-[5] (./main.aux (./2.5.6.aux))
+] [4]) [5] (./main.aux (./2.5.6.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2347 strings out of 474116
- 36601 string characters out of 5733619
+ 2365 strings out of 474116
+ 36756 string characters out of 5733619
  1943187 words of memory out of 5000000
- 24709 multiletter control sequences out of 15000+600000
+ 24718 multiletter control sequences out of 15000+600000
  560041 words of font info for 43 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,14n,70p,280b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,14n,70p,991b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmbx10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/
@@ -251,7 +251,7 @@ ve/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></opt/home
 brew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
 sy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/pu
 blic/amsfonts/cm/cmsy7.pfb>
-Output written on main.pdf (5 pages, 119006 bytes).
+Output written on main.pdf (5 pages, 124269 bytes).
 PDF statistics:
  70 PDF objects out of 1000 (max. 8388607)
  42 compressed objects within 1 object stream
