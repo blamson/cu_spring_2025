@@ -11,3 +11,15 @@ Y_i =
 \]
 
 Find the distribution of $\sum Y_i$
+
+\noindent \textbf{Solution:}
+
+We can think of each $Y_i$ as a bernoulli random variable where the probability of success is based on a value of $X_i$ exceeding the average of $X$.
+
+More formally:
+
+\[Y_i \sim Bern(p=P(X_i > \mu))\]
+
+We're trying to find the distribution of $\sum Y_i$ and thankfully that's not too bad. The sum of bernoulloi rvs is just a binomial. The probability parameter stays the same, but we can change $X_i$ to $X_1$ because our rvs are all iid. 
+
+\[\sum Y_i \sim Bin(n, p=P(X_1 > \mu))\]
