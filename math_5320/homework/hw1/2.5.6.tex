@@ -1,0 +1,86 @@
+\subsection*{5.6}
+
+If $X$ has pdf $f_X(x)$, and $Y$, independent of $X$, has pdf $f_Y(y)$, establish formulas for the random variable $Z$ in each of the following situations.
+
+\subsubsection*{A} \textbf{Problem:} $Z = X - Y$
+
+\noindent\textbf{Solution:}
+
+For all sections of this problem I will be using the general formula for bivariate transformations. 
+
+\[f_{u,v}(u,v) = f_{X,Y}(h_1(u, v), h_2(u, v)) |J|\]
+
+Where $|J|$ is the absolute value of the jacobian. This strategy just seems like the most straightforward way to accomplish this. 
+
+So let's rearrange the transformation a bit.
+
+\begin{align*}
+	Z &= X - Y & Y &= X - Z & X &= U \\
+	&& Y &= U - Z
+\end{align*}
+
+From here we can set up our Jacobian.
+
+\begin{align*}
+	J &= \m{v}{\frac{dx}{du} & \frac{dx}{dz} \\ \frac{dy}{du} & \frac{dy}{dz}} \\
+	&= \m{v}{1 & 0 \\ 1 & -1} \\
+	&= 1 \cdot -1 - 1 \cdot 0 \\
+	&= -1
+\end{align*}
+
+From here we plug in our pieces.
+\begin{align*}
+	f_{u,v}(u,v) &= f_{X,Y}(h_1(u, v), h_2(u, v)) |J| \\
+	&= f_{X,Y}(f_X(u), f_Y(u-z)) |-1| \\
+	&= f_X(u) \cdot f_Y(u - z) & \text{(X and Y are independent)}
+\end{align*}
+
+To clairfy, we used the fact that X and Y are independent to split up the joint $f_{X, Y(x,y)}$ into $f_X(x) \cdot f_Y(y)$. 
+
+Now, we need the marginal distribution to finish.
+
+\[f_Z(z) = \int f_X(u) f_Y(u - z) du\]
+
+\subsubsection*{B} \textbf{Problem:} $Z = XY$
+
+\noindent\textbf{Solution:}
+
+Alright I'm gonna skip the details on this one.
+
+\begin{align*}
+	Z &= XY & Y &= \frac{Z}{X} & X &= U \\
+	&& Y &= \frac{Z}{U}
+\end{align*}
+
+\begin{align*}
+	J &= \m{v}{\frac{dx}{du} & \frac{dx}{dz} \\ \frac{dy}{du} & \frac{dy}{dz}} \\
+	&= \m{v}{1 & 0 \\ \frac{-z}{u^2} & \frac{1}{u}} \\
+	&= 1 \cdot \frac{1}{u} - \left( \frac{-z}{u^2} \cdot 0 \right) \\
+	&= \frac{1}{u}
+\end{align*}
+
+\begin{align*}
+	f_{U,Z}(u,z) &= f_X(u) f_Y\left(\frac{z}{u}\right) \cdot \left| \frac{1}{u} \right| \\
+	f_Z(z) &= \int  f_X(u) f_Y\left(\frac{z}{u}\right) \cdot \frac{1}{u} du 
+\end{align*}
+
+\subsubsection*{C} \textbf{Problem:} $Z = \frac{X}{Y}$
+
+\noindent\textbf{Solution:}
+
+\begin{align*}
+	Z &=  \frac{X}{Y} & Y &= \frac{X}{Z} & X &= U \\
+	&& Y &= \frac{U}{Z}
+\end{align*}
+
+\begin{align*}
+	J &= \m{v}{\frac{dx}{du} & \frac{dx}{dz} \\ \frac{dy}{du} & \frac{dy}{dz}} \\
+	&= \m{v}{1 & 0 \\ \frac{1}{z} & \frac{-z}{u^2}} \\
+	&= 1 \cdot \frac{-u}{z^2} - \left( \frac{1}{z} \cdot 0 \right) \\
+	&= \frac{-u}{z^2}
+\end{align*}
+
+\begin{align*}
+	f_{U,Z}(u,z) &= f_X(u) f_Y\left(\frac{u}{z}\right) \cdot \left| \frac{u}{z^2} \right| \\
+	f_Z(z) &= \int  f_X(u) f_Y\left(\frac{u}{z}\right) \cdot \frac{u}{z^2} du 
+\end{align*}
