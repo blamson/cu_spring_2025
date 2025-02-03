@@ -126,6 +126,17 @@ $$
 \end{align}
 $$
 
+In other words:
+
+$$
+\begin{align}
+    p(y=1\mid\theta=A) &= 0.1 \\
+    p(y=2\mid\theta=A) &= 0.9 \\
+    p(y=1\mid\theta=B) &= 0.2 \\
+    p(y=1\mid\theta=B) &= 0.8
+\end{align}
+$$
+
 ### Marginal Distribution
 
 $$
@@ -215,3 +226,32 @@ Let's think through the order of operations.
 What outcome we get is entirely determined by what door we choose initially. Choosing a goat is the only way we win given that we always swap.
 
 Let's treat our initial pick as a bernoulli. We have a $1/3$ chance of choosing a car and a $2/3$ chance of choosing a goat. If we choose the goat we win. So, my thought is that our chance of success given that we always swap is $2/3$. I'm not sure how to put that in conditional probability terms though. 
+
+## Bayesian Solution
+
+To think of this in the conditional way, let us frame the problem this way. What is the probability we win a car given that we selected a door with a car (or goat)?
+
+Let $\theta$ here repsent what was behind the door we chose, either a goat or a car. We'll represent those with $g$ and $c$ respectively. Then, $y$ will represent the outcome. We'll use the same notation for $y$. 
+
+Since we always swap, $\theta=g$ always results in a win, and, by extension, $\theta=c$ always results in a loss. We have a $2/3$ of choosing a goat initially, and a $1-(2/3)=1/3$ chance of choosing a car.
+
+So,
+
+$$
+\begin{align}
+   p(y=c \mid \theta=g) = 1 \\
+   p(y=c \mid \theta=c) = 0 \\
+   p(\theta = g) = \frac{2}{3} \\
+   p(\theta = c) = \frac{1}{3} \\
+\end{align}
+$$
+
+From here, we just use the law of total probability! This is the marginal distribution of $y$ as it represents the probability that we win a car given that we always swap. 
+
+$$
+\begin{align}
+    p(y) &= p(y=c \mid \theta=g) \cdot p(\theta = g) + p(y=c \mid \theta=c) \cdot p(\theta = c) \\
+    &= 1 \cdot \frac{2}{3} + 0 \cdot \frac{1}{3} \\
+    &= \frac{2}{3}
+\end{align}
+$$
