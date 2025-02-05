@@ -1,0 +1,61 @@
+\subsection*{3}
+
+Complete the proof of Lemma 5.3.2
+
+
+\vspace{0.75em}
+\hrule
+\vspace{0.75em}
+\noindent\textbf{Lemma 5.3.2}
+
+We use the notation $\chi^2_p$ to denote a chi squared random variable with $p$ degrees of freedom. 
+
+\begin{itemize}
+\item If $Z$ is a $N(0,1)$ random variable, then, $Z^2 \sim \chi^2_1$. That is, the square of a standard normal random variable is a chi squared random variable.
+
+\item If $X_1, \cdots, X_n$ are independent, and $X_i \sim \chi^2_{p_i}$, then $X_1 + \cdots + X_n \sim \chi^2_{p_1 + \ldots + p_n}$.
+\end{itemize}
+\hrule
+\vspace{0.75em}
+
+\noindent\textbf{Solution}
+
+Thankfully we worked on this one in class!
+
+\subsubsection*{A}
+\noindent\textbf{Goal:} If $Z$ is a $N(0,1)$ random variable, then, $Z^2 \sim \chi^2_1$.
+
+For these proofs moment generating functions are fantastic. Let's examine the mgf of a squared standard normal.
+
+\begin{align*}
+	M_{Z^2}(t) &= E(e^{tz^2}) \\
+	&= \int e^{tz^2} \frac{e^{-z^2/2}}{\sqrt{2\pi}} dz \\
+	&= \int \frac{1}{\sqrt{2\pi}} exp\left( -\frac{z^2}{t} (1-2t) \right) dz \\
+	&= \frac{1}{\sqrt{1-2t}} \int \frac{\sqrt{1-2t}}{\sqrt{2\pi}} exp\left( -\frac{1-zt}{2} z^2 \right) dz 
+\end{align*}
+
+From here, the integrand is pdf of $N(0, (1-2t)^{-1})$. Our goal so far has been to rearrange that integral for that purpose. So, that integral evaluates to 1 as it's over all possible values for that pdf. Lastly, we are left with the value outside the integral.
+
+\[M_{Z^2}(t) = (1-2t)^{-1/2}\]
+
+which is the mgf of a $\chi^2$ random variable.
+
+\subsubsection*{B}
+
+\noindent\textbf{Goal:} If $X_1, \cdots, X_n$ are independent, and $X_i \sim \chi^2_{p_i}$, then $X_1 + \cdots + X_n \sim \chi^2_{p_1 + \ldots + p_n}$
+
+For the second proof we will proceed in a similar way, using moment generating functions.
+
+The goal here will be to look at the behavior of the sum in the mgf and rearrange it so it's a form we can understand.
+
+\begin{align*}
+	M_{\sum x_i}(t) &= E[e^{t \sum x_i}] \\
+	&= E\left[\prod e^{t x_i} \right] & (\text{Properties of exponent}) \\
+	&= \prod E[e^{tx_i}] & (\text{X's are independent}) \\
+	&= \prod M_{X_{i}} (t) \\
+	&= \prod (1-2t)^{-p_i/2} \\
+	&= (1-2t)^{-\frac{1}{2} (p_1 + \cdots + p_n)}
+\end{align*}
+
+
+which is the mgf of a $\chi^2$ with $p=p_1 + \cdots + p_n$.
