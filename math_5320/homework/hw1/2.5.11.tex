@@ -1,0 +1,78 @@
+\subsection*{5.11}
+
+\noindent\textbf{Problem:} Suppose $\bar{X}$ and $S^2$ are calculated from a random sample $X_1, \cdots, X_n$ drawn from a population with finite variance $\sigma^2$. We know that $E[S^2] = \sigma^2$. Prove that $E[S] \leq \sigma$, and, if $\sigma^2 > 0$, then $E[S] < \sigma$.
+
+What does this say about the sample standard deviation as an estimator of the true standard deviation?
+
+\subsubsection*{Setup:}
+
+\noindent\textbf{Thoughts Before Proof:}
+
+I did not reach this solution organically. I initially assumed that this would work much like the proof for $E[S^2] = \sigma^2$. However I quickly found myself a bit stuck due to the square root. I suppose the big hint here is that the goal of the proof involves an inequality. Anyway, this proof will be leveraging Jensen's Inequality. Using this inequality was not my idea, but I will at least attempt to put in the work to convince myself of it. For this, we require some setup.
+
+\noindent\textbf{Theorems and Definitions:}
+
+\vspace{0.75em}
+\hrule
+\vspace{0.75em}
+\noindent\textbf{Definition 4.7.6}:
+A function $g(x)$ is \textbf{convex} if $g(\lambda x + (1 - \lambda)y) \leq \lambda g(x) + (1 - \lambda)g(y)$ for all x and y, and $0 < \lambda < 1$. A function $g(x)$ is \textbf{concave} if $-g(x)$ is convex.
+
+\vspace{0.75em}
+\hrule
+\vspace{0.75em}
+
+\noindent\textbf{Alternative Convex Definition (From Probability by Ross)}:
+A twice-differentiable real-valued function $f(x)$ is said to be \textbf{convex} if $f''(x) \geq 0 \;\forall\; x$. Similarly, it is said to be \textbf{concave} if $f''(x) \leq 0 \;\forall\; x$.
+
+\vspace{0.75em}
+\hrule
+\vspace{0.75em}
+
+\noindent\textbf{Theorem 4.7.7 (Jensens Inequality)}
+
+For any random variable $X$, if $g(x)$ is a \textbf{convex} function then $E(g(X)) \geq g(E(X))$.
+
+Equality holds if and only if, for every line $a + bx$ that is tangent to $g(x)$ at $x = E(X)$, P(g(X) = a+bX) = 1
+
+Also, Jensen's Inequality applies to concave functions as well. If $g$ is \textbf{concave} then $E[g(X)] \leq g(E[X])$. (From page 156 of Casella \& Berger). 
+\vspace{0.75em}
+\hrule
+\vspace{0.75em}
+
+Note that I include both definitions of convex/concave because the first is from our book but I don't want to bother interpreting it. The other version from Sheldon Ross should be more than sufficient.
+
+\pagebreak
+
+\subsubsection*{Solution}
+
+With all that out of the way, we can begin our solution to the first part of the proof. 
+
+For this problem we are examining $E[S] = E[\sqrt{S^2}]$. 
+
+Let $Y=S^2$ and $g(y) = \sqrt{y}$. 
+
+Using the alternative definition of convex we examine the second derivative of $f(y)$, 
+
+\[f''(y) = -\frac{1}{4} y^{-3/2}\]
+
+From this, we note that
+
+\[f''(y) \leq 0 \; \forall y\] 
+
+Therefore, $g(y)$ is concave.
+
+From Theorem 4.7.7 we can use the alternative version of the inequality for concave functions.
+
+\begin{align*}
+	E[g(y)] &\leq g(E[y]) \\
+	E[\sqrt{S^2}] &\leq \sqrt{E[S^2]} & (\text{Substitue in values}) \\
+	&\leq \sqrt{\sigma^2} & (\text{Known expectation}) \\
+	&\leq \sigma & (\text{Value can't be negative due to the square})
+\end{align*}
+
+Completing the first portion of the proof.
+
+\noindent\textbf{Interpretation:}
+
+What this means is that the sample standard deviation will always underestimate the population standard deviation. More informally, it will always be an optimistic estimation of the population standard deviation.
