@@ -44,7 +44,7 @@ Note that I include both definitions of convex/concave because the first is from
 
 \pagebreak
 
-\subsubsection*{Solution}
+\subsubsection*{Solution Part 1}
 
 With all that out of the way, we can begin our solution to the first part of the proof. 
 
@@ -54,11 +54,11 @@ Let $Y=S^2$ and $g(y) = \sqrt{y}$.
 
 Using the alternative definition of convex we examine the second derivative of $f(y)$, 
 
-\[f''(y) = -\frac{1}{4} y^{-3/2}\]
+\[g''(y) = -\frac{1}{4} y^{-3/2}\]
 
 From this, we note that
 
-\[f''(y) \leq 0 \; \forall y\] 
+\[g''(y) \leq 0 \; \forall y\] 
 
 Therefore, $g(y)$ is concave.
 
@@ -72,6 +72,30 @@ From Theorem 4.7.7 we can use the alternative version of the inequality for conc
 \end{align*}
 
 Completing the first portion of the proof.
+
+
+\subsubsection*{Solution Part 2}
+
+Prove that if $\sigma^2 > 0$, then $E[S] < \sigma$.
+
+For this part, our goal is to show that if $\sigma^2$ is non-zero, that $E[S]$ will never be equal to it. That is, the equality does not hold if $\sigma^2$ is non-zero. To show this we return back to the fundamentals. 
+
+For our random variable $S$,
+
+\begin{align*}
+	Var(S) &= E[S^2] - (E[S])^2 \\
+	Var(S) &= \sigma^2 - (E[S])^2 & (\text{Substitute known values})\\
+	(E[S])^2 &= \sigma^2 - Var(S) \\
+	E[S] &= \sqrt{\sigma^2 - Var(S)}
+\end{align*}
+
+From this equality, $E[S] = \sigma$ only if $Var(S) = 0$. Since we know that $\sigma^2 > 0$ so too must $Var(S) > 0$ as the population variance will now cause the sample to vary. 
+
+Therefore, returning back to our inequality, because $Var(S) > 0$,
+
+\[E[\sqrt{S^2}] < \sigma\]
+
+completing the proof.
 
 \noindent\textbf{Interpretation:}
 
