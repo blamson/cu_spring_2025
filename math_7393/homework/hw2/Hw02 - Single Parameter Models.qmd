@@ -1,0 +1,158 @@
+---
+title: "Homework 2 - Single parameter models"
+format: html
+self-contained: true
+author: Brady Lamson
+---
+
+# Problem 1
+
+You would like to know the probability a coin will yield a ‘head’ when spun in a certain manner.  Let $\theta$ denote the probability of a head for a single spin.  Somebody spins the coin 10 times and observes fewer than 3 heads (you only know that there were fewer than 3 successes in 10 spins).  A Beta(4, 4) distribution matches your prior beliefs about $\theta$.
+
+## (a)
+
+Compute the unnormalized posterior density for $\theta$, $p(\theta \mid y < 3)$.
+
+Let's first write out the density of $\theta$.
+
+$$
+\begin{align}
+    p(\theta) &= \frac{\Gamma(4 + 4)}{\Gamma(4) \Gamma(4)} \theta^{4-1} (1-\theta)^{4-1} \\
+    &\propto \theta^3(1-\theta)^3
+\end{align}
+$$
+
+Next we'll examine $p(y<3|n=10,\theta)$
+
+$$
+\begin{align}
+    p(y<3\mid n=10,\theta) &= p(y=0\mid n=10,\theta) + p(y=1\mid n=10,\theta) + p(y=2\mid n=10,\theta) \\
+    &= \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i}
+\end{align}
+$$
+
+From this,
+
+$$
+\begin{align}
+    p(\theta \mid y<3) &\propto p(y<3\mid\theta)p(\theta) \\
+    &\propto \left( \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i} \right) \theta^3(1-\theta)^3 \\
+    &\propto \sum_{i=0}^{2} {10 \choose i} \theta^{i+3} (1-\theta)^{13-i} & \left(\text{Move prior into sum}\right)
+\end{align}
+$$
+
+## (b)
+
+Plot the result from (a).
+
+```{r, echo=FALSE}
+func <- function(theta) {
+  # Ensure theta is a vector
+  likelihood <- sapply(theta, function(theta) {
+      i <- 0:2
+      n <- 10
+      sum(choose(n, i) * theta^(i) * (1 - theta)^(n - i))
+  })
+  
+  # Prior (unnormalized Beta(4,4))
+  prior <- theta^3 * (1 - theta)^3
+  
+  # Unnormalized posterior
+  likelihood * prior
+}
+
+# Plotting the unnormalized posterior
+curve(func, from = 0, to = 1, ylab = "Density", xlab = expression(theta), main="Posterior Distribution", lwd = 2)
+
+```
+
+# Problem 2
+Consider two coins $C_1$ and $C_2$.  $P(\mathrm{heads} \mid C_1 ) =0.6$ and $P(\mathrm{heads} \mid C_2 )=0.4$.  Choose one of the coins at random and imagine spinning it repeatedly until you get a head.  Given that the first two spins from the chosen coin are tails, what is the expectation of the number of additional spins until a head shows up?  Let $S$ be the number of additional spins until you spin a ‘head’.  Let $TT$ denote the first two spins were tails.  Determine $E[S|TT]$.  Hint: Use the double expectation rule and Bayes’ theorem to solve this problem.
+
+
+
+# Problem 3
+
+## (a)
+Determine Jeffreys’ prior for $\lambda$ assuming a Poisson($\lambda$) sampling distribution.  
+
+Jeffreys' prior is defined as $p(\theta) \propto J(\theta)^{1/2}$ where $J(\theta)$ is the Fisher Information for $\theta$.
+
+$$J(\theta) = -E\left( \frac{d^2}{d\theta^2} ln(p(y \mid \theta)) \mid \theta\right)$$
+
+So to accomplish this problem we need to go through a few steps. 
+
+1. Get the log-likelihood function
+2. Get the first and second derivatives
+3. Get the negative expected value of the second derivative
+4. Take the square root.
+
+$$
+\begin{align}
+    p(y \mid \theta) &= \frac{e^{-\theta}\theta^y}{y!} \\
+    ln(p(y \mid \theta)) &= -\theta + yln(\theta)-ln(y!) & (\text{log likelihood}) \\
+    \frac{d}{d\theta} ln(p(y \mid \theta)) &= -1 + \frac{y}{\theta} & (\text{first derivative}) \\
+    \frac{d^2}{d\theta^2} ln(p(y \mid \theta)) &= -\frac{y}{\theta^2} & (\text{second derivative}) \\
+    J(\theta) &= -E\left[ -\frac{y}{\theta^2} \mid \theta \right] & (\text{from definition of } J(\theta))\\
+    &= \frac{1}{\theta^2} E[y\mid\theta] & (\theta \text{ is fixed}) \\
+    &= \frac{1}{\theta^2}\theta & (y\mid\theta \text{ is poisson}) \\
+    &= \frac{1}{\theta} \\
+    p(\theta) &\propto J(\theta)^{1/2} & (\text{Jeffreys prior def'n})\\
+    &\propto \theta^{-1/2}
+\end{align}
+$$
+
+## (b)
+
+Is the resulting distribution in (a) similar to any known distribution, possibly an "improper" distribution?  If so, with what parameters? 
+
+It looks similar to the kernel of a gamma, almost. Let's look at that kernel and compare.
+
+$$p(\theta \mid \alpha, \beta) \propto \theta^{\alpha - 1}e^{-x/\beta}$$
+
+If $\alpha=1/2$ that first part would be perfect, but as is we can't ignore that second portion that we don't have. As such I believe our prior is improper. 
+
+# Problem 4  
+
+## (a)
+
+Determine the natural parameter of the binomial distribution. 
+
+## (b)
+
+Denote the natural parameter found in (a) as $\phi(\theta)$.  Assume $p(\phi(\theta))\propto 1$.  Note that this is an improper prior distribution because it CANNOT integrate to 1 since the support of the natural parameter is $(-\infty,\infty)$.  Determine $p(\theta)$ using the change-of-variable formula. Note that $\phi(\theta)$ will be  equivalent to $h^{-1}$ from the notes! You know the distribution of $\phi$ and want to find this distribution of $\theta$ through the change of variable formula. You actually have fewer steps to complete than usual. Typically, we have $\theta(\phi)=h(\phi)$ and must solve for $\phi(\theta) = h^{-1}(\theta)$. In our case, we already know $h^{-1}(\theta)$. We don’t need to solve for h.
+
+## (c)
+Use the prior derived in (b) to derive the posterior distribution for a $\mathrm{Bin}(n,\theta)$ sampling distribution.  Is the resulting posterior distribution always proper?
+
+# Problem 5:
+
+Assume $y\mid \theta \sim \mathrm{Bin}(n,\theta)$ and $\theta∼U(0,1)$.
+
+## (a)
+
+Determine the prior predictive distribution for $y$, i.e., $p(y)$.  Note: Do not leave your result in terms of a Beta function. Simplify, simplify, simplify! You will get a nice, neat solution for $p(y)$. Does this make sense, intuitively? 
+
+## (b)
+
+Determine the formula for the posterior variance for $\theta$.
+
+## (c)
+
+Determine the prior variance for $\theta$. 
+
+## (d)
+
+Is the posterior variance for $\theta$ ever greater than the prior variance?  If so, provide a counter example. If not, then prove the posterior variance is always smaller than the prior variance.
+
+# Problem 6
+
+Assume $y\mid \theta\sim \mathrm{Bin}(n,\theta)$ and $\theta \sim \mathrm{Beta}(\alpha, \beta)$.  Is the posterior variance for $\theta$ ever greater than the prior variance?  If so, provide an example.
+
+# Problem 7
+
+In general, when might the posterior variance be greater than the prior variance?  (Not for this specific example, but in general?)
+
+# Problem 8
+
+Use Bayes’ theorem to verify the formulas for $\mu_n$ and $\tau_n^2$ given in the notes when $y_1,\ldots,y_n \mid \theta ∼ N(\theta, \sigma^2)$ and $\theta \sim N(\mu_0, \tau_0^2)$, with $\sigma^2$ assumed known.  Hint:  complete the square!
