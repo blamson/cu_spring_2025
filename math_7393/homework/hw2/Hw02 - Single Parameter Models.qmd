@@ -118,6 +118,41 @@ If $\alpha=1/2$ that first part would be perfect, but as is we can't ignore that
 
 Determine the natural parameter of the binomial distribution. 
 
+To get the natural parameter we first need to get the binomial distribution into the exponential form:
+
+$$
+p(y \mid \theta) = f(y)g(\theta)e^{\phi(\theta)u(y)}
+$$
+
+where $\phi(\theta)$ is our natural parameter. The book gives us a hint, telling us that it's $logit(\theta) = log\left(\frac{\theta}{1-\theta}\right)$. So we at least have a goal in mind. 
+
+$$
+\begin{align}
+    p(y \mid n,\theta) &= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    &= \exp\left(\ln\left({n \choose y} \theta^y (1-\theta)^{n-y}\right)\right) & (\text{Setup for rearranging}) \\
+    &= \exp\left(ln{n \choose y} + y \ln(\theta) + (n-y)\ln(1-\theta)\right) & (\text{Product property of ln}) \\
+    &= {n \choose y} \exp(y\ln(\theta) - y\ln(1-\theta))\exp(n\ln(1-\theta)) & (\text{Distribute } (n-y), \text{rearrange}) \\
+    &= {n \choose y} \exp(n\ln(1-\theta)) \exp\left(y\ln\left(\frac{\theta}{1-\theta}\right)\right) & (\text{Quotient property of ln, rearrange})
+\end{align}
+$$
+
+So now we have the form we need where:
+
+$$
+\begin{align}
+    f(y) &= {n \choose y} \\
+    g(\theta) &=  \exp(n\ln(1-\theta)) \\
+    \phi(\theta) &= \ln\left(\frac{\theta}{1-\theta}\right) \\
+    u(y) &= y
+\end{align}
+$$
+
+As such, our natural paramter is 
+
+$$
+\phi(\theta) = \ln\left(\frac{\theta}{1-\theta}\right)
+$$
+
 ## (b)
 
 Denote the natural parameter found in (a) as $\phi(\theta)$.  Assume $p(\phi(\theta))\propto 1$.  Note that this is an improper prior distribution because it CANNOT integrate to 1 since the support of the natural parameter is $(-\infty,\infty)$.  Determine $p(\theta)$ using the change-of-variable formula. Note that $\phi(\theta)$ will be  equivalent to $h^{-1}$ from the notes! You know the distribution of $\phi$ and want to find this distribution of $\theta$ through the change of variable formula. You actually have fewer steps to complete than usual. Typically, we have $\theta(\phi)=h(\phi)$ and must solve for $\phi(\theta) = h^{-1}(\theta)$. In our case, we already know $h^{-1}(\theta)$. We don’t need to solve for h.
