@@ -124,7 +124,7 @@ $$
 p(y \mid \theta) = f(y)g(\theta)e^{\phi(\theta)u(y)}
 $$
 
-where $\phi(\theta)$ is our natural parameter. The book gives us a hint, telling us that it's $logit(\theta) = log\left(\frac{\theta}{1-\theta}\right)$. So we at least have a goal in mind. 
+where $\phi(\theta)$ is our natural parameter. The book gives us a hint, telling us that it's $logit(\theta) = log\left(\frac{\theta}{1-\theta}\right)$ (page 37). So we at least have a goal in mind. 
 
 $$
 \begin{align}
@@ -157,8 +157,69 @@ $$
 
 Denote the natural parameter found in (a) as $\phi(\theta)$.  Assume $p(\phi(\theta))\propto 1$.  Note that this is an improper prior distribution because it CANNOT integrate to 1 since the support of the natural parameter is $(-\infty,\infty)$.  Determine $p(\theta)$ using the change-of-variable formula. Note that $\phi(\theta)$ will be  equivalent to $h^{-1}$ from the notes! You know the distribution of $\phi$ and want to find this distribution of $\theta$ through the change of variable formula. You actually have fewer steps to complete than usual. Typically, we have $\theta(\phi)=h(\phi)$ and must solve for $\phi(\theta) = h^{-1}(\theta)$. In our case, we already know $h^{-1}(\theta)$. We don’t need to solve for h.
 
+### Setup
+
+For this let us refer to the change of variable formula from the notes.
+
+$$
+p_{\phi}(\phi) = p_{\theta}(h^{-1}(\phi)) \left| \frac{dh^{-1}(\phi)}{d\phi} \right|
+$$
+
+This is written to solve for $p_{\phi}(\phi)$ which we already know. Our goal is to get $p_{\theta}(\theta)$, so we need to rewrite this. Thankfully it's as simple as swapping the symbols!
+
+$$
+p_{\theta}(\theta) = p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\theta} \right|
+$$
+
+Now all we really need is the first derivative of our answer from part a.
+
+### Solution
+
+(i) Derivative
+
+$$
+\begin{align}
+     \frac{dh^{-1}(\theta)}{d\theta} &= \frac{d}{d\theta} ln\left( \frac{\theta}{1-\theta} \right) \\
+     &= \frac{1}{\theta-\theta^2} \\
+     &= \frac{1}{\theta(1-\theta)} \\
+     &= \theta^{-1}(1-\theta)^{-1}
+\end{align}
+$$
+
+(ii) Plug it in
+
+Here we'll take advantage of the fact that $p_{\phi}(h^{-1}(\theta)) \propto 1$. This means all that is left really is the derivative.
+
+$$
+\begin{align}
+    p_{\theta}(\theta) &=  p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\theta} \right| \\
+    &\propto 1 \cdot \left\vert \theta^{-1}(1-\theta)^{-1} \right\vert \\
+    &= \theta^{-1}(1-\theta)^{-1}
+\end{align}
+$$
+
+This appears to be the kernel of a $Beta(0,0)$ distribution, but those values for $\alpha$ and $\beta$ are invalid for the distribution. So it's definitely improper.
+
 ## (c)
 Use the prior derived in (b) to derive the posterior distribution for a $\mathrm{Bin}(n,\theta)$ sampling distribution.  Is the resulting posterior distribution always proper?
+
+Okay so now we have a binomial data distribution. 
+
+$$
+p(y\mid n,\theta) = {n \choose y} \theta^y (1-\theta)^{n-y} \; ; \; y=0,1,...,n \;;\; 0 \leq \theta \leq 1
+$$
+
+Using that info we have:
+
+$$
+\begin{align}
+    p(\theta \mid y) &\propto p(y \mid \theta) p(\theta) \\
+    &\propto {n \choose y} \theta^y (1-\theta)^{n-y} \theta^{-1}(1-\theta)^{-1} \\
+    &\propto \theta^{y-1} (1-\theta)^{n-y-1}
+\end{align}
+$$
+
+Which appears to be the kernel of a $Beta(y, n-y)$ distribution. However, this is only a proper distribution when $y>0$ and $n-y>0$. 
 
 # Problem 5:
 
@@ -167,6 +228,53 @@ Assume $y\mid \theta \sim \mathrm{Bin}(n,\theta)$ and $\theta∼U(0,1)$.
 ## (a)
 
 Determine the prior predictive distribution for $y$, i.e., $p(y)$.  Note: Do not leave your result in terms of a Beta function. Simplify, simplify, simplify! You will get a nice, neat solution for $p(y)$. Does this make sense, intuitively? 
+
+Let's set some stuff up.
+
+$$
+\begin{align}
+    p(y \mid \theta) &= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    p(\theta) &= \frac{1}{1-0} \\
+    &= 1
+\end{align}
+$$
+
+We want to find $p(y)$, so we can use those two pieces to get there.
+
+$$
+\begin{align}
+    p(y) &= \int p(y \mid \theta) p(\theta) d\theta \\
+    &= \int {n \choose y} \theta^y (1-\theta)^{n-y} \cdot 1 d\theta \\
+    &= {n \choose y} \int \theta^y (1-\theta)^{n-y} d\theta \\
+\end{align}
+$$
+
+From here we can recognize that the integrand is the kernel of a beta distribution with $\alpha=y+1$ and $\beta=n-y+1$. Why this is important is we don't need to evaluate the integral directly. We know that it will evaluate to be the inverse of the normalizing constant! That is, it'll evaluate to the value such that if the normalizing constant was in the integrand that the integral would evaluate to 1.
+
+The normalizing constant of the beta distribution is:
+
+$$
+\begin{align}
+c &= \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)} \\
+\frac{1}{c} &= \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha + \beta)}
+\end{align}
+$$
+
+So, back to the integral, making sure to subtitute in the appropriate values of $\alpha$ and $\beta$.
+
+Also, as a small note. $\Gamma(x) = (x-1)!$.
+
+$$
+\begin{align}
+    p(y) &= {n \choose y} \int \theta^y (1-\theta)^{n-y} d\theta \\
+    &= {n \choose y} \frac{\Gamma(y+1)\Gamma(n-y+1)}{\Gamma(y+1+n-y+1)} \\
+    &= \frac{n!}{y!(n-y)!} \cdot \frac{y!(n-y)!}{(n+1)!} \\
+    &= \frac{n!}{(n+1)n!} \\
+    &= (n + 1)^{-1}
+\end{align}
+$$
+
+This does make sense intuitively. Our prior is a non-informative one. It doesn't tell us anything about which values of $y$ would be more likely than others. What we see in our result is that it isn't a function of $y$ and, as such, all of the values along the support are equally likely. 
 
 ## (b)
 

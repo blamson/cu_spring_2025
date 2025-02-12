@@ -3192,14 +3192,92 @@ window.Quarto = {
 <section id="a-2" class="level2">
 <h2 class="anchored" data-anchor-id="a-2">(a)</h2>
 <p>Determine the natural parameter of the binomial distribution.</p>
+<p>To get the natural parameter we first need to get the binomial distribution into the exponential form:</p>
+<p><span class="math display">\[
+p(y \mid \theta) = f(y)g(\theta)e^{\phi(\theta)u(y)}
+\]</span></p>
+<p>where <span class="math inline">\(\phi(\theta)\)</span> is our natural parameter. The book gives us a hint, telling us that it’s <span class="math inline">\(logit(\theta) = log\left(\frac{\theta}{1-\theta}\right)\)</span> (page 37). So we at least have a goal in mind.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(y \mid n,\theta) &amp;= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    &amp;= \exp\left(\ln\left({n \choose y} \theta^y (1-\theta)^{n-y}\right)\right) &amp; (\text{Setup for rearranging}) \\
+    &amp;= \exp\left(ln{n \choose y} + y \ln(\theta) + (n-y)\ln(1-\theta)\right) &amp; (\text{Product property of ln}) \\
+    &amp;= {n \choose y} \exp(y\ln(\theta) - y\ln(1-\theta))\exp(n\ln(1-\theta)) &amp; (\text{Distribute } (n-y), \text{rearrange}) \\
+    &amp;= {n \choose y} \exp(n\ln(1-\theta)) \exp\left(y\ln\left(\frac{\theta}{1-\theta}\right)\right) &amp; (\text{Quotient property of ln, rearrange})
+\end{align}
+\]</span></p>
+<p>So now we have the form we need where:</p>
+<p><span class="math display">\[
+\begin{align}
+    f(y) &amp;= {n \choose y} \\
+    g(\theta) &amp;=  \exp(n\ln(1-\theta)) \\
+    \phi(\theta) &amp;= \ln\left(\frac{\theta}{1-\theta}\right) \\
+    u(y) &amp;= y
+\end{align}
+\]</span></p>
+<p>As such, our natural paramter is</p>
+<p><span class="math display">\[
+\phi(\theta) = \ln\left(\frac{\theta}{1-\theta}\right)
+\]</span></p>
 </section>
 <section id="b-2" class="level2">
 <h2 class="anchored" data-anchor-id="b-2">(b)</h2>
 <p>Denote the natural parameter found in (a) as <span class="math inline">\(\phi(\theta)\)</span>. Assume <span class="math inline">\(p(\phi(\theta))\propto 1\)</span>. Note that this is an improper prior distribution because it CANNOT integrate to 1 since the support of the natural parameter is <span class="math inline">\((-\infty,\infty)\)</span>. Determine <span class="math inline">\(p(\theta)\)</span> using the change-of-variable formula. Note that <span class="math inline">\(\phi(\theta)\)</span> will be equivalent to <span class="math inline">\(h^{-1}\)</span> from the notes! You know the distribution of <span class="math inline">\(\phi\)</span> and want to find this distribution of <span class="math inline">\(\theta\)</span> through the change of variable formula. You actually have fewer steps to complete than usual. Typically, we have <span class="math inline">\(\theta(\phi)=h(\phi)\)</span> and must solve for <span class="math inline">\(\phi(\theta) = h^{-1}(\theta)\)</span>. In our case, we already know <span class="math inline">\(h^{-1}(\theta)\)</span>. We don’t need to solve for h.</p>
+<section id="setup" class="level3">
+<h3 class="anchored" data-anchor-id="setup">Setup</h3>
+<p>For this let us refer to the change of variable formula from the notes.</p>
+<p><span class="math display">\[
+p_{\phi}(\phi) = p_{\theta}(h^{-1}(\phi)) \left| \frac{dh^{-1}(\phi)}{d\phi} \right|
+\]</span></p>
+<p>This is written to solve for <span class="math inline">\(p_{\phi}(\phi)\)</span> which we already know. Our goal is to get <span class="math inline">\(p_{\theta}(\theta)\)</span>, so we need to rewrite this. Thankfully it’s as simple as swapping the symbols!</p>
+<p><span class="math display">\[
+p_{\theta}(\theta) = p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\theta} \right|
+\]</span></p>
+<p>Now all we really need is the first derivative of our answer from part a.</p>
+</section>
+<section id="solution" class="level3">
+<h3 class="anchored" data-anchor-id="solution">Solution</h3>
+<ol type="i">
+<li>Derivative</li>
+</ol>
+<p><span class="math display">\[
+\begin{align}
+     \frac{dh^{-1}(\theta)}{d\theta} &amp;= \frac{d}{d\theta} ln\left( \frac{\theta}{1-\theta} \right) \\
+     &amp;= \frac{1}{\theta-\theta^2} \\
+     &amp;= \frac{1}{\theta(1-\theta)} \\
+     &amp;= \theta^{-1}(1-\theta)^{-1}
+\end{align}
+\]</span></p>
+<ol start="2" type="i">
+<li>Plug it in</li>
+</ol>
+<p>Here we’ll take advantage of the fact that <span class="math inline">\(p_{\phi}(h^{-1}(\theta)) \propto 1\)</span>. This means all that is left really is the derivative.</p>
+<p><span class="math display">\[
+\begin{align}
+    p_{\theta}(\theta) &amp;=  p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\theta} \right| \\
+    &amp;\propto 1 \cdot \left\vert \theta^{-1}(1-\theta)^{-1} \right\vert \\
+    &amp;= \theta^{-1}(1-\theta)^{-1}
+\end{align}
+\]</span></p>
+<p>This appears to be the kernel of a <span class="math inline">\(Beta(0,0)\)</span> distribution, but those values for <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are invalid for the distribution. So it’s definitely improper.</p>
+</section>
 </section>
 <section id="c" class="level2">
 <h2 class="anchored" data-anchor-id="c">(c)</h2>
 <p>Use the prior derived in (b) to derive the posterior distribution for a <span class="math inline">\(\mathrm{Bin}(n,\theta)\)</span> sampling distribution. Is the resulting posterior distribution always proper?</p>
+<p>Okay so now we have a binomial data distribution.</p>
+<p><span class="math display">\[
+p(y\mid n,\theta) = {n \choose y} \theta^y (1-\theta)^{n-y} \; ; \; y=0,1,...,n \;;\; 0 \leq \theta \leq 1
+\]</span></p>
+<p>Using that info we have:</p>
+<p><span class="math display">\[
+\begin{align}
+    p(\theta \mid y) &amp;\propto p(y \mid \theta) p(\theta) \\
+    &amp;\propto {n \choose y} \theta^y (1-\theta)^{n-y} \theta^{-1}(1-\theta)^{-1} \\
+    &amp;\propto \theta^{y-1} (1-\theta)^{n-y-1}
+\end{align}
+\]</span></p>
+<p>Which appears to be the kernel of a <span class="math inline">\(Beta(y, n-y)\)</span> distribution. However, this is only a proper distribution when <span class="math inline">\(y&gt;0\)</span> and <span class="math inline">\(n-y&gt;0\)</span>.</p>
 </section>
 </section>
 <section id="problem-5" class="level1">
@@ -3208,6 +3286,42 @@ window.Quarto = {
 <section id="a-3" class="level2">
 <h2 class="anchored" data-anchor-id="a-3">(a)</h2>
 <p>Determine the prior predictive distribution for <span class="math inline">\(y\)</span>, i.e., <span class="math inline">\(p(y)\)</span>. Note: Do not leave your result in terms of a Beta function. Simplify, simplify, simplify! You will get a nice, neat solution for <span class="math inline">\(p(y)\)</span>. Does this make sense, intuitively?</p>
+<p>Let’s set some stuff up.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(y \mid \theta) &amp;= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    p(\theta) &amp;= \frac{1}{1-0} \\
+    &amp;= 1
+\end{align}
+\]</span></p>
+<p>We want to find <span class="math inline">\(p(y)\)</span>, so we can use those two pieces to get there.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(y) &amp;= \int p(y \mid \theta) p(\theta) d\theta \\
+    &amp;= \int {n \choose y} \theta^y (1-\theta)^{n-y} \cdot 1 d\theta \\
+    &amp;= {n \choose y} \int \theta^y (1-\theta)^{n-y} d\theta \\
+\end{align}
+\]</span></p>
+<p>From here we can recognize that the integrand is the kernel of a beta distribution with <span class="math inline">\(\alpha=y+1\)</span> and <span class="math inline">\(\beta=n-y+1\)</span>. Why this is important is we don’t need to evaluate the integral directly. We know that it will evaluate to be the inverse of the normalizing constant! That is, it’ll evaluate to the value such that if the normalizing constant was in the integrand that the integral would evaluate to 1.</p>
+<p>The normalizing constant of the beta distribution is:</p>
+<p><span class="math display">\[
+\begin{align}
+c &amp;= \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)} \\
+\frac{1}{c} &amp;= \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha + \beta)}
+\end{align}
+\]</span></p>
+<p>So, back to the integral, making sure to subtitute in the appropriate values of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>.</p>
+<p>Also, as a small note. <span class="math inline">\(\Gamma(x) = (x-1)!\)</span>.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(y) &amp;= {n \choose y} \int \theta^y (1-\theta)^{n-y} d\theta \\
+    &amp;= {n \choose y} \frac{\Gamma(y+1)\Gamma(n-y+1)}{\Gamma(y+1+n-y+1)} \\
+    &amp;= \frac{n!}{y!(n-y)!} \cdot \frac{y!(n-y)!}{(n+1)!} \\
+    &amp;= \frac{n!}{(n+1)n!} \\
+    &amp;= (n + 1)^{-1}
+\end{align}
+\]</span></p>
+<p>This does make sense intuitively. Our prior is a non-informative one. It doesn’t tell us anything about which values of <span class="math inline">\(y\)</span> would be more likely than others. What we see in our result is that it isn’t a function of <span class="math inline">\(y\)</span> and, as such, all of the values along the support are equally likely.</p>
 </section>
 <section id="b-3" class="level2">
 <h2 class="anchored" data-anchor-id="b-3">(b)</h2>
