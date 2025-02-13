@@ -280,21 +280,156 @@ This does make sense intuitively. Our prior is a non-informative one. It doesn't
 
 Determine the formula for the posterior variance for $\theta$.
 
+For the posterior variance we first need the posterior. Thankfully we've done that work already in a way. Looking back at our computation for the marginal density of $y$ included everything we need for the posterior. 
+
+$$
+p(y) = \int p(y \mid \theta) p(\theta) d\theta \\
+p(\theta \mid y) \propto  p(y \mid \theta) p(\theta)
+$$
+
+From this, we already know that the distribution of the posterior is a beta distribution with $\alpha=y+1$ and $\beta=n-y+1$. It works out really conveniently that way!
+
+As for the variance, we can directly apply the variance of the beta distribution.
+
+Let $X \sim Beta(\alpha, beta)$. $Var(X) = \frac{\alpha\beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}$
+
+$$
+\begin{align}
+    Var(\theta \mid y) &= \frac{(y+1)(n-y+1)}{(y+1+n-y+1)^2(y+1+n-y+1 + 1)} \\
+    &= \frac{(y+1)(n-y+1)}{(n+2)^2(n+3)} \\
+\end{align}
+$$
+
 ## (c)
 
 Determine the prior variance for $\theta$. 
 
+The prior is just a uniform distribution, so we can easily find the variance.
+
+$$
+Var(\theta) = \frac{(1-0)^2}{12} = \frac{1}{12}
+$$
+
 ## (d)
 
+**Problem**
+
 Is the posterior variance for $\theta$ ever greater than the prior variance?  If so, provide a counter example. If not, then prove the posterior variance is always smaller than the prior variance.
+
+**Answer**
+
+For this problem we'll be sticking to the same prior and data distribution as the rest of problem 5. So a uniform prior and binomial data distribution. 
+
+With this set up the posterior variance will never be larger than the prior variance. What's more, is that, the best case scenario is in the trivial situation with no data $y=n=0$. In that situation the variances match.
+
+**Setup**
+
+We'll be leveraging the posterior variance formula from the previous section:
+
+$$
+Var(\theta \mid y) = \frac{(y+1)(n-y+1)}{(n+2)^2(n+3)}
+$$
+
+And the prior variance
+
+$$
+Var(\theta) = \frac{1}{12}
+$$
+
+So our proof will be to verify that
+
+$$
+    Var(\theta \mid y) < Var(\theta), \; \forall\; n\geq1, \; 0\leq y\leq n
+$$
+
+**Special Case:** $n=y=0$
+
+Before we start, let us entertain the trivial example mentioned before.
+
+$$
+\begin{align}
+    Var(\theta \mid y) &= \frac{(y+1)(n-y+1)}{(n+2)^2(n+3)} \\
+    &= \frac{1\cdot1}{2^2 \cdot 3} \\
+    &= \frac{1}{12} \\
+    Var(\theta \mid y) &= Var(\theta)
+\end{align}
+$$
+
+This should make intuitive sense as, with no data, all of the variance will be contained within the prior. 
+
+**Other Cases**
+
+Let us now proceed with all cases where $n\geq1$.
+
+When we expand out our posterior variance our inequality looks like
+
+$$
+\begin{align}
+    \frac{yn-y^2+n+1}{n^3+7n^2+16n+12} &< \frac{1}{12} \\
+    \frac{12(yn-y^2+n+1)}{n^3+7n^2+16n+12} &< 1 & \text{(mult by 12)} \\
+\end{align}
+$$
+
+Looking into this, the numerators largest term is a quadratic, $y^2$. However, $0\leq y \leq n$, so $y$ becoming as large as possible results in the quadratic cancelling out. The bounds on $y$ prevent the numerator from ever becoming too large. However, the denominator will always increase as $n$ increases. On top of that, it is a cubic which will grow faster than the quadratic ever could.
+
+Looking at the limits as both numbers approach infinity we get,
+
+$$
+\begin{align}
+    \lim_{n,y\to\infty} \frac{12(yn-y^2+n+1)}{n^3+7n^2+16n+12} &< 1 \\
+    0 &< 1
+\end{align}
+$$
+
+This holds for all $n,y$. 
+
+**Summary**
+
+In summary, for $n=0$, the variance of the posterior matches the prior.
+
+For situations where $n \geq 1$, the denominator greatly outpaces the numerator, ensuring that the posterior variance can never be greater than the prior variance.
 
 # Problem 6
 
 Assume $y\mid \theta\sim \mathrm{Bin}(n,\theta)$ and $\theta \sim \mathrm{Beta}(\alpha, \beta)$.  Is the posterior variance for $\theta$ ever greater than the prior variance?  If so, provide an example.
 
+Yes it certainly can be in this situation. 
+
+Let's look at an example. I came up with this example by throwing random numbers at the wall.
+
+Let $\theta \sim \mathrm{Beta}(1, 11)$.
+
+We'll have 3 trials $(n=3)$ and 3 successes $(y=3)$ for our binomial rv.
+
+**Variance of Prior**
+
+$$
+\begin{align}
+    Var(\theta) &= \frac{11\cdot1}{12^2 \cdot 13} \\
+    &\approx 0.0059
+\end{align}
+$$
+
+**Variance of Posterior**
+
+Our posterior, $\theta \mid y$ will have a distribution $Beta(1+3, 11+3) = Beta(4,14)$.
+
+$$
+\begin{align}
+    Var(\theta \mid y) &= \frac{4 \cdot 12}{16^2 \cdot 17} \\
+    &\approx 0.011
+\end{align}
+$$
+
+**Result**
+
+As $0.011 > 0.0059$, the posterior variance can infact be larger than the prior variance. This is because our prior very much did not align with the data at all. $E[\theta]=1/12$ which is a far cry from our data success probability of $1$. This contradiction, combined with a small sample size, is what helped result in that increased posterior variance. 
+
 # Problem 7
 
 In general, when might the posterior variance be greater than the prior variance?  (Not for this specific example, but in general?)
+
+In general, large conflicts between the prior assumptions and data can cause this. A very strongly informed prior matched with extreme outliers or contradicting data can throw the variance out of wack for the posterior distribution. It also depends on what distributions are used. Some distributions will force the posterior variance to be lower than the prior. We saw this in problem 5. Not all distributions will force this to be true, as we saw in problem 6.
 
 # Problem 8
 
