@@ -3149,6 +3149,73 @@ window.Quarto = {
 <section id="problem-2" class="level1">
 <h1>Problem 2</h1>
 <p>Consider two coins <span class="math inline">\(C_1\)</span> and <span class="math inline">\(C_2\)</span>. <span class="math inline">\(P(\mathrm{heads} \mid C_1 ) =0.6\)</span> and <span class="math inline">\(P(\mathrm{heads} \mid C_2 )=0.4\)</span>. Choose one of the coins at random and imagine spinning it repeatedly until you get a head. Given that the first two spins from the chosen coin are tails, what is the expectation of the number of additional spins until a head shows up? Let <span class="math inline">\(S\)</span> be the number of additional spins until you spin a ‘head’. Let <span class="math inline">\(TT\)</span> denote the first two spins were tails. Determine <span class="math inline">\(E[S|TT]\)</span>. Hint: Use the double expectation rule and Bayes’ theorem to solve this problem.</p>
+<p>Okay this problem has a lot going on in it. There are a lot of pieces needed to solve this one and it can be a little overwhelming to understand exactly why each piece is necessary in the moment. At least for me it was! Let’s start with our basic building blocks.</p>
+<p>First, our two coins. We choose a coin at random, so we can say that <span class="math inline">\(Pr(C_1) = Pr(C_2) = 0.5\)</span>. This piece functions as our prior. We assume each coin was equally likely to be selected at the start. In other words, we aren’t sure which coin we chose yet. Once we observe our data it’ll help us update this belief based on which coin is more likely to grant us those results.</p>
+<p>Our data is two tails, or <span class="math inline">\(y=\{TT\}\)</span>. We’ll come back to this later.</p>
+<p>And next is our goal which is to determine <span class="math inline">\(E[S|TT]\)</span> where <span class="math inline">\(S\)</span> represents the number of additional spins until a heads shows up. Based on this interpretation can we state that <span class="math inline">\(S\)</span> follows a geometric distribution.</p>
+<p>So what we have here are two possible geometric distributions, one with <span class="math inline">\(p=0.6\)</span> when <span class="math inline">\(C_1\)</span> is chosen and the other with <span class="math inline">\(p=0.4\)</span> for <span class="math inline">\(C_2\)</span>. In other words:</p>
+<p><span class="math display">\[
+\begin{align}
+    S\mid TT, C_1 &amp;\sim Geo(0.6) \\
+    S\mid TT, C_2 &amp;\sim Geo(0.4) \\
+\end{align}
+\]</span></p>
+<p>The final answer here will be the <em>weighted average</em> of the expectations of the two geometric random variables. The weight will be how likely it was each coin was chosen given that we got two tails so far.</p>
+<p><span class="math display">\[
+E[S \mid TT] = p(C_1 \mid TT) \cdot E[S \mid TT, C_1] + p(C_2 \mid TT) \cdot E[S \mid TT, C_2]
+\]</span></p>
+<p>Now that we know our goal we can start getting all the pieces together.</p>
+<p>Let’s start with the expected values of <span class="math inline">\(S\)</span>. These are simple. Given a geometric random variable <span class="math inline">\(S\)</span>, <span class="math inline">\(E[S \mid p] = 1/p\)</span>. So,</p>
+<p><span class="math display">\[
+\begin{align}
+    E[S \mid TT, C_1] &amp;= \frac{1}{0.6} \\
+    E[S \mid TT, C_2] &amp;= \frac{1}{0.4} \\
+\end{align}
+\]</span></p>
+<p>What’s trickier now is the “weights”, <span class="math inline">\(p(C_i \mid TT)\)</span>. For these we’ll want to use bayes rule.</p>
+<p><span class="math display">\[
+    p(C_i \mid TT) = \frac{p(TT \mid C_i) p(C_i)}{p(TT)}  
+\]</span></p>
+<p>Taking on <span class="math inline">\(p(TT)\)</span> will give us what we need for both coins.</p>
+<p><span class="math display">\[
+p(TT) = p(TT \mid C_1) p(C_1) + p(TT \mid C_2) p(C_2)
+\]</span></p>
+<p><span class="math inline">\(p(TT \mid C_i)\)</span> can be computed using the binomial pmf. Once we have a coin we’re simply flipping it. In both cases we know our data, number of trials and probability of success for each trial.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(TT \mid C_1) &amp;= {2 \choose 2} 0.6^0(1-0.6)^2 = 0.4^2 = 0.16 \\
+    p(TT \mid C_2) &amp;= {2 \choose 2} 0.4^0(1-0.4)^2 = 0.6^2 = 0.36 \\
+\end{align}
+\]</span></p>
+<p>So plugging that in gives us:</p>
+<p><span class="math display">\[
+\begin{align}
+    p(TT) &amp;=p(TT \mid C_1) p(C_1) + p(TT \mid C_2) p(C_2) \\
+    &amp;= 0.16 \cdot 0.5 + 0.36 \cdot 0.5 \\
+    &amp;= 0.08 + 0.18 \\
+    &amp;= 0.26
+\end{align}
+\]</span></p>
+<p>Now we can use all those pieces together.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(C_1 \mid TT) &amp;= \frac{p(TT \mid C_1) p(C_1)}{p(TT)} \\
+    &amp;= \frac{0.08}{0.26} \\
+    &amp;\approx 0.308 \\
+    p(C_2 \mid TT) &amp;= \frac{p(TT \mid C_2) p(C_1)}{p(TT)} \\
+    &amp;= \frac{0.18}{0.26} \\
+    &amp;\approx 0.692
+\end{align}
+\]</span></p>
+<p>Lastly, we return back to our goal.</p>
+<p><span class="math display">\[
+\begin{align}
+    E[S \mid TT] &amp;= p(C_1 \mid TT) \cdot E[S \mid TT, C_1] + p(C_2 \mid TT) \cdot E[S \mid TT, C_2] \\
+    &amp;\approx 0.308 \cdot \frac{1}{0.6} + 0.692 \cdot \frac{1}{0.4} \\
+    &amp;\approx 2.243
+\end{align}
+\]</span></p>
+<p>To conclude, the expected number of flips it will take to get our first heads is approximately <span class="math inline">\(2.243\)</span>. So a little over <span class="math inline">\(2\)</span> flips.</p>
 </section>
 <section id="problem-3" class="level1">
 <h1>Problem 3</h1>

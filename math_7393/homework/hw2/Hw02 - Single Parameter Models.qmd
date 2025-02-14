@@ -69,7 +69,96 @@ curve(func, from = 0, to = 1, ylab = "Density", xlab = expression(theta), main="
 # Problem 2
 Consider two coins $C_1$ and $C_2$.  $P(\mathrm{heads} \mid C_1 ) =0.6$ and $P(\mathrm{heads} \mid C_2 )=0.4$.  Choose one of the coins at random and imagine spinning it repeatedly until you get a head.  Given that the first two spins from the chosen coin are tails, what is the expectation of the number of additional spins until a head shows up?  Let $S$ be the number of additional spins until you spin a ‘head’.  Let $TT$ denote the first two spins were tails.  Determine $E[S|TT]$.  Hint: Use the double expectation rule and Bayes’ theorem to solve this problem.
 
+Okay this problem has a lot going on in it. There are a lot of pieces needed to solve this one and it can be a little overwhelming to understand exactly why each piece is necessary in the moment. At least for me it was! Let's start with our basic building blocks.
 
+First, our two coins. We choose a coin at random, so we can say that $Pr(C_1) = Pr(C_2) = 0.5$. This piece functions as our prior. We assume each coin was equally likely to be selected at the start. In other words, we aren't sure which coin we chose yet. Once we observe our data it'll help us update this belief based on which coin is more likely to grant us those results.
+
+Our data is two tails, or $y=\{TT\}$. We'll come back to this later.
+
+And next is our goal which is to determine $E[S|TT]$ where $S$ represents the number of additional spins until a heads shows up. Based on this interpretation can we state that $S$ follows a geometric distribution.
+
+So what we have here are two possible geometric distributions, one with $p=0.6$ when $C_1$ is chosen and the other with $p=0.4$ for $C_2$. In other words:
+
+$$
+\begin{align}
+    S\mid TT, C_1 &\sim Geo(0.6) \\
+    S\mid TT, C_2 &\sim Geo(0.4) \\
+\end{align}
+$$
+
+The final answer here will be the *weighted average* of the expectations of the two geometric random variables. The weight will be how likely it was each coin was chosen given that we got two tails so far. 
+
+$$
+E[S \mid TT] = p(C_1 \mid TT) \cdot E[S \mid TT, C_1] + p(C_2 \mid TT) \cdot E[S \mid TT, C_2]
+$$
+
+Now that we know our goal we can start getting all the pieces together. 
+
+Let's start with the expected values of $S$. These are simple. Given a geometric random variable $S$, $E[S \mid p] = 1/p$. So,
+
+$$
+\begin{align}
+    E[S \mid TT, C_1] &= \frac{1}{0.6} \\
+    E[S \mid TT, C_2] &= \frac{1}{0.4} \\
+\end{align}
+$$
+
+What's trickier now is the "weights", $p(C_i \mid TT)$. For these we'll want to use bayes rule.
+
+$$
+    p(C_i \mid TT) = \frac{p(TT \mid C_i) p(C_i)}{p(TT)}  
+$$
+
+Taking on $p(TT)$ will give us what we need for both coins.
+
+$$
+p(TT) = p(TT \mid C_1) p(C_1) + p(TT \mid C_2) p(C_2)
+$$
+
+$p(TT \mid C_i)$ can be computed using the binomial pmf. Once we have a coin we're simply flipping it. In both cases we know our data, number of trials and probability of success for each trial.
+
+$$
+\begin{align}
+    p(TT \mid C_1) &= {2 \choose 2} 0.6^0(1-0.6)^2 = 0.4^2 = 0.16 \\
+    p(TT \mid C_2) &= {2 \choose 2} 0.4^0(1-0.4)^2 = 0.6^2 = 0.36 \\
+\end{align}
+$$
+
+So plugging that in gives us:
+
+$$
+\begin{align}
+    p(TT) &=p(TT \mid C_1) p(C_1) + p(TT \mid C_2) p(C_2) \\
+    &= 0.16 \cdot 0.5 + 0.36 \cdot 0.5 \\
+    &= 0.08 + 0.18 \\
+    &= 0.26
+\end{align}
+$$
+
+Now we can use all those pieces together.
+
+$$
+\begin{align}
+    p(C_1 \mid TT) &= \frac{p(TT \mid C_1) p(C_1)}{p(TT)} \\
+    &= \frac{0.08}{0.26} \\
+    &\approx 0.308 \\
+    p(C_2 \mid TT) &= \frac{p(TT \mid C_2) p(C_1)}{p(TT)} \\
+    &= \frac{0.18}{0.26} \\
+    &\approx 0.692
+\end{align}
+$$
+
+Lastly, we return back to our goal.
+
+$$
+\begin{align}
+    E[S \mid TT] &= p(C_1 \mid TT) \cdot E[S \mid TT, C_1] + p(C_2 \mid TT) \cdot E[S \mid TT, C_2] \\
+    &\approx 0.308 \cdot \frac{1}{0.6} + 0.692 \cdot \frac{1}{0.4} \\
+    &\approx 2.243
+\end{align}
+$$
+
+To conclude, the expected number of flips it will take to get our first heads is approximately $2.243$. So a little over $2$ flips.
 
 # Problem 3
 
