@@ -3,6 +3,7 @@ title: "Homework 2 - Single parameter models"
 format: html
 self-contained: true
 author: Brady Lamson
+date: 2/15/2025
 ---
 
 # Problem 1
@@ -310,6 +311,12 @@ $$
 
 Which appears to be the kernel of a $Beta(y, n-y)$ distribution. However, this is only a proper distribution when $y>0$ and $n-y>0$. 
 
+Thus,
+
+$$
+\theta \mid y \sim Beta(y, n-y) \;; y>0, n-y>0
+$$
+
 # Problem 5:
 
 Assume $y\mid \theta \sim \mathrm{Bin}(n,\theta)$ and $\theta∼U(0,1)$.
@@ -501,18 +508,27 @@ $$
 
 **Variance of Posterior**
 
-Our posterior, $\theta \mid y$ will have a distribution $Beta(1+3, 11+3) = Beta(4,14)$.
+$$
+\begin{align}
+    p(\theta \mid y) &\propto p(y \mid \theta) p(\theta) \\
+    &\propto \theta^3 (1-\theta)^{3-3}  \theta^{1-1}(1-\theta)^{11-1} \\
+    &\propto \theta^{3} (1-\theta)^{10} \\
+    &\propto \theta^{4-1} (1-\theta)^{11-1}
+\end{align}
+$$
+
+Thus, $\theta \mid y \sim Beta(4,11)$.
 
 $$
 \begin{align}
-    Var(\theta \mid y) &= \frac{4 \cdot 12}{16^2 \cdot 17} \\
-    &\approx 0.011
+    Var(\theta \mid y) &= \frac{4 \cdot 11}{15^2 \cdot 16} \\
+    &\approx 0.012
 \end{align}
 $$
 
 **Result**
 
-As $0.011 > 0.0059$, the posterior variance can infact be larger than the prior variance. This is because our prior very much did not align with the data at all. $E[\theta]=1/12$ which is a far cry from our data success probability of $1$. This contradiction, combined with a small sample size, is what helped result in that increased posterior variance. 
+As $0.012 > 0.0059$, the posterior variance can infact be larger than the prior variance. This is because our prior very much did not align with the data at all. $E[\theta]=1/12$ which is a far cry from our data success probability of $1$. This contradiction, combined with a small sample size, is what helped result in that increased posterior variance. 
 
 # Problem 7
 
@@ -523,3 +539,173 @@ In general, large conflicts between the prior assumptions and data can cause thi
 # Problem 8
 
 Use Bayes’ theorem to verify the formulas for $\mu_n$ and $\tau_n^2$ given in the notes when $y_1,\ldots,y_n \mid \theta ∼ N(\theta, \sigma^2)$ and $\theta \sim N(\mu_0, \tau_0^2)$, with $\sigma^2$ assumed known.  Hint:  complete the square!
+
+## Setup
+
+First let's actually refer back to the notes. 
+
+Given that we have a normal-normal conjugate pair as specified in the problem, we have the following information:
+
+Posterior Distribution:
+
+$$
+\begin{align}
+    p(\theta \mid y) &\propto p(\theta)p(y \mid \theta) \\
+    &\propto \exp\left( -\frac{1}{2\tau_0^2}(\theta - \mu_0)^2 \right) \prod_{i=1}^n \exp \left( - \frac{1}{2\sigma^2} (y_i - \theta)^2 \right) \\
+    &\propto \exp\left( -\frac{1}{2\tau_n^2}(\theta - \mu_n)^2 \right)
+\end{align}
+$$
+
+
+
+$$
+\begin{align}
+    \mu_n &= \frac
+    {\frac{1}{\tau_o^2} \mu_0 + \frac{n}{\sigma^2} \bar{y}}
+    {\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}} \\
+    \frac{1}{\tau_n} &= \frac{1}{\tau^2_0} + \frac{n}{\sigma^2}
+\end{align}
+$$
+
+To explain notation a bit more. $\mu_0$ and $\tau_0$ are the mean and standard deviation of the prior. $1/\tau_0^2$ represents the prior precision.
+
+> The posterior mean $\mu_n$ is a weighted average of the prior mean and the observed sample mean, with weights proportional to the precisions. (Notes 02 - page 24/56)
+
+From this, $\tau_n$ is the standard deviation of the posterior.
+
+## Solution
+
+Alright let's get started. Our goal is to go back and do the expansion of $p(\theta \mid y)$ ourselves. We want to get it into the final form of that expansion on our own.
+
+$$
+\begin{align}
+    p(\theta \mid y) &\propto p(\theta)p(y \mid \theta) \\
+    &\propto \exp\left( -\frac{1}{2\tau_0^2}(\theta - \mu_0)^2 \right) 
+    \prod_{i=1}^n \exp \left( - \frac{1}{2\sigma^2} (y_i - \theta)^2 \right) 
+    && \text{(from previous work)}\\
+    &\propto \exp\left( -\frac{1}{2\tau_0^2}\left(\theta^2-2\theta\mu_0+\mu_0^2 \right)\right)
+    \prod_{i=1}^n \exp \left( - \frac{1}{2\sigma^2} y_i^2-2y_i\theta + \theta^2 \right)
+    && \text{(expand out work)}\\
+    &\propto \exp\left( -\frac{1}{2\tau_0^2}\left(\theta^2-2\theta\mu_0+\mu_0^2 \right)\right)
+    \exp \left(\sum_{i=1}^n - \frac{1}{2\sigma^2} y_i^2-2y_i\theta + \theta^2 \right)
+    && \text{(Move product inside exponent)}\\
+    &\propto \exp\left( -\frac{1}{2\tau_0^2}\left(\theta^2-2\theta\mu_0+\mu_0^2 \right)\right)
+    \exp \left(- \frac{1}{2\sigma^2} \left( \sum_{i=1}^n y_i^2 -2\theta\sum_{i=1}^n y_i + n\theta^2 \right)\right)
+    && \text{(Distribute sum)}\\
+    &\propto \exp\left( -\frac{1}{2\tau_0^2}\left(\theta^2-2\theta\mu_0+\mu_0^2 \right)
+    - \frac{1}{2\sigma^2} \left( \sum_{i=1}^n y_i^2 -2\theta\sum_{i=1}^n y_i + n\theta^2 \right)\right)
+    && \text{(Combine exponents)}\\
+    &\propto \exp\left(-\frac{1}{2}\left(
+    -\frac{1}{2\tau_0^2}\left(\theta^2-2\theta\mu_0+\mu_0^2 \right)
+    - \frac{1}{2\sigma^2} \left( \sum_{i=1}^n y_i^2 -2\theta\sum_{i=1}^n y_i + n\theta^2 \right)
+    \right)\right)
+    && \text{(Factor out } -1/2)\\
+    &\propto \exp\left(-\frac{1}{2}\left(
+    \frac{\theta^2}{\tau_0^2} - \frac{2\theta\mu_0}{\tau_0^2} + \frac{\mu_0^2}{\tau_0^2} + \frac{\sum y_i^2}{\sigma^2} - \frac{2\theta \sum y_i}{\sigma^2} + \frac{n\theta^2}{\sigma^2}
+    \right)\right)
+    && \text{(Distribute)}\\
+\end{align}
+$$
+
+### Rearraning terms of $\theta$ (our kernel)
+
+Now we take a look at the values here involving $\theta$. We'll ignore the rest as these make up the kernel of our distribution.
+
+$$
+\begin{align}
+    \frac{\theta^2}{\tau_0^2} - \frac{2\theta\mu_0}{\tau_0^2} - \frac{2\theta \sum y_i}{\sigma^2} + \frac{n\theta^2}{\sigma^2}
+\end{align}
+$$
+
+Let's do some algebra with these.
+
+$$
+\begin{align}
+    \frac{\theta^2}{\tau_0^2} - \frac{2\theta\mu_0}{\tau_0^2} - \frac{2\theta \sum y_i}{\sigma^2} + \frac{n\theta^2}{\sigma^2}
+    &= \theta^2 \left(\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}\right)
+    - 2\theta\left( \frac{\mu_0}{\tau_0^2} + \frac{\sum y_i}{\sigma^2} \right)
+\end{align}
+$$
+
+We want to work on getting this into the form from the start, so we'll note the following:
+
+$$
+\frac{\sum y_i}{\sigma^2} \cdot \frac{n}{n} = \frac{n}{\sigma^2} \bar{y}
+$$
+
+Therefore we have,
+
+$$
+\begin{align}
+    \frac{\theta^2}{\tau_0^2} - \frac{2\theta\mu_0}{\tau_0^2} - \frac{2\theta \sum y_i}{\sigma^2} + \frac{n\theta^2}{\sigma^2}
+    &= \theta^2 \left(\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}\right)
+    - 2\theta\left( \frac{\mu_0}{\tau_0^2} + \frac{n}{\sigma^2} \bar{y} \right)
+\end{align}
+$$
+
+### Completing the Square
+
+Now we recognize that what we have matches part of a quadratic.
+
+$$
+    \theta^2 \left(\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}\right)
+    - 2\theta\left( \frac{\mu_0}{\tau_0^2} + \frac{n}{\sigma^2} \bar{y} \right) \\
+    = \theta^2a-2\theta b
+$$
+
+Where
+
+$$
+\begin{align}
+    a &= \frac{1}{\tau_0^2} + \frac{n}{\sigma^2} \\
+    a &= \frac{1}{\tau_n^2} \\[1mm]
+    b &= \frac{\mu_0}{\tau_0^2} + \frac{n}{\sigma^2} \bar{y} \\
+    \frac{b}{a} &= \mu_n
+\end{align}
+$$
+
+So,
+
+$$
+\begin{align}
+    \theta^2a-2\theta b &= a\left(\theta^2 - 2\theta\frac{b}{a}\right) \\
+    &= a\left(\theta - \frac{b}{a}\right)^2 - a\left(\frac{b}{a}\right)^2 \\
+    &= \frac{1}{\tau_n^2} \left( \theta - \mu_n \right)^2 -\frac{1}{\tau_n^2}\mu_n^2 \\
+\end{align}
+$$
+
+Which, don't forget, is equal to the kernel of our exponential earlier:
+
+$$
+\frac{\theta^2}{\tau_0^2} - \frac{2\theta\mu_0}{\tau_0^2} - \frac{2\theta \sum y_i}{\sigma^2} + \frac{n\theta^2}{\sigma^2}
+$$
+
+This is the key work to verifying that the formulas for $\mu_n$ and $1/\tau_n^2$ are correct. We were able to successfully rewrite our kernel using those terms.
+
+We'll go ahead and take this all the way to see if we get the correct posterior. I don't believe it's neccessary, but it feels right to do.
+
+### Returning back to the exponential
+
+Plugging this back into our previous work:
+
+$$
+\begin{align}
+    p(\theta \mid y) &\propto p(\theta)p(y \mid \theta) \\
+    &\propto \exp\left(-\frac{1}{2}\left(
+    \frac{\theta^2}{\tau_0^2} - \frac{2\theta\mu_0}{\tau_0^2} + \frac{\mu_0^2}{\tau_0^2} + \frac{\sum y_i^2}{\sigma^2} - \frac{2\theta \sum y_i}{\sigma^2} + \frac{n\theta^2}{\sigma^2}
+    \right)\right)
+    && \text{(Previous work)}\\
+    &\propto \exp\left(-\frac{1}{2}\left(
+    \frac{1}{\tau_n^2} \left( \theta - \mu_n \right)^2 - \frac{1}{\tau_n^2}\mu_n^2 + \frac{\mu_0^2}{\tau_0^2} + \frac{\sum y_i^2}{\sigma^2}
+    \right)\right)
+    && \text{(Plugging in prior section)} \\
+    &\propto \exp\left(-\frac{1}{2\tau^2_n}\left(\theta - \mu_n\right)^2\right)
+    && \text{(Removing values that don't depend on } \theta) \\
+\end{align}
+$$
+
+Leaving us with the kernel of a $N(\mu_n, \tau_n^2)$. Therefore, $\theta \mid y \sim N(\mu_n, \tau_n^2)$.
+
+### Summary
+
+In summary, using bayes theorem for the posterior brought us to the correct distribution while also verifying the formulas for $\mu_n$ and $1/\tau_n^2$ along the way.
