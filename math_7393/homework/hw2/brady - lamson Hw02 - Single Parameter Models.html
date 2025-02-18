@@ -3127,7 +3127,7 @@ window.Quarto = {
 <p><span class="math display">\[
 \begin{align}
     p(y&lt;3\mid n=10,\theta) &amp;= p(y=0\mid n=10,\theta) + p(y=1\mid n=10,\theta) + p(y=2\mid n=10,\theta) \\
-    &amp;= \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i}
+    &amp;= \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i}I_{[0,1]}(\theta)
 \end{align}
 \]</span></p>
 <p>From this,</p>
@@ -3135,7 +3135,7 @@ window.Quarto = {
 \begin{align}
     p(\theta \mid y&lt;3) &amp;\propto p(y&lt;3\mid\theta)p(\theta) \\
     &amp;\propto \left( \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i} \right) \theta^3(1-\theta)^3 \\
-    &amp;\propto \sum_{i=0}^{2} {10 \choose i} \theta^{i+3} (1-\theta)^{13-i} &amp; \left(\text{Move prior into sum}\right)
+    &amp;\propto \sum_{i=0}^{2} {10 \choose i} \theta^{i+3} (1-\theta)^{13-i}I_{[0,1]}(\theta) &amp; \left(\text{Move prior into sum}\right)
 \end{align}
 \]</span></p>
 </section>
@@ -3249,7 +3249,7 @@ p(TT) = p(TT \mid C_1) p(C_1) + p(TT \mid C_2) p(C_2)
     &amp;= \frac{1}{\theta^2}\theta &amp; (y\mid\theta \text{ is poisson}) \\
     &amp;= \frac{1}{\theta} \\
     p(\theta) &amp;\propto J(\theta)^{1/2} &amp; (\text{Jeffreys prior def&#39;n})\\
-    &amp;\propto \theta^{-1/2}
+    &amp;\propto \theta^{-1/2} I_{(0,\infty)}(\theta)
 \end{align}
 \]</span></p>
 </section>
@@ -3277,7 +3277,7 @@ p(y \mid \theta) = f(y)g(\theta)e^{\phi(\theta)u(y)}
     &amp;= \exp\left(\ln\left({n \choose y} \theta^y (1-\theta)^{n-y}\right)\right) &amp; (\text{Setup for rearranging}) \\
     &amp;= \exp\left(ln{n \choose y} + y \ln(\theta) + (n-y)\ln(1-\theta)\right) &amp; (\text{Product property of ln}) \\
     &amp;= {n \choose y} \exp(y\ln(\theta) - y\ln(1-\theta))\exp(n\ln(1-\theta)) &amp; (\text{Distribute } (n-y), \text{rearrange}) \\
-    &amp;= {n \choose y} \exp(n\ln(1-\theta)) \exp\left(y\ln\left(\frac{\theta}{1-\theta}\right)\right) &amp; (\text{Quotient property of ln, rearrange})
+    &amp;= {n \choose y} \exp(n\ln(1-\theta))  \exp\left(y\ln\left(\frac{\theta}{1-\theta}\right)\right)I_{(0,1)}(\theta) &amp; (\text{Quotient property of ln, rearrange})
 \end{align}
 \]</span></p>
 <p>So now we have the form we need where:</p>
@@ -3289,9 +3289,9 @@ p(y \mid \theta) = f(y)g(\theta)e^{\phi(\theta)u(y)}
     u(y) &amp;= y
 \end{align}
 \]</span></p>
-<p>As such, our natural paramter is</p>
+<p>As such, our natural parameter is</p>
 <p><span class="math display">\[
-\phi(\theta) = \ln\left(\frac{\theta}{1-\theta}\right)
+\phi(\theta) = \ln\left(\frac{\theta}{1-\theta}\right)I_{(0,1)}(\theta)
 \]</span></p>
 </section>
 <section id="b-2" class="level2">
@@ -3330,7 +3330,7 @@ p_{\theta}(\theta) = p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\th
 \begin{align}
     p_{\theta}(\theta) &amp;=  p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\theta} \right| \\
     &amp;\propto 1 \cdot \left\vert \theta^{-1}(1-\theta)^{-1} \right\vert \\
-    &amp;= \theta^{-1}(1-\theta)^{-1}
+    &amp;= \theta^{-1}(1-\theta)^{-1}I_{(0,1)}(\theta)
 \end{align}
 \]</span></p>
 <p>This appears to be the kernel of a <span class="math inline">\(Beta(0,0)\)</span> distribution, but those values for <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are invalid for the distribution. So it’s definitely improper.</p>
@@ -3348,7 +3348,7 @@ p(y\mid n,\theta) = {n \choose y} \theta^y (1-\theta)^{n-y} \; ; \; y=0,1,...,n 
 \begin{align}
     p(\theta \mid y) &amp;\propto p(y \mid \theta) p(\theta) \\
     &amp;\propto {n \choose y} \theta^y (1-\theta)^{n-y} \theta^{-1}(1-\theta)^{-1} \\
-    &amp;\propto \theta^{y-1} (1-\theta)^{n-y-1}
+    &amp;\propto \theta^{y-1} (1-\theta)^{n-y-1}I_{(0,1)}(\theta)
 \end{align}
 \]</span></p>
 <p>Which appears to be the kernel of a <span class="math inline">\(Beta(y, n-y)\)</span> distribution. However, this is only a proper distribution when <span class="math inline">\(y&gt;0\)</span> and <span class="math inline">\(n-y&gt;0\)</span>.</p>
@@ -3367,7 +3367,7 @@ p(y\mid n,\theta) = {n \choose y} \theta^y (1-\theta)^{n-y} \; ; \; y=0,1,...,n 
 <p>Let’s set some stuff up.</p>
 <p><span class="math display">\[
 \begin{align}
-    p(y \mid \theta) &amp;= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    p(y \mid \theta) &amp;= {n \choose y} \theta^y (1-\theta)^{n-y}I_{(0,1)}(\theta) \\
     p(\theta) &amp;= \frac{1}{1-0} \\
     &amp;= 1
 \end{align}
@@ -3376,8 +3376,8 @@ p(y\mid n,\theta) = {n \choose y} \theta^y (1-\theta)^{n-y} \; ; \; y=0,1,...,n 
 <p><span class="math display">\[
 \begin{align}
     p(y) &amp;= \int p(y \mid \theta) p(\theta) d\theta \\
-    &amp;= \int {n \choose y} \theta^y (1-\theta)^{n-y} \cdot 1 d\theta \\
-    &amp;= {n \choose y} \int \theta^y (1-\theta)^{n-y} d\theta \\
+    &amp;= \int {n \choose y} \theta^y (1-\theta)^{n-y} \cdot 1 I_{(0,1)}(\theta)d\theta \\
+    &amp;= {n \choose y} \int \theta^y (1-\theta)^{n-y} I_{(0,1)}(\theta)d\theta \\
 \end{align}
 \]</span></p>
 <p>From here we can recognize that the integrand is the kernel of a beta distribution with <span class="math inline">\(\alpha=y+1\)</span> and <span class="math inline">\(\beta=n-y+1\)</span>. Why this is important is we don’t need to evaluate the integral directly. We know that it will evaluate to be the inverse of the normalizing constant! That is, it’ll evaluate to the value such that if the normalizing constant was in the integrand that the integral would evaluate to 1.</p>
@@ -3396,7 +3396,7 @@ c &amp;= \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)} \\
     &amp;= {n \choose y} \frac{\Gamma(y+1)\Gamma(n-y+1)}{\Gamma(y+1+n-y+1)} \\
     &amp;= \frac{n!}{y!(n-y)!} \cdot \frac{y!(n-y)!}{(n+1)!} \\
     &amp;= \frac{n!}{(n+1)n!} \\
-    &amp;= (n + 1)^{-1}
+    &amp;= (n + 1)^{-1}I_{(0,n)}(y)
 \end{align}
 \]</span></p>
 <p>This does make sense intuitively. Our prior is a non-informative one. It doesn’t tell us anything about which values of <span class="math inline">\(y\)</span> would be more likely than others. What we see in our result is that it isn’t a function of <span class="math inline">\(y\)</span> and, as such, all of the values along the support are equally likely.</p>
@@ -3501,7 +3501,7 @@ Var(\theta) = \frac{1}{12}
     p(\theta \mid y) &amp;\propto p(y \mid \theta) p(\theta) \\
     &amp;\propto \theta^3 (1-\theta)^{3-3}  \theta^{1-1}(1-\theta)^{11-1} \\
     &amp;\propto \theta^{3} (1-\theta)^{10} \\
-    &amp;\propto \theta^{4-1} (1-\theta)^{11-1}
+    &amp;\propto \theta^{4-1} (1-\theta)^{11-1}I_{(0,1)}(\theta)
 \end{align}
 \]</span></p>
 <p>Thus, <span class="math inline">\(\theta \mid y \sim Beta(4,11)\)</span>.</p>

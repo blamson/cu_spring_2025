@@ -28,7 +28,7 @@ Next we'll examine $p(y<3|n=10,\theta)$
 $$
 \begin{align}
     p(y<3\mid n=10,\theta) &= p(y=0\mid n=10,\theta) + p(y=1\mid n=10,\theta) + p(y=2\mid n=10,\theta) \\
-    &= \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i}
+    &= \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i}I_{[0,1]}(\theta)
 \end{align}
 $$
 
@@ -38,7 +38,7 @@ $$
 \begin{align}
     p(\theta \mid y<3) &\propto p(y<3\mid\theta)p(\theta) \\
     &\propto \left( \sum_{i=0}^{2} {10 \choose i} \theta^i (1-\theta)^{10-i} \right) \theta^3(1-\theta)^3 \\
-    &\propto \sum_{i=0}^{2} {10 \choose i} \theta^{i+3} (1-\theta)^{13-i} & \left(\text{Move prior into sum}\right)
+    &\propto \sum_{i=0}^{2} {10 \choose i} \theta^{i+3} (1-\theta)^{13-i}I_{[0,1]}(\theta) & \left(\text{Move prior into sum}\right)
 \end{align}
 $$
 
@@ -188,7 +188,7 @@ $$
     &= \frac{1}{\theta^2}\theta & (y\mid\theta \text{ is poisson}) \\
     &= \frac{1}{\theta} \\
     p(\theta) &\propto J(\theta)^{1/2} & (\text{Jeffreys prior def'n})\\
-    &\propto \theta^{-1/2}
+    &\propto \theta^{-1/2} I_{(0,\infty)}(\theta)
 \end{align}
 $$
 
@@ -222,7 +222,7 @@ $$
     &= \exp\left(\ln\left({n \choose y} \theta^y (1-\theta)^{n-y}\right)\right) & (\text{Setup for rearranging}) \\
     &= \exp\left(ln{n \choose y} + y \ln(\theta) + (n-y)\ln(1-\theta)\right) & (\text{Product property of ln}) \\
     &= {n \choose y} \exp(y\ln(\theta) - y\ln(1-\theta))\exp(n\ln(1-\theta)) & (\text{Distribute } (n-y), \text{rearrange}) \\
-    &= {n \choose y} \exp(n\ln(1-\theta)) \exp\left(y\ln\left(\frac{\theta}{1-\theta}\right)\right) & (\text{Quotient property of ln, rearrange})
+    &= {n \choose y} \exp(n\ln(1-\theta))  \exp\left(y\ln\left(\frac{\theta}{1-\theta}\right)\right)I_{(0,1)}(\theta) & (\text{Quotient property of ln, rearrange})
 \end{align}
 $$
 
@@ -237,10 +237,10 @@ $$
 \end{align}
 $$
 
-As such, our natural paramter is 
+As such, our natural parameter is 
 
 $$
-\phi(\theta) = \ln\left(\frac{\theta}{1-\theta}\right)
+\phi(\theta) = \ln\left(\frac{\theta}{1-\theta}\right)I_{(0,1)}(\theta)
 $$
 
 ## (b)
@@ -284,7 +284,7 @@ $$
 \begin{align}
     p_{\theta}(\theta) &=  p_{\phi}(h^{-1}(\theta)) \left| \frac{dh^{-1}(\theta)}{d\theta} \right| \\
     &\propto 1 \cdot \left\vert \theta^{-1}(1-\theta)^{-1} \right\vert \\
-    &= \theta^{-1}(1-\theta)^{-1}
+    &= \theta^{-1}(1-\theta)^{-1}I_{(0,1)}(\theta)
 \end{align}
 $$
 
@@ -305,7 +305,7 @@ $$
 \begin{align}
     p(\theta \mid y) &\propto p(y \mid \theta) p(\theta) \\
     &\propto {n \choose y} \theta^y (1-\theta)^{n-y} \theta^{-1}(1-\theta)^{-1} \\
-    &\propto \theta^{y-1} (1-\theta)^{n-y-1}
+    &\propto \theta^{y-1} (1-\theta)^{n-y-1}I_{(0,1)}(\theta)
 \end{align}
 $$
 
@@ -329,7 +329,7 @@ Let's set some stuff up.
 
 $$
 \begin{align}
-    p(y \mid \theta) &= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    p(y \mid \theta) &= {n \choose y} \theta^y (1-\theta)^{n-y}I_{(0,1)}(\theta) \\
     p(\theta) &= \frac{1}{1-0} \\
     &= 1
 \end{align}
@@ -340,8 +340,8 @@ We want to find $p(y)$, so we can use those two pieces to get there.
 $$
 \begin{align}
     p(y) &= \int p(y \mid \theta) p(\theta) d\theta \\
-    &= \int {n \choose y} \theta^y (1-\theta)^{n-y} \cdot 1 d\theta \\
-    &= {n \choose y} \int \theta^y (1-\theta)^{n-y} d\theta \\
+    &= \int {n \choose y} \theta^y (1-\theta)^{n-y} \cdot 1 I_{(0,1)}(\theta)d\theta \\
+    &= {n \choose y} \int \theta^y (1-\theta)^{n-y} I_{(0,1)}(\theta)d\theta \\
 \end{align}
 $$
 
@@ -366,7 +366,7 @@ $$
     &= {n \choose y} \frac{\Gamma(y+1)\Gamma(n-y+1)}{\Gamma(y+1+n-y+1)} \\
     &= \frac{n!}{y!(n-y)!} \cdot \frac{y!(n-y)!}{(n+1)!} \\
     &= \frac{n!}{(n+1)n!} \\
-    &= (n + 1)^{-1}
+    &= (n + 1)^{-1}I_{(0,n)}(y)
 \end{align}
 $$
 
@@ -513,7 +513,7 @@ $$
     p(\theta \mid y) &\propto p(y \mid \theta) p(\theta) \\
     &\propto \theta^3 (1-\theta)^{3-3}  \theta^{1-1}(1-\theta)^{11-1} \\
     &\propto \theta^{3} (1-\theta)^{10} \\
-    &\propto \theta^{4-1} (1-\theta)^{11-1}
+    &\propto \theta^{4-1} (1-\theta)^{11-1}I_{(0,1)}(\theta)
 \end{align}
 $$
 
