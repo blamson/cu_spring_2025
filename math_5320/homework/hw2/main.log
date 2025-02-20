@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  18 FEB 2025 17:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  19 FEB 2025 17:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -133,6 +133,15 @@ Package: amsthm 2020/05/29 v2.20.6
 \thm@headsep=\skip64
 \dth@everypar=\toks27
 )
+(/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/amsf
+onts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/setspace/sets
 pace.sty
 Package: setspace 2022/12/04 v6.7b set line spacing
@@ -172,8 +181,7 @@ ackend-pdftex.def
 File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count274
 \l__pdf_internal_box=\box53
-)
-No file main.aux.
+) (./main.aux (./5.17.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
@@ -216,30 +224,69 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 pstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-)) (./2.tex) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/ma
-p/pdftex/updmap/pdftex.map}
+)) (./2.tex
+LaTeX Font Info:    Trying to load font information for U+msa on input line 7.
 
-] (./main.aux)
+(/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsa
+.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 7.
+
+(/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsb
+.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Overfull \hbox (28.56293pt too wide) detected at line 15
+[]
+ []
+
+[1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/updm
+ap/pdftex.map}
+
+]) [2]
+\openout2 = `5.17.aux'.
+
+ (./5.17.tex [3
+
+]
+Overfull \hbox (39.90904pt too wide) detected at line 81
+[]
+ []
+
+[4] [5]) [6] (./main.aux (./5.17.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2307 strings out of 474116
- 35796 string characters out of 5733619
- 1927187 words of memory out of 5000000
- 24681 multiletter control sequences out of 15000+600000
- 559279 words of font info for 40 fonts, out of 8000000 for 9000
+ 2455 strings out of 474116
+ 38408 string characters out of 5733619
+ 1941187 words of memory out of 5000000
+ 24802 multiletter control sequences out of 15000+600000
+ 561286 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,11n,70p,242b,227s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,14n,70p,370b,237s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmr10.pfb>
-Output written on main.pdf (1 page, 30730 bytes).
+sfonts/cm/cmbx10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/
+share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></opt/homebrew/Cella
+r/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmmi5.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmmi7.pfb></opt/homebrew/Cellar/texlive/20240312/share
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/homebrew/Cellar/texl
+ive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></opt/hom
+ebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></opt/homebrew/Cellar/texlive/2024
+0312/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
+Output written on main.pdf (6 pages, 144645 bytes).
 PDF statistics:
- 18 PDF objects out of 1000 (max. 8388607)
- 10 compressed objects within 1 object stream
+ 83 PDF objects out of 1000 (max. 8388607)
+ 50 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

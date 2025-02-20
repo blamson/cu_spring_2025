@@ -1,0 +1,148 @@
+\section*{5.17}
+
+Let $X \sim F_{p,q}$
+
+\subsection*{A.}
+
+Derive the  pdf of $X$
+
+\subsubsection*{F Distribution}
+
+To start let us recall the pdf of an $F$ distribution. This will be our goal at the end.
+
+\[
+f(x \mid v_1, v_2) = 
+\frac{\Gamma(\frac{v_1 + v_2}{2})}{\Gamma(\frac{v_1}{2})\Gamma(\frac{v_1}{2})}
+\left(\frac{v_1}{v_2}\right)^{v_1/2}
+\frac{x^{\frac{v_1}{2} - 1}}{\left( 1 + \left( \frac{v_1}{v_2} \right)x \right)^{(v_1 + v_2)/2}}
+I(.)
+\]
+
+Where $I(.) = I_{[0, \infty]}(x)I_{v_1 \in \mathbb{N}}(v_1)I_{v_2 \in \mathbb{N}}(v_2)$
+
+\subsubsection*{Joint pdf of Chi Squared RVs}
+
+Recall that:
+
+\[X = \frac{U/p}{V/q}\]
+
+with $U\sim \chi^2_p$ and $V \sim \chi^2_q$ and $U$ is independent of $V$.
+
+We'll use this info to contrust the joint pdf of $V$ and $U$.
+
+\begin{align*}
+	f_U(u) &= \frac{1}{\Gamma(p/2) 2^{p/2}} u^{(p/2)-1} \exp(-u/2) \\
+	f_V(v) &= \frac{1}{\Gamma(q/2) 2^{q/2}} v^{(q/2)-1} \exp(-v/2) \\
+	f_{U,V}(u,v) &= f(u) f(v) \\ 
+	&= \frac{1}{\Gamma(p/2) 2^{p/2}} u^{(p/2)-1} \exp(-u/2) \frac{1}{\Gamma(q/2) 2^{q/2}} v^{(q/2)-1} \exp(-v/2) \cdot I(.) \\
+	&= \frac{}{\Gamma(p/2) \Gamma(q/2)} \cdot \frac{1}{2^{(p+q)/2}} u^{(p/2)-1} v^{(q/2)-1} \exp\left( -\frac{1}{2}(u+v) \right) I(.)
+\end{align*}
+
+Where $I(.)$ represents our collection of indicator functions. I'll keep them here for reference but will not be writing them all out every single time.
+
+	\[I(.) = I_{(0,\infty)}(u)I_{(0,\infty)}(v)I_{p \in \mathbb{N}}(p)I_{q \in \mathbb{N}}(q)\]
+
+\subsubsection*{Jacobian Transformation Setup}
+
+We'll be leveraging the jacobian transformation method for this problem so it's appropriate we stay organize and establish all of the parts we will need.
+
+\[
+	f_{X,Y}(x,y) = f_{U,V}(h_1(x,y), h_2(x,y)) |J|
+\]
+
+We have the joint pdf $f(u,v)$ already, so what we need now are $h_1, h_2$ and the Jacobian itself. We'll start with the algebraic portion.
+
+\begin{align*}
+	X &= \frac{U/p}{V/q} & Y=V \\
+	\frac{U}{P} &= X \cdot \frac{V}{q} \\
+	U &= \frac{XVP}{q} \\
+	U &= \frac{XYP}{q} \\
+\end{align*}
+
+Now for the Jacobian.
+
+\begin{align*}
+	J &= \m{v}{\frac{du}{dx} & \frac{du}{dy} \\ \frac{dv}{dx} & \frac{dv}{dy}} \\
+	&= \m{v}{\frac{p}{q} y & \frac{p}{q} x \\  0 & 1 } \\
+	&= \frac{p}{q} y \cdot 1 - \frac{p}{q} x \cdot 0 \\ 
+	&= \frac{p}{q} y
+\end{align*}
+
+\subsubsection*{Jacobian Transformation}
+
+\begin{align*}
+	f_{X,Y}(x,y) &= f_{U,V}(h_1(x,y), h_2(x,y)) |J| \\
+	&= \frac{1}{\Gamma(p/2)\Gamma(q/2)} 
+	\frac{1}{2^{(p+q)/2}} 
+	\left( \frac{p}{q}xy \right)^{(p/2)-1} 
+	y^{(q/2)-1} 
+	\exp\left( -\frac{1}{2} \left( \frac{p}{q}xy + y \right) \right) 
+	I(.) \frac{p}{q}y
+\end{align*}
+
+\subsubsection*{Marginal pdf of $X$}
+
+Here our goal is to pull out all of the values that do not depend on $y$ from this pdf. Our overall goal at the moment, based on a hint in the homework problem, is to then arrange the integrand to be in the form of a gamma distribution. Ideally from there we should see the remaining pieces fall into the form of the $F$ pdf.
+
+There's some algebraic simplifying and rearranging that I won't be showing here just to save time. 
+
+\begin{align*}
+	f_X(x) &= \int f_{X,Y}(x,y) dy \\
+	&= \frac{1}{\Gamma(p/2)\Gamma(q/2)} 
+	\frac{1}{2^{(p+q)/2}} 
+	\left( \frac{p}{q} \right)^{(p/2)-1} 
+	\frac{p}{q}
+	x^{(p/2)-1} \\
+	&\cdot \int y^{(p/2)-1} y^{(q/2)-1} y \exp\left( -\frac{1}{2}y \left( \frac{p}{q}x + 1 \right) \right) \\
+	&= \frac{1}{\Gamma(p/2)\Gamma(q/2)} 
+	\frac{1}{2^{(p+q)/2}} 
+	\left( \frac{p}{q} \right)^{p/2} 
+	x^{(p/2)-1} \\
+	&\cdot \int y^{\frac{p+q}{2} - 1} \exp\left( -\frac{1}{2}y \left( \frac{p}{q}x + 1 \right) \right)
+\end{align*}
+
+Paying attention to the integrand here, we have the kernel of a gamma distribution with:\vspace{-2mm}
+
+\begin{align*}
+	\alpha &= \frac{p+q}{2} & \beta &= \frac{2}{\frac{p}{q}x + 1}
+\end{align*}
+
+What this means is that the integrand evaluates to the inverse of the normalizing constant. We could also technically multiply by 1 to put the normalizing constant in there, but, to be frank, I really don't feel like it.
+
+So, the inverse of the normalizing constant is:
+
+\begin{align*}
+	\left( \frac{1}{\Gamma(\alpha)\beta^{\alpha}} \right)^{-1} &= \Gamma(\alpha)\beta^{\alpha} \\
+	&= \Gamma\left( \frac{p+q}{2} \right) \cdot \left( \frac{2}{\frac{p}{q}x + 1} \right)^{\frac{p+q}{2}}
+\end{align*}
+
+\pagebreak
+\subsubsection*{Wrapping this up}
+
+Returning to our marginal distribution gives us:
+
+\begin{align*}
+	f_X(x) &= \frac{1}{\Gamma(p/2)\Gamma(q/2)} 
+	\frac{1}{2^{(p+q)/2}} 
+	\left( \frac{p}{q} \right)^{p/2} 
+	x^{(p/2)-1} \cdot \Gamma\left( \frac{p+q}{2} \right) \cdot \left( \frac{2}{\frac{p}{q}x + 1} \right)^{\frac{p+q}{2}} \\
+	&= \frac{\Gamma\left( \frac{p+q}{2} \right)}{\Gamma(p/2)\Gamma(q/2)} \cdot \left( \frac{p}{q} \right)^{p/2} \cdot 
+	\frac{x^{(p/2)-1}}{\left(1+ \frac{p}{q}x\right)^{\frac{p+q}{2}}} I(.)
+\end{align*}
+
+Where $I(.) = I_{(0,\infty)}(x)I_{p \in \mathbb{N}}(p)I_{q \in \mathbb{N}}(q)$
+
+Which is the pdf of an $F$ distribution where $v_1=p, v_2=q$. 
+
+\subsection*{B.}
+
+Derive the mean and variance of $X$.
+
+\subsection*{C.}
+
+Show that $1/X$ has an $F_{q,p}$ distribution.
+
+\subsection*{D.}
+
+Show that 
+\[\frac{p}{q}X \cdot \frac{1}{1+\frac{p}{q}X} \sim Beta(p/2, q/2)\]

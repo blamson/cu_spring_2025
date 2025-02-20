@@ -4,5 +4,36 @@ Prove that the following families of distribution are or are not exponential fam
 
 \subsection*{A: Poisson}
 
+The primary trick here will be to use the fact that $\exp(\ln(x)) = x$ to rewrite things in an exponential form. Then we'll leverage the properties of logarithms to move things around.
+
+\begin{align*}
+	f(x \mid \lambda) &= \frac{e^{-\lambda} \lambda^x}{x!} I_{(0,\infty)}(\lambda)I_{x \in \{0,1,\ldots\}}(x)\\
+	&= \exp \left( \ln \left( \frac{e^{-\lambda} \lambda^x}{x!} I_{(0,\infty)}(\lambda)I_{x \in \{0,1,\ldots\}}(x) \right) \right) \\
+	&= \exp \left( -\lambda + x\ln(\lambda) - \ln(x!) + \ln(I_{(0,\infty)}(\lambda)) + \ln(I_{x \in \{0,1,\ldots\}}(x)) \right) \\
+	&= \exp(-\lambda)\exp(\ln(I_{(0,\infty)}(\lambda))) \exp(-\ln(x!)) \exp(\ln(I_{x \in \{0,1,\ldots\}}(x))) \exp(x\ln(\lambda)) \\
+	&= \exp(-\lambda)I_{(0,\infty)}(\lambda) \cdot \frac{1}{x!} I_{x \in \{0,1,\ldots\}}(x) \cdot \exp(x\ln(\lambda)) \\
+\end{align*}
+
+From here we have:
+
+\begin{align*}
+	c(\theta) &= \exp(-\lambda)I_{(0,\infty)}(\lambda) \\
+	h(x) &= \frac{1}{x!}I_{x \in \{0,1,\ldots\}}(x) \\
+	w_1(\theta) &= \ln(\lambda) \\
+	t_1(x) &= x
+\end{align*}
+
+Demonstrating that the Poisson family of random variables is in the exponential family.
+
+\pagebreak
+
 \subsection*{B: Uniform}
+
+\begin{align*}
+	f(x \mid a,b) &= \frac{1}{b - a} I_{[a,b]}(x) \\
+	&= \exp\left( \ln\left( \frac{1}{b - a} I_{[a,b]}(x)  \right) \right) \\
+	&= \exp(\ln( I_{[a,b]}(x) ) - \ln(b-a)) 
+\end{align*}
+
+With this we kind of get stuck. There just aren't the pieces we need to rearrange this properly. We can get an $h(x)$ with the indicator function and the pdf itself can function as a $c(\theta)$ but we simply don't have what we need to tackle the exponential component.
 
