@@ -1,0 +1,83 @@
+---
+title: "Homework 3"
+author: "Brady Lamson"
+format: html
+self-contained: true
+---
+
+# ```{r}
+# if(!require(mvtnorm, quietly = TRUE)) {
+#   # install and load packages if necessary
+#   install.packages("mvtnorm", repos = "https://cran.rstudio.com/")
+#   library(mvtnorm)
+# }
+# 
+# if(!require(cubature, quietly = TRUE)) {
+#   install.packages("cubature", repos = "https://cran.rstudio.com/")
+#   library(cubature)
+# }
+# 
+# if(!require(ggplot2, quietly = TRUE)) {
+#   install.packages("ggplot2", repos = "https://cran.rstudio.com/")
+#   library(ggplot2)
+# }
+# 
+# if(!require(latex2exp, quietly = TRUE)) {
+#   install.packages("latex2exp", repos = "https://cran.rstudio.com/")
+#   library(latex2exp)
+# }
+# ```
+
+```{r}
+packages <- c("mvtnorm", "cubature", "ggplot2", "latex2exp")
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cran.rstudio.com/")
+    library(pkg, character.only = TRUE)
+  }
+}
+```
+
+
+# Problems 1-5
+
+Data dist: negative binomial. n=200, success ratio = 200/503
+
+prior dist: beta(1.1, 1.5)
+
+## Problem 1
+
+Create a graphic of the plotting the likelihood function and the prior density versus $\theta$. Recall that the likelihood function is the data density evaluated at the observed data values as a function of $\theta$. Make sure to scale the likelihood function so that its mode is similar to the mode of the prior. Make sure to provide a legend distinguishing the two functions.
+
+```{r}
+# Setup our table of prior and likelihood values
+theta_support <- seq(0.001,0.999, length=1000)
+
+prior <- dbeta(x=theta_support, shape1=1.1, shape2=1.5)
+
+likelihood <- dnbinom(x=503, size=200, prob = theta_support)
+
+df <- data.frame(theta_support, prior, likelihood)
+
+# Scale the likelihood so both it and the prior are on a similar scale
+df$likelihood <- df$likelihood / max(df$likelihood) * max(df$prior)
+```
+
+```{r}
+ggplot(df, aes(x = theta_support)) +
+    geom_line(aes(y = prior, color = "Prior"), size = 1.1) +
+    geom_line(aes(y = likelihood, color = "Likelihood"), size = 1.1) +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Prior and Scaled Data Distribution Along Support of Theta",
+        color = "Line Type"
+    ) +
+    scale_color_discrete(labels = c(
+        TeX(r'($p(\theta)$)'),TeX(r'($p(y | \theta)$)')
+    )) +
+    theme_minimal() +
+    theme(legend.position = "top")
+```
+
