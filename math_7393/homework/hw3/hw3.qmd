@@ -5,30 +5,7 @@ format: html
 self-contained: true
 ---
 
-# ```{r}
-# if(!require(mvtnorm, quietly = TRUE)) {
-#   # install and load packages if necessary
-#   install.packages("mvtnorm", repos = "https://cran.rstudio.com/")
-#   library(mvtnorm)
-# }
-# 
-# if(!require(cubature, quietly = TRUE)) {
-#   install.packages("cubature", repos = "https://cran.rstudio.com/")
-#   library(cubature)
-# }
-# 
-# if(!require(ggplot2, quietly = TRUE)) {
-#   install.packages("ggplot2", repos = "https://cran.rstudio.com/")
-#   library(ggplot2)
-# }
-# 
-# if(!require(latex2exp, quietly = TRUE)) {
-#   install.packages("latex2exp", repos = "https://cran.rstudio.com/")
-#   library(latex2exp)
-# }
-# ```
-
-```{r}
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 packages <- c("mvtnorm", "cubature", "ggplot2", "latex2exp")
 
 for (pkg in packages) {
@@ -66,8 +43,8 @@ df$likelihood <- df$likelihood / max(df$likelihood) * max(df$prior)
 
 ```{r}
 ggplot(df, aes(x = theta_support)) +
-    geom_line(aes(y = prior, color = "Prior"), size = 1.1) +
-    geom_line(aes(y = likelihood, color = "Likelihood"), size = 1.1) +
+    geom_line(aes(y = prior, color = "Prior"), linewidth = 1.1) +
+    geom_line(aes(y = likelihood, color = "Likelihood"), linewidth = 1.1) +
     labs(
         x = TeX(r'($\theta$)'), 
         y = "Density", 
