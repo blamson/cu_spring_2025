@@ -6,7 +6,7 @@ self-contained: true
 ---
 
 ```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-packages <- c("mvtnorm", "cubature", "ggplot2", "latex2exp")
+packages <- c("mvtnorm", "cubature", "ggplot2", "latex2exp", "glue")
 
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
@@ -29,28 +29,34 @@ Create a graphic of the plotting the likelihood function and the prior density v
 
 ```{r}
 # Setup our table of prior and likelihood values
+n_trials <- 503
+n_succ <- 200
+n_fail <- n_trials - n_succ
+
 theta_support <- seq(0.001,0.999, length=1000)
 
 prior <- dbeta(x=theta_support, shape1=1.1, shape2=1.5)
 
-likelihood <- dnbinom(x=503, size=200, prob = theta_support)
+likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta_support)
 
 df <- data.frame(theta_support, prior, likelihood)
 
 # Scale the likelihood so both it and the prior are on a similar scale
-df$likelihood <- df$likelihood / max(df$likelihood) * max(df$prior)
+df$likelihood_scaled <- df$likelihood / max(df$likelihood) * max(df$prior)
 ```
 
 ```{r}
+line_size <- 1.2
 ggplot(df, aes(x = theta_support)) +
-    geom_line(aes(y = prior, color = "Prior"), linewidth = 1.1) +
-    geom_line(aes(y = likelihood, color = "Likelihood"), linewidth = 1.1) +
+    geom_line(aes(y = prior, color = "Prior"), linewidth = line_size) +
+    geom_line(aes(y = likelihood_scaled, color = "Likelihood"), linewidth = line_size) +
     labs(
         x = TeX(r'($\theta$)'), 
         y = "Density", 
         title = "Prior and Scaled Data Distribution Along Support of Theta",
-        color = "Line Type"
+        color = ""
     ) +
+    scale_x_continuous(breaks=seq(0,1,0.1)) +
     scale_color_discrete(labels = c(
         TeX(r'($p(\theta)$)'),TeX(r'($p(y | \theta)$)')
     )) +
@@ -58,3 +64,64 @@ ggplot(df, aes(x = theta_support)) +
     theme(legend.position = "top")
 ```
 
+## Problem 2
+
+```{r}
+dpost <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, const = 1) {
+    prior <- dbeta(x=theta, shape1=1.1, shape2=1.5)
+    likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta)
+    posterior <- prior * likelihood / const
+}
+
+# plot(theta_support, dpost(theta=theta_support), type="l")
+```
+
+For fun let's take a look at how our posterior has shifted compared to the likelihood. 
+
+```{r, echo=FALSE}
+df$posterior <- df$prior * df$likelihood
+
+line_size <- 1
+ggplot(df, aes(x = theta_support)) +
+    # geom_line(aes(y = posterior), linewidth = line_size, color="coral") +
+    geom_line(aes(y = posterior, color = "Posterior"), linewidth = line_size) +
+    geom_line(aes(y = likelihood, color = "Likelihood"), linewidth = line_size) +
+    scale_x_continuous(breaks=seq(0,1,0.1)) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        #title = "Posterior Distribution"
+        title = 'Comparing the Posterior and Likelihood'
+    ) +
+    theme(legend.position = "top")
+```
+
+What we can see is that it hasn't *shifted* much, but it definitely is more concentrated right around 0.4. 
+
+Now that we've done that for no reason, let's get $\hat{\theta}_{MAP}$.
+
+The notes have the MAP computation using the log posterior, let's try with and without it and see what we get.
+
+```{r}
+# determine MAP
+map <- optimize(dpost, interval = c(0.3, 0.5), maximum = TRUE)$maximum
+
+glue("The MAP estimate for theta is: {round(map,5)}")
+```
+
+```{r}
+dpostlog <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, const = 1) {
+    prior <- dbeta(x=theta, shape1=1.1, shape2=1.5, log = T)
+    likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta, log = T)
+    posterior <- exp(prior + likelihood - const)
+}
+
+map <- optimize(dpostlog, interval = c(0.3, 0.5), maximum = TRUE)$maximum
+
+glue("(Log Posterior) The MAP estimate for theta is: {round(map,5)}")
+```
+
+Same values. This MAP also matches the value of theta you get if you evaluate $E[\theta \mid y]$ by hand, we'll get back to that later.
+
+## Problem 3
