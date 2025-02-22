@@ -19,9 +19,13 @@ for (pkg in packages) {
 
 # Problems 1-5
 
-Data dist: negative binomial. n=200, success ratio = 200/503
+Data dist: negative binomial. $n=200$, $r=503-200=303$
 
-prior dist: beta(1.1, 1.5)
+$y\mid\theta \sim NBin(y=303, n=200, p=\theta)$
+
+prior dist: $Beta(1.1, 1.5)$
+
+$\theta \sim Beta(\alpha=1.1, \beta=1.5)$
 
 ## Problem 1
 
@@ -218,3 +222,32 @@ glue("The normal approximated variance is {round(norm_approx_var, 5)}")
 ```
 
 Which matches the posterior variance we calculated earlier using cubature methods.
+
+## Problem 5
+
+Our true posterior is a $Beta(201.1, 304.5)$ distribution. 
+
+```{r}
+# theta_support <- seq(0.001,0.999, length=1000)
+# Lower count of theta for dashed line and zoom in
+theta_support <- seq(0.2,0.6, length=100)
+true_post <- dbeta(x=theta_support, shape1=201.1, shape2=304.5)
+norm_approx <- dnorm(x=theta_support, mean=map, sd=sqrt(norm_approx_var))
+df <- data.frame(theta_support, true_post, norm_approx)
+
+line_size <- 1.2
+ggplot(df, aes(x = theta_support)) +
+    geom_line(aes(y = true_post, color = "True Posterior"), linewidth = line_size) +
+    geom_line(aes(y = norm_approx, color = "Normal Approximation"), linewidth = line_size, linetype="dashed") +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "True Posterior compared to the Normal Approximation",
+        color = ""
+    ) +
+    scale_x_continuous(breaks=seq(0,1,0.1)) +
+    theme_minimal() +
+    theme(legend.position = "top")
+```
+
+They match extremely well. Even with a variety of line widths it's difficult to see where any discrepancies even are. As such I made the sequence of $\theta$ smaller and used a dashed line for the normal approximation so we can see the overlap a bit better.
