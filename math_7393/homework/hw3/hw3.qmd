@@ -71,6 +71,8 @@ dpost <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, co
     prior <- dbeta(x=theta, shape1=1.1, shape2=1.5)
     likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta)
     posterior <- prior * likelihood / const
+    
+    posterior
 }
 
 # plot(theta_support, dpost(theta=theta_support), type="l")
@@ -115,6 +117,8 @@ dpostlog <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5,
     prior <- dbeta(x=theta, shape1=1.1, shape2=1.5, log = T)
     likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta, log = T)
     posterior <- exp(prior + likelihood - const)
+    
+    posterior
 }
 
 map <- optimize(dpostlog, interval = c(0.3, 0.5), maximum = TRUE)$maximum
@@ -125,3 +129,56 @@ glue("(Log Posterior) The MAP estimate for theta is: {round(map,5)}")
 Same values. This MAP also matches the value of theta you get if you evaluate $E[\theta \mid y]$ by hand, we'll get back to that later.
 
 ## Problem 3
+
+**Problem:** Determine the posterior mean and variance using deterministic methods (i.e., cubature methods). Note that you will need to determine the scaling constant associated with the marginal data density, $p(y)$.
+
+### A
+
+**Problem:** What is $p(y)$? Specifically, determine this constant numerically.
+
+Let's break this down for my own sake.
+
+Our current posterior that we're working with is *unnormalized*. That is, it won't integrate to 1. The value it integrates to is the inverse of the normalizing constant of our posterior! This is great because we can update our posterior with this constant to normalize it!
+
+```{r}
+const <- integrate(dpost, lower=0, upper=1)$value
+glue("p(y) is: {round(const,5)}")
+```
+
+### B
+
+**Problem:** What is the posterior mean?
+
+Thankfully our `dpost` function already accounts for a constant, so we just need to plug that in. We multiply by $\theta$ because we're looking for the expected value. This is basic but easy to forget when we're looking at code.
+
+$E[X] = \int x f(x) dx$
+
+```{r}
+mean_target <- function(theta, constant) {
+    theta * dpost(theta=theta, const=constant)
+}
+
+mean_theta <- integrate(mean_target, lower=0, upper=1, constant=const)$value
+glue("E[theta|y] is: {round(mean_theta,5)}")
+```
+
+### C
+
+**Problem:** What is the posterior variance?
+
+Here we'll use the classic:
+
+$Var(X) = E[X^2] - E[X]^2$
+
+We already have the latter part, for the former we update our function to square theta. 
+
+```{r}
+mean_target_squared <- function(theta, constant) {
+    theta^2 * dpost(theta=theta, const=constant)
+}
+
+mean_theta_squared <- integrate(mean_target_squared, lower=0, upper=1, constant=const)$value
+var_theta <- mean_theta_squared - mean_theta^2
+glue("Var[theta|y] is: {round(var_theta,5)}")
+```
+

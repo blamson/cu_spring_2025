@@ -3194,10 +3194,13 @@ window.Quarto = {
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    prior <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(<span class="at">x=</span>theta, <span class="at">shape1=</span><span class="fl">1.1</span>, <span class="at">shape2=</span><span class="fl">1.5</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    likelihood <span class="ot">&lt;-</span> <span class="fu">dnbinom</span>(<span class="at">x=</span>n_fail, <span class="at">size=</span>n_succ, <span class="at">prob =</span> theta)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    posterior <span class="ot">&lt;-</span> prior <span class="sc">*</span> likelihood <span class="sc">/</span> const</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># plot(theta_support, dpost(theta=theta_support), type=&quot;l&quot;)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    posterior</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># plot(theta_support, dpost(theta=theta_support), type=&quot;l&quot;)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>For fun let’s take a look at how our posterior has shifted compared to the likelihood.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -3207,13 +3210,88 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<p>What we can see is that it hasn’t <em>shifted</em> much, but it definitely is more concentrated right around 0.4.</p>
+<p>Now that we’ve done that for no reason, let’s get <span class="math inline">\(\hat{\theta}_{MAP}\)</span>.</p>
+<p>The notes have the MAP computation using the log posterior, let’s try with and without it and see what we get.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># determine MAP</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>(map <span class="ot">&lt;-</span> <span class="fu">optimize</span>(dpost, <span class="at">interval =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>), <span class="at">maximum =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>maximum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>map <span class="ot">&lt;-</span> <span class="fu">optimize</span>(dpost, <span class="at">interval =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>), <span class="at">maximum =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>maximum</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">&quot;The MAP estimate for theta is: {round(map,5)}&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.3973389</code></pre>
+<pre><code>The MAP estimate for theta is: 0.39734</code></pre>
 </div>
 </div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dpostlog <span class="ot">&lt;-</span> <span class="cf">function</span>(theta, <span class="at">successes=</span><span class="dv">200</span>, <span class="at">failures=</span><span class="dv">303</span>, <span class="at">shape1=</span><span class="fl">1.1</span>, <span class="at">shape2=</span><span class="fl">1.5</span>, <span class="at">const =</span> <span class="dv">1</span>) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    prior <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(<span class="at">x=</span>theta, <span class="at">shape1=</span><span class="fl">1.1</span>, <span class="at">shape2=</span><span class="fl">1.5</span>, <span class="at">log =</span> T)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    likelihood <span class="ot">&lt;-</span> <span class="fu">dnbinom</span>(<span class="at">x=</span>n_fail, <span class="at">size=</span>n_succ, <span class="at">prob =</span> theta, <span class="at">log =</span> T)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    posterior <span class="ot">&lt;-</span> <span class="fu">exp</span>(prior <span class="sc">+</span> likelihood <span class="sc">-</span> const)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    posterior</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>map <span class="ot">&lt;-</span> <span class="fu">optimize</span>(dpostlog, <span class="at">interval =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>), <span class="at">maximum =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>maximum</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">&quot;(Log Posterior) The MAP estimate for theta is: {round(map,5)}&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(Log Posterior) The MAP estimate for theta is: 0.39734</code></pre>
+</div>
+</div>
+<p>Same values. This MAP also matches the value of theta you get if you evaluate <span class="math inline">\(E[\theta \mid y]\)</span> by hand, we’ll get back to that later.</p>
+</section>
+<section id="problem-3" class="level2">
+<h2 class="anchored" data-anchor-id="problem-3">Problem 3</h2>
+<p><strong>Problem:</strong> Determine the posterior mean and variance using deterministic methods (i.e., cubature methods). Note that you will need to determine the scaling constant associated with the marginal data density, <span class="math inline">\(p(y)\)</span>.</p>
+<section id="a" class="level3">
+<h3 class="anchored" data-anchor-id="a">A</h3>
+<p><strong>Problem:</strong> What is <span class="math inline">\(p(y)\)</span>? Specifically, determine this constant numerically.</p>
+<p>Let’s break this down for my own sake.</p>
+<p>Our current posterior that we’re working with is <em>unnormalized</em>. That is, it won’t integrate to 1. The value it integrates to is the inverse of the normalizing constant of our posterior! This is great because we can update our posterior with this constant to normalize it!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>const <span class="ot">&lt;-</span> <span class="fu">integrate</span>(dpost, <span class="at">lower=</span><span class="dv">0</span>, <span class="at">upper=</span><span class="dv">1</span>)<span class="sc">$</span>value</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">&quot;p(y) is: {round(const,5)}&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>p(y) is: 0.00095</code></pre>
+</div>
+</div>
+</section>
+<section id="b" class="level3">
+<h3 class="anchored" data-anchor-id="b">B</h3>
+<p><strong>Problem:</strong> What is the posterior mean?</p>
+<p>Thankfully our <code>dpost</code> function already accounts for a constant, so we just need to plug that in. We multiply by <span class="math inline">\(\theta\)</span> because we’re looking for the expected value. This is basic but easy to forget when we’re looking at code.</p>
+<p><span class="math inline">\(E[X] = \int x f(x) dx\)</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mean_target <span class="ot">&lt;-</span> <span class="cf">function</span>(theta, constant) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    theta <span class="sc">*</span> <span class="fu">dpost</span>(<span class="at">theta=</span>theta, <span class="at">const=</span>constant)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>mean_theta <span class="ot">&lt;-</span> <span class="fu">integrate</span>(mean_target, <span class="at">lower=</span><span class="dv">0</span>, <span class="at">upper=</span><span class="dv">1</span>, <span class="at">constant=</span>const)<span class="sc">$</span>value</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">&quot;E[theta|y] is: {round(mean_theta,5)}&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>E[theta|y] is: 0.39775</code></pre>
+</div>
+</div>
+</section>
+<section id="c" class="level3">
+<h3 class="anchored" data-anchor-id="c">C</h3>
+<p><strong>Problem:</strong> What is the posterior variance?</p>
+<p>Here we’ll use the classic:</p>
+<p><span class="math inline">\(Var(X) = E[X^2] - E[X]^2\)</span></p>
+<p>We already have the latter part, for the former we update our function to square theta.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>mean_target_squared <span class="ot">&lt;-</span> <span class="cf">function</span>(theta, constant) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    theta<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">dpost</span>(<span class="at">theta=</span>theta, <span class="at">const=</span>constant)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>mean_theta_squared <span class="ot">&lt;-</span> <span class="fu">integrate</span>(mean_target_squared, <span class="at">lower=</span><span class="dv">0</span>, <span class="at">upper=</span><span class="dv">1</span>, <span class="at">constant=</span>const)<span class="sc">$</span>value</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>var_theta <span class="ot">&lt;-</span> mean_theta_squared <span class="sc">-</span> mean_theta<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">&quot;Var[theta|y] is: {round(var_theta,5)}&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Var[theta|y] is: 0.00047</code></pre>
+</div>
+</div>
+</section>
 </section>
 </section>
 
