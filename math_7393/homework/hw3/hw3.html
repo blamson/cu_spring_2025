@@ -3293,6 +3293,36 @@ window.Quarto = {
 </div>
 </section>
 </section>
+<section id="problem-4" class="level2">
+<h2 class="anchored" data-anchor-id="problem-4">Problem 4</h2>
+<p>So, according to the normal approximation from the notes:</p>
+<p><span class="math display">\[\theta \mid y \sim N(\hat{\theta}, I(\hat{\theta})^{-1})\]</span></p>
+<p>Where <span class="math inline">\(\hat{\theta} = \hat{\theta}_{MAP}\)</span> in our case and</p>
+<p><span class="math display">\[I(\hat{\theta}) = -\frac{d^2}{d\hat{\theta}^2} \ln(p(y \mid \theta))\]</span></p>
+<p>So we already know the mean of our distribution from our original MAP estimate. <strong>The mean is</strong> <span class="math inline">\(\approx 0.397\)</span>.</p>
+<p>For the variance we’ll just need to sort out the second derivative of the log likelihood and evaluate it at our MAP estimator.</p>
+<p><span class="math display">\[
+\begin{align}
+    \ln(p(y \mid r, \hat{\theta})) &amp;= \ln \left( {r+y-1 \choose y} \theta^r (1-\theta)^y \right) \\
+    &amp;= \ln {r+y-1 \choose y} + r \ln(\theta) + y\ln(1-\theta) \\
+    \frac{d}{d\hat{\theta}} \ln(p(y \mid r, \hat{\theta})) &amp;= r\theta^{-1} - y(1-\theta)^{-1} \\
+    \frac{d^2}{d\hat{\theta}^2} \ln(p(y \mid r, \hat{\theta})) &amp;= -r\theta^{-2} - y(1-\theta)^{-2} \\
+    \frac{d^2}{d\hat{\theta}^2} \ln(p(y=303 \mid r=200, \hat{\theta})) &amp;= -200\theta^{-2} - 303(1-\theta)^{-2} \\
+    I(\hat{\theta}) &amp;= 200\theta^{-2} + 303(1-\theta)^{-2} \\
+\end{align}
+\]</span></p>
+<p>From here we just need the inverse of this evaluated at our MAP estimate.</p>
+<p><span class="math inline">\(Var(\theta \mid y) \approx (200 \cdot 0.397^{-2} + 303(1-0.397)^{-2})^{-1}\)</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>observed_inf <span class="ot">&lt;-</span> n_succ <span class="sc">*</span> map<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>) <span class="sc">+</span> n_fail <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>map)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>norm_approx_var <span class="ot">&lt;-</span> observed_inf<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">&quot;The normal approximated variance is {round(norm_approx_var, 5)}&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>The normal approximated variance is 0.00048</code></pre>
+</div>
+</div>
+<p>Which matches the posterior variance we calculated earlier using cubature methods.</p>
+</section>
 </section>
 
 </main>

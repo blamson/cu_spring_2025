@@ -182,3 +182,39 @@ var_theta <- mean_theta_squared - mean_theta^2
 glue("Var[theta|y] is: {round(var_theta,5)}")
 ```
 
+## Problem 4
+
+So, according to the normal approximation from the notes:
+
+$$\theta \mid y \sim N(\hat{\theta}, I(\hat{\theta})^{-1})$$
+
+Where $\hat{\theta} = \hat{\theta}_{MAP}$ in our case and 
+
+$$I(\hat{\theta}) = -\frac{d^2}{d\hat{\theta}^2} \ln(p(y \mid \theta))$$
+
+So we already know the mean of our distribution from our original MAP estimate. **The mean is** $\approx 0.397$.
+
+For the variance we'll just need to sort out the second derivative of the log likelihood and evaluate it at our MAP estimator.
+
+$$
+\begin{align}
+    \ln(p(y \mid r, \hat{\theta})) &= \ln \left( {r+y-1 \choose y} \theta^r (1-\theta)^y \right) \\
+    &= \ln {r+y-1 \choose y} + r \ln(\theta) + y\ln(1-\theta) \\
+    \frac{d}{d\hat{\theta}} \ln(p(y \mid r, \hat{\theta})) &= r\theta^{-1} - y(1-\theta)^{-1} \\
+    \frac{d^2}{d\hat{\theta}^2} \ln(p(y \mid r, \hat{\theta})) &= -r\theta^{-2} - y(1-\theta)^{-2} \\
+    \frac{d^2}{d\hat{\theta}^2} \ln(p(y=303 \mid r=200, \hat{\theta})) &= -200\theta^{-2} - 303(1-\theta)^{-2} \\
+    I(\hat{\theta}) &= 200\theta^{-2} + 303(1-\theta)^{-2} \\
+\end{align}
+$$
+
+From here we just need the inverse of this evaluated at our MAP estimate.
+
+$Var(\theta \mid y) \approx (200 \cdot 0.397^{-2} + 303(1-0.397)^{-2})^{-1}$
+
+```{r}
+observed_inf <- n_succ * map^(-2) + n_fail * (1-map)^(-2)
+norm_approx_var <- observed_inf^(-1)
+glue("The normal approximated variance is {round(norm_approx_var, 5)}")
+```
+
+Which matches the posterior variance we calculated earlier using cubature methods.
