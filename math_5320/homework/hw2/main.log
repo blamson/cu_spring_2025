@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  19 FEB 2025 17:27
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  23 FEB 2025 13:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -247,27 +247,27 @@ ap/pdftex.map}
 ]) [2]
 \openout2 = `5.17.aux'.
 
- (./5.17.tex [3
+ (./5.17.tex (./5.17a.tex [3
 
 ]
-Overfull \hbox (39.90904pt too wide) detected at line 81
+Overfull \hbox (39.90904pt too wide) detected at line 77
 []
  []
 
-[4] [5]) [6] (./main.aux (./5.17.aux))
+[4] [5]) (./5.17b.tex [6] [7]) [8]) [9] (./main.aux (./5.17.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2455 strings out of 474116
- 38408 string characters out of 5733619
- 1941187 words of memory out of 5000000
- 24802 multiletter control sequences out of 15000+600000
+ 2468 strings out of 474116
+ 38537 string characters out of 5733619
+ 1942187 words of memory out of 5000000
+ 24808 multiletter control sequences out of 15000+600000
  561286 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,14n,70p,370b,237s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,14n,70p,450b,237s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmbx10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/
@@ -283,10 +283,10 @@ mr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/pub
 lic/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></opt/homebrew/Cellar/texlive/2024
 0312/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on main.pdf (6 pages, 144645 bytes).
+Output written on main.pdf (9 pages, 154116 bytes).
 PDF statistics:
- 83 PDF objects out of 1000 (max. 8388607)
- 50 compressed objects within 1 object stream
+ 94 PDF objects out of 1000 (max. 8388607)
+ 58 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
