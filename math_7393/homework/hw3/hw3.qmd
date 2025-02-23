@@ -251,3 +251,87 @@ ggplot(df, aes(x = theta_support)) +
 ```
 
 They match extremely well. Even with a variety of line widths it's difficult to see where any discrepancies even are. As such I made the sequence of $\theta$ smaller and used a dashed line for the normal approximation so we can see the overlap a bit better.
+
+# Problem 6
+
+More fun with Jeffreys' prior. Let $y \sim \text{Poisson}(\theta)$. We have previously shown that Jeffreys' prior for this setting is:
+
+$p(\theta) \approx \theta^{-1/2}I(\theta > 0)$
+
+## A.
+
+**Problem:** Let $\phi = \sqrt{\theta}$ Write the pmf of $y$ in terms of $\phi$ instead of $\theta$. This is a simple reparameterization of the distribution NOT a transformation of the distribution. Just replace $\theta$ with the appropriate function of $\phi$.
+
+First we'll start with the usual pmf using $\theta$.
+
+$$
+p(y\mid\theta) = \frac{e^{-\theta} \theta^y}{y!}I_{y \in \{0,1,...\}}(y)I_{[0,\infty)}(\theta)
+$$
+
+Now, $\phi = \sqrt{\theta}$ so $\phi^2 = \theta$. We just plug that in.
+
+$$
+p(y\mid\phi^2) = \frac{e^{-\phi^2} \phi^{2y}}{y!}I_{y \in \{0,1,...\}}(y)I_{[0,\infty)}(\phi)
+$$
+
+## B
+
+**Problem:** Determine the Fisher's Information for $\phi$ using your answer in a.
+
+$$
+    J(\phi) = -E\left[ \frac{d^2\phi}{d\phi^2} \ln(p(y\mid\phi^2))\right]
+$$
+
+Here we're going to just work through the algebra. Get the log density, take the first and second derivatives, then get the negative expectation for the Fishers Information.
+
+$$
+\begin{align}
+    \ln(p(y\mid\phi^2)) &= -\phi^2 + 2y\ln(\phi) - \ln(y!) \\
+    \frac{d\phi}{d\phi} \ln(p(y\mid\phi^2)) &= -2\phi +2y\phi^{-1} \\
+    \frac{d^2\phi}{d\phi^2} \ln(p(y\mid\phi^2)) &= -2 - 2y\phi^{-2} \\
+    J(\phi) &= -E[-2 - 2y\phi^{-2}] \\
+    &= -1 \cdot \left( -2 - 2\phi^{-2}E[y]\right ) \\
+    &= 2+2\phi^{-2}\phi^2 \\
+    &= 4
+\end{align}
+$$
+
+## C
+
+**Problem:** Determine Jeffrey's prior for $\phi$
+
+We're almost there!
+
+$$
+\begin{align}
+    p(\phi) &\approx J(\phi)^{-1/2} \\
+    &\approx \sqrt{4} \\
+    &\approx 2
+\end{align}
+$$
+
+What this tells us here is the Jeffreys' prior for $\phi$ is uniform. 
+
+## D
+
+**Problem:** Using your answer in c as the prior for $\phi$, use the change-of-variable formula on $p_{\phi}(\phi)$ to find $p_{\theta}(\theta)$ when $\phi = \sqrt{\theta}$.
+
+Generic change of variable formula here for reference.
+
+$$
+f_Y(y) = f_X(g^{-1}(y)) \cdot \left\vert \frac{d}{dy} g^{-1}(y)\right\vert
+$$
+
+$$
+\begin{align}
+    p_{\theta}(\theta) &\approx p_{\phi}(\sqrt{\theta}) \left\vert \frac{d}{d\theta} \sqrt{\theta}\right\vert \\
+    &\approx 2\cdot \frac{1}{2}\theta^{-1/2} \\
+    p_{\theta}(\theta) &\approx \theta^{-1/2} I_{[0,\infty)}(\theta)
+\end{align}
+$$
+
+## E
+
+What does this example confirm about Jeffreys' prior?
+
+This exercise confirms that Jeffreys' prior is invariant to parameterization. At least, based on my interpretation, it seems that the Jeffreys' prior is able to adapt to different kinds of parameterizations and maintain its ability to be a non-informative prior.

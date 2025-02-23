@@ -3360,6 +3360,75 @@ window.Quarto = {
 <p>They match extremely well. Even with a variety of line widths it’s difficult to see where any discrepancies even are. As such I made the sequence of <span class="math inline">\(\theta\)</span> smaller and used a dashed line for the normal approximation so we can see the overlap a bit better.</p>
 </section>
 </section>
+<section id="problem-6" class="level1">
+<h1>Problem 6</h1>
+<p>More fun with Jeffreys’ prior. Let <span class="math inline">\(y \sim \text{Poisson}(\theta)\)</span>. We have previously shown that Jeffreys’ prior for this setting is:</p>
+<p><span class="math inline">\(p(\theta) \approx \theta^{-1/2}I(\theta &gt; 0)\)</span></p>
+<section id="a." class="level2">
+<h2 class="anchored" data-anchor-id="a.">A.</h2>
+<p><strong>Problem:</strong> Let <span class="math inline">\(\phi = \sqrt{\theta}\)</span> Write the pmf of <span class="math inline">\(y\)</span> in terms of <span class="math inline">\(\phi\)</span> instead of <span class="math inline">\(\theta\)</span>. This is a simple reparameterization of the distribution NOT a transformation of the distribution. Just replace <span class="math inline">\(\theta\)</span> with the appropriate function of <span class="math inline">\(\phi\)</span>.</p>
+<p>First we’ll start with the usual pmf using <span class="math inline">\(\theta\)</span>.</p>
+<p><span class="math display">\[
+p(y\mid\theta) = \frac{e^{-\theta} \theta^y}{y!}I_{y \in \{0,1,...\}}(y)I_{[0,\infty)}(\theta)
+\]</span></p>
+<p>Now, <span class="math inline">\(\phi = \sqrt{\theta}\)</span> so <span class="math inline">\(\phi^2 = \theta\)</span>. We just plug that in.</p>
+<p><span class="math display">\[
+p(y\mid\phi^2) = \frac{e^{-\phi^2} \phi^{2y}}{y!}I_{y \in \{0,1,...\}}(y)I_{[0,\infty)}(\phi)
+\]</span></p>
+</section>
+<section id="b-1" class="level2">
+<h2 class="anchored" data-anchor-id="b-1">B</h2>
+<p><strong>Problem:</strong> Determine the Fisher’s Information for <span class="math inline">\(\phi\)</span> using your answer in a.</p>
+<p><span class="math display">\[
+    J(\phi) = -E\left[ \frac{d^2\phi}{d\phi^2} \ln(p(y\mid\phi^2))\right]
+\]</span></p>
+<p>Here we’re going to just work through the algebra. Get the log density, take the first and second derivatives, then get the negative expectation for the Fishers Information.</p>
+<p><span class="math display">\[
+\begin{align}
+    \ln(p(y\mid\phi^2)) &amp;= -\phi^2 + 2y\ln(\phi) - \ln(y!) \\
+    \frac{d\phi}{d\phi} \ln(p(y\mid\phi^2)) &amp;= -2\phi +2y\phi^{-1} \\
+    \frac{d^2\phi}{d\phi^2} \ln(p(y\mid\phi^2)) &amp;= -2 - 2y\phi^{-2} \\
+    J(\phi) &amp;= -E[-2 - 2y\phi^{-2}] \\
+    &amp;= -1 \cdot \left( -2 - 2\phi^{-2}E[y]\right ) \\
+    &amp;= 2+2\phi^{-2}\phi^2 \\
+    &amp;= 4
+\end{align}
+\]</span></p>
+</section>
+<section id="c-1" class="level2">
+<h2 class="anchored" data-anchor-id="c-1">C</h2>
+<p><strong>Problem:</strong> Determine Jeffrey’s prior for <span class="math inline">\(\phi\)</span></p>
+<p>We’re almost there!</p>
+<p><span class="math display">\[
+\begin{align}
+    p(\phi) &amp;\approx J(\phi)^{-1/2} \\
+    &amp;\approx \sqrt{4} \\
+    &amp;\approx 2
+\end{align}
+\]</span></p>
+<p>What this tells us here is the Jeffreys’ prior for <span class="math inline">\(\phi\)</span> is uniform.</p>
+</section>
+<section id="d" class="level2">
+<h2 class="anchored" data-anchor-id="d">D</h2>
+<p><strong>Problem:</strong> Using your answer in c as the prior for <span class="math inline">\(\phi\)</span>, use the change-of-variable formula on <span class="math inline">\(p_{\phi}(\phi)\)</span> to find <span class="math inline">\(p_{\theta}(\theta)\)</span> when <span class="math inline">\(\phi = \sqrt{\theta}\)</span>.</p>
+<p>Generic change of variable formula here for reference.</p>
+<p><span class="math display">\[
+f_Y(y) = f_X(g^{-1}(y)) \cdot \left\vert \frac{d}{dy} g^{-1}(y)\right\vert
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    p_{\theta}(\theta) &amp;\approx p_{\phi}(\sqrt{\theta}) \left\vert \frac{d}{d\theta} \sqrt{\theta}\right\vert \\
+    &amp;\approx 2\cdot \frac{1}{2}\theta^{-1/2} \\
+    p_{\theta}(\theta) &amp;\approx \theta^{-1/2} I_{[0,\infty)}(\theta)
+\end{align}
+\]</span></p>
+</section>
+<section id="e" class="level2">
+<h2 class="anchored" data-anchor-id="e">E</h2>
+<p>What does this example confirm about Jeffreys’ prior?</p>
+<p>This exercise confirms that Jeffreys’ prior is invariant to parameterization. At least, based on my interpretation, it seems that the Jeffreys’ prior is able to adapt to different kinds of parameterizations and maintain its ability to be a non-informative prior.</p>
+</section>
+</section>
 
 </main>
 <!-- /main column -->
