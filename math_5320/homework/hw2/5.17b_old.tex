@@ -1,0 +1,97 @@
+\subsection*{B.}
+
+Derive the mean and variance of $X$.
+
+\subsubsection*{The mean}
+
+Starting with the mean of course. First, let's set our goal. According to the book, the expected value of our $X$ should be:
+
+$$E[X] = \frac{q}{q-2} I_{q > 2}(q)$$
+
+To start, we exploit the fact that $U$ is independent of $V$ here so we can split up the expectations.
+
+\vspace{-0.4cm}
+\begin{align*}
+	E[X] &= E\left[ \frac{U/p}{V/q} \right] \\
+	&= E[U/p] E\left[ \frac{1}{v/q} \right] \\
+	&= pE[U] qE\left[ \frac{1}{v} \right] \\
+	&= p\frac{1}{p}qE\left[ \frac{1}{v} \right] \\
+	&= qE\left[ \frac{1}{v} \right] \\
+\end{align*}
+
+So we're left with just $q$ and $V$. A quick sanity check to the textbook shows that this isn't a red flag, the expected value of an $F$ distribution is only a function of $v_2$. 
+
+So we now have a transformation of $V$ so we'll be using the change of variable formula, though a simpler version than we just used. A similar strategy will be used to part A. Once we get everything set up we'll be looking to set up the kernel of a gamma distribution and using the inverse normalizing constant to break everything down. 
+
+\subsubsection*{Transformation Setup}
+
+We'll use $Y = 1/V$. 
+
+So we'll get:
+
+$V=1/Y=g^{-1}(y)$
+
+$\frac{d}{dy}g^{-1}(y) = -y^{-2}$
+
+From here, the generic change of variable formula for reference (the x and y do not correspond to ours):
+
+$$
+f_Y(y) = f_X(g^{-1}(y)) \cdot \left\vert \frac{d}{dy} g^{-1}(y)\right\vert
+$$
+
+\vspace{-0.4cm}
+\begin{align*}
+	f_Y(y) &= f_V(g^{-1}(y)) \cdot \left| \frac{d}{dy} g^{-1}(y) \right| \\
+	&= f_V\left( \frac{1}{y} \right) \cdot |-y^{-2}| \\
+	&= \frac{1}{\Gamma(q/2)2^{q/2}} \left( \frac{1}{y} \right)^{(q/2) - 1} e^{-1/2y} \left( \frac{1}{y} \right)^2
+\end{align*}
+
+Now that setup is done we can tackle the expected value.
+
+\subsubsection*{Evaluating $qE[Y]$}
+
+Let's hop right into it. 
+
+\vspace{-0.4cm}
+\begin{align*}
+qE[Y] &= q\int y \frac{1}{\Gamma(q/2)2^{q/2}} \left( \frac{1}{y} \right)^{(q/2) - 1} e^{-1/2y} \left( \frac{1}{y} \right)^2 dy \\
+	&= q\int \frac{1}{\Gamma(q/2)2^{q/2}}  \left( \frac{1}{y} \right)^{-1} \left( \frac{1}{y} \right)^{(q/2) - 1} \left( \frac{1}{y} \right)^2  e^{-1/2y} dy \\
+	&= q\int \frac{1}{\Gamma(q/2)2^{q/2}} \left( \frac{1}{y} \right)^{(q/2)} e^{-1/2y} dy & \text{(Some cleanup)} \\
+\end{align*}
+
+From here we have a plan we could use like in part A, remove the constants and sort out what kind of gamma this is. However we have a $1/y$ in here which complicates things. We could try to rewrite $1/y=y^{-1}$ but that would give us a negative alpha value, something that isn't allowed within the gamma. A quick u-substitution and some more algebraic rearraging will sort things out for us. 
+
+\vspace{-0.4cm}
+\begin{align*}
+	u &= \frac{1}{y} & \frac{du}{dy} &= -\frac{1}{y^2} \\
+	y &= \frac{1}{u} & du &= -\frac{1}{y^2} dy
+\end{align*}
+
+Now we'll re-arrange a bit so we can accomodate everything. We'll need to break out a $-y^{-2}$ for the $du$ in particular.
+
+\vspace{-0.4cm}
+\begin{align*}
+	qE[Y] &= q  \frac{1}{\Gamma(q/2)2^{q/2}} \int \left( \frac{1}{y} \right)^{(q/2)-2}  \left( \frac{1}{y} \right)^{2} e^{-1/2y} dy & \text{(Setup for usub)} \\
+	&=  q  \frac{1}{\Gamma(q/2)2^{q/2}} \int u^{(q/2) - 2} e^{-u/2} du 
+\end{align*}
+
+The integrand is the kernel of a gamma distribution with $\alpha=(q/2) -1$ and $\beta=2$. 
+
+Thus, we get the inverse normalizing constant:
+
+$$ \Gamma(\alpha) \beta^{\alpha} = \Gamma( (q/2)-1 ) 2^{(q/2)-1} $$
+
+Substituting that back in allows us to wrap this up. We need to manipulate the factorials in the gamma function a bit to help simplify things. As a reminder, $\Gamma(x) = (x-1)!$.
+\vspace{-0.4cm}
+\begin{align*}
+	qE[Y] &=  \frac{q}{\Gamma(q/2)2^{q/2}} \Gamma( (q/2)-1 ) 2^{(q/2)-1} \\
+	&= \frac{ 2^{(q/2)-1} }{ 2^{q/2} } \cdot q \cdot \frac{\Gamma\left( \frac{q}{2} - 1 \right)}{\Gamma\left( \frac{q}{2} \right)} \\
+	&= \frac{1}{2} \cdot q \cdot \frac{\left( \frac{q}{2} - 1 - 1 \right)!}{\left( \frac{q}{2} - 1 \right)!} \\
+	&= \frac{q}{2} \cdot \frac{\left( \frac{q}{2} - 2 \right)!}{\left( \frac{q}{2} - 1 \right) \left( \frac{q}{2} - 2 \right)!} \\
+	&= \frac{q}{2} \cdot \frac{1}{\frac{q}{2} - 1} \\
+	&= \frac{q}{2\left( \frac{q}{2} - 1 \right)} \\
+	&= \frac{q}{q - 2} I_{q > 2}(q)
+\end{align*}
+
+
+Which matches our goal at the start

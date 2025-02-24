@@ -11,7 +11,7 @@ $$E[X] = \frac{q}{q-2} I_{q > 2}(q)$$
 To start, we exploit the fact that $U$ is independent of $V$ here so we can split up the expectations.
 
 \vspace{-0.4cm}
-\begin{align*}
+\begin{align*}0
 	E[X] &= E\left[ \frac{U/p}{V/q} \right] \\
 	&= E[U/p] E\left[ \frac{1}{v/q} \right] \\
 	&= pE[U] qE\left[ \frac{1}{v} \right] \\
@@ -21,77 +21,101 @@ To start, we exploit the fact that $U$ is independent of $V$ here so we can spli
 
 So we're left with just $q$ and $V$. A quick sanity check to the textbook shows that this isn't a red flag, the expected value of an $F$ distribution is only a function of $v_2$. 
 
-So we now have a transformation of $V$ so we'll be using the change of variable formula, though a simpler version than we just used. A similar strategy will be used to part A. Once we get everything set up we'll be looking to set up the kernel of a gamma distribution and using the inverse normalizing constant to break everything down. 
+So really we just have to evaluate $qE[1/V]$. Easy.
 
-\subsubsection*{Transformation Setup}
-
-We'll use $Y = 1/V$. 
-
-So we'll get:
-
-$V=1/Y=g^{-1}(y)$
-
-$\frac{d}{dy}g^{-1}(y) = -y^{-2}$
-
-From here, the generic change of variable formula for reference (the x and y do not correspond to ours):
-
-$$
-f_Y(y) = f_X(g^{-1}(y)) \cdot \left\vert \frac{d}{dy} g^{-1}(y)\right\vert
-$$
-
-\vspace{-0.4cm}
 \begin{align*}
-	f_Y(y) &= f_V(g^{-1}(y)) \cdot \left| \frac{d}{dy} g^{-1}(y) \right| \\
-	&= f_V\left( \frac{1}{y} \right) \cdot |-y^{-2}| \\
-	&= \frac{1}{\Gamma(q/2)2^{q/2}} \left( \frac{1}{y} \right)^{(q/2) - 1} e^{-1/2y} \left( \frac{1}{y} \right)^2
+	E[X] &= qE[1/V] \\
+	&= q \int \frac{1}{v} f_V(v) dv \\
+	&= \frac{q}{\Gamma(q/2) 2^{q/2}} \int v^{-1} v^{(q/2)-1} \exp(-v/2) dv \\
+	&= \frac{q}{\Gamma(q/2) 2^{q/2}} \int v^{((q/2) -1 )-1} \exp(-v/2) dv \\
 \end{align*}
 
-Now that setup is done we can tackle the expected value.
+Giving us the kernel of a Gamma random variable with $\alpha = (q/2)-1$ and $\beta = 2$.
 
-\subsubsection*{Evaluating $qE[Y]$}
+Much like in part A we'll be using the inverse of the normalizing constant which is $c^{-1} = \Gamma(\alpha)\beta^{\alpha}$.
 
-Let's hop right into it. 
+We'll also take note of one property of the Gamma function, that is: $\Gamma(\alpha) = (\alpha-1)\Gamma(\alpha - 1)$. 
 
-\vspace{-0.4cm}
 \begin{align*}
-qE[Y] &= q\int y \frac{1}{\Gamma(q/2)2^{q/2}} \left( \frac{1}{y} \right)^{(q/2) - 1} e^{-1/2y} \left( \frac{1}{y} \right)^2 dy \\
-	&= q\int \frac{1}{\Gamma(q/2)2^{q/2}}  \left( \frac{1}{y} \right)^{-1} \left( \frac{1}{y} \right)^{(q/2) - 1} \left( \frac{1}{y} \right)^2  e^{-1/2y} dy \\
-	&= q\int \frac{1}{\Gamma(q/2)2^{q/2}} \left( \frac{1}{y} \right)^{(q/2)} e^{-1/2y} dy & \text{(Some cleanup)} \\
-\end{align*}
-
-From here we have a plan we could use like in part A, remove the constants and sort out what kind of gamma this is. However we have a $1/y$ in here which complicates things. We could try to rewrite $1/y=y^{-1}$ but that would give us a negative alpha value, something that isn't allowed within the gamma. A quick u-substitution and some more algebraic rearraging will sort things out for us. 
-
-\vspace{-0.4cm}
-\begin{align*}
-	u &= \frac{1}{y} & \frac{du}{dy} &= -\frac{1}{y^2} \\
-	y &= \frac{1}{u} & du &= -\frac{1}{y^2} dy
-\end{align*}
-
-Now we'll re-arrange a bit so we can accomodate everything. We'll need to break out a $-y^{-2}$ for the $du$ in particular.
-
-\vspace{-0.4cm}
-\begin{align*}
-	qE[Y] &= q  \frac{1}{\Gamma(q/2)2^{q/2}} \int \left( \frac{1}{y} \right)^{(q/2)-2}  \left( \frac{1}{y} \right)^{2} e^{-1/2y} dy & \text{(Setup for usub)} \\
-	&=  q  \frac{1}{\Gamma(q/2)2^{q/2}} \int u^{(q/2) - 2} e^{-u/2} du 
-\end{align*}
-
-The integrand is the kernel of a gamma distribution with $\alpha=(q/2) -1$ and $\beta=2$. 
-
-Thus, we get the inverse normalizing constant:
-
-$$ (\Gamma(\alpha) \beta^{\alpha}) = \Gamma( (q/2)-1 ) 2^{(q/2)-1} $$
-
-Substituting that back in allows us to wrap this up. We need to manipulate the factorials in the gamma function a bit to help simplify things. As a reminder, $\Gamma(x) = (x-1)!$.
-\vspace{-0.4cm}
-\begin{align*}
-	qE[Y] &=  \frac{q}{\Gamma(q/2)2^{q/2}} \Gamma( (q/2)-1 ) 2^{(q/2)-1} \\
-	&= \frac{ 2^{(q/2)-1} }{ 2^{q/2} } \cdot q \cdot \frac{\Gamma\left( \frac{q}{2} - 1 \right)}{\Gamma\left( \frac{q}{2} \right)} \\
-	&= \frac{1}{2} \cdot q \cdot \frac{\left( \frac{q}{2} - 1 - 1 \right)!}{\left( \frac{q}{2} - 1 \right)!} \\
-	&= \frac{q}{2} \cdot \frac{\left( \frac{q}{2} - 2 \right)!}{\left( \frac{q}{2} - 1 \right) \left( \frac{q}{2} - 2 \right)!} \\
-	&= \frac{q}{2} \cdot \frac{1}{\frac{q}{2} - 1} \\
+	E[X] &= \frac{q}{\Gamma(q/2) 2^{q/2}} \cdot \Gamma\left( (q/2) - 1 \right) 2^{(q/2)-1}  \\
+	&= q \frac{\Gamma((q/2) - 1)}{((q/2) - 1)\Gamma((q/2) - 1))} \cdot \frac{2^{\frac{q}{2} - 1}}{2^{\frac{q}{2}}} \\
 	&= \frac{q}{2\left( \frac{q}{2} - 1 \right)} \\
-	&= \frac{q}{q - 2} I_{q > 2}(q)
+	&= \frac{q}{q-2} I_{q>2}(q)
 \end{align*}
 
+Which is the same as the mean stated in the book.
 
-Which matches our goal at the start
+\subsubsection*{The Variance}
+
+For the variance, we'll start with the the form of the variance from the book.
+
+\[
+	Var(X) = 2\left( \frac{v_2}{v_2 - 2} \right)^2 \frac{(v_1 + v_2 - 2)}{v_1(v_2-4)}
+\]
+
+We'll be using the classic formula for the variance for this problem.
+
+$Var(X) = E[X^2] - E[X]^2$
+
+We already know the latter part of the variance, so our focus now is on $E[X^2]$. 
+
+Using a similar setup from earlier:
+
+\begin{align*}
+E[X^2] &= E\left[ \left(\frac{U/p}{V/q}\right)^2 \right] \\
+&= E\left[ \frac{U^2}{p^2} \cdot \frac{1}{V^2/q^2} \right] \\
+&= \frac{1}{p^2}E[U^2] \cdot q^2E\left[ \frac{1}{V^2} \right] \\
+\end{align*}
+
+From here, we focus on $U^2$ for a moment. We know that $E[U^2] = Var(U) + E[U]^2$. The variance of a $\chi^2$ random variable is known, so we'll plug that in.
+
+\begin{align*}
+	E[X^2] &= \frac{1}{p^2} \left( Var(U) + E[U^2] \right) \cdot q^2E\left[ \frac{1}{V^2} \right] \\
+	&= \frac{1}{p^2} \left( 2p + p^2 \right) \cdot q^2E\left[ \frac{1}{V^2} \right] \\
+	&= \frac{1}{p} \left( 2 + p \right) \cdot q^2E\left[ \frac{1}{V^2} \right] \\
+\end{align*}
+
+Now, we focus on $1/V^2$. 
+
+\begin{align*}
+	E[1/V^2] &= \int \frac{1}{v^2} f_V(v) dv \\
+	&= \frac{q}{\Gamma(q/2) 2^{q/2}} \int v^{-2} v^{(q/2)-1} \exp(-v/2) dv \\
+	&= \frac{q}{\Gamma(q/2) 2^{q/2}} \int v^{((q/2) - 2 )-1} \exp(-v/2) dv \\
+\end{align*}
+
+Giving us the kernel of a Gamma random variable with $\alpha = (q/2)-2$ and $\beta = 2$.
+
+You know the drill by now. We'll plug in the inverse normalizing constant. We're going to do some additional algebra now because it'll come in handy later.
+
+\begin{align*}
+	E[1/V^2] &= \frac{1}{\Gamma(q/2) 2^{q/2}} \cdot \Gamma\left( (q/2) - 2 \right) 2^{(q/2)-2}  \\
+	&= \frac{\Gamma((q/2) - 2)}{((q/2) - 1)((q/2) - 2)\Gamma((q/2) - 2))} \cdot \frac{2^{\frac{q}{2} - 2}}{2^{\frac{q}{2}}} \\
+	&= \frac{1}{4} \cdot \frac{1}{\left( \frac{q}{2} - 1 \right)\left( \frac{q}{2} - 2 \right)} \\
+	&= \frac{1}{4} \cdot \frac{1}{\frac{1}{2}(q-2)\frac{1}{2}(q-4)} \\
+	&= \frac{1}{(q-2)(q-4)}
+\end{align*}
+
+And finally, we return back to our original work and get it into the form we need. This requires a LOT of weird algebra.
+
+Let us reference the form of the variance again.
+
+\[
+	Var(X) = 2\left( \frac{v_2}{v_2 - 2} \right)^2 \frac{(v_1 + v_2 - 2)}{v_1(v_2-4)}
+\]
+
+Our goal is to slowly split things apart to get all the individual pieces we need and pray it all works out.
+
+\vspace{-3mm}
+\begin{align*}
+	Var(X) &= E[X^2] - E[X]^2 \\
+	Var(X) &= \frac{1}{p}(2+p) \cdot q^2 \frac{1}{(q-2)(q-4)} - \left( \frac{q}{q-2} \right)^2 \\
+	&= \frac{(2+p)q^2}{p(q-2)(q-4)} - \frac{q^2}{(q-2)^2} \\
+	&= \frac{(2+p)q^2 \cdot (q-2)^2 - q^2(q-2)(q-4) }{p(q-2)(q-4)(q-2)^2} & \text{(Common denominators)} \\
+	&= \frac{q^2((2+p) \cdot (q-2)^2 - (q-2)(q-4)) }{(q-2)^2p(q-2)(q-4)} & \text{(Factor out }q^2) \\
+	&= \left( \frac{q}{q-2} \right)^2 \cdot  \frac{(q-2)( (2+p) \cdot (q-2) - (q-4)) }{p(q-2)(q-4)} & \text{Factor out } (q-2)) \\ 
+	&= \left( \frac{q}{q-2} \right)^2 \cdot  \frac{(2+p) \cdot (q-2) - (q-4) }{p(q-4)} \\ 
+	&= \left( \frac{q}{q-2} \right)^2 \cdot  \frac{2q+2p-4 }{p(q-4)} & \text{(Rewrite Numerator)} \\
+	&= 2 \cdot \left( \frac{q}{q-2} \right)^2 \cdot  \frac{q+p-2 }{p(q-4)} I_{q > 4}(q) & \text{(Factor out 2)} \\
+\end{align*}
+
+And with that we're done!
