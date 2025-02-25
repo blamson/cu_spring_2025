@@ -1,0 +1,59 @@
+\section*{5.24}
+
+Let $X_1,\cdots, X_n$ be a random sample from a population with pdf
+
+\[
+	f_X(x) =
+	\begin{cases}
+		1/\theta & 0<x<\theta \\
+		0 & \text{o/w}
+	\end{cases}
+\]
+
+Let $X_{(1)},..,X_{(n)}$ be the order statistics. Show that $X_{(1)}/X_{(n)}$ and $X_{(n)}$ are independent random variables.
+
+The plan here is to use Theorem 5.4.6 using the min and max order statistics for the joint pdf, pray it simplifies down, then do a bivariate transformation to handle the independence check.
+
+To start, we need a few small pieces to work with for that theorem.
+
+\begin{align*}
+	f_X(x) &= 1/\theta & U&=X_{(1)} \\
+	F_X(x) &= x/\theta & V&=X_{(n)}
+\end{align*}
+
+I would normally write out the joint pdf from 5.4.6 in full here but honestly, that seems really tedious.
+
+\begin{align*}
+	f_{X_{(1)}, X_{(n)}} &= \frac{n!}{(1-1)!(n-1-1)!(n-n)!} f_X(u)f_X(v) \\
+	&\cdot F_X(u)^{1-1}\left( F_X(v) - F_X(u) \right)^{n-1-1} (1-F_X(v))^{n-n} \\
+	&= \frac{n!}{0!(n-2)!0!} \frac{1}{\theta^2} \cdot 1 \cdot \left( \frac{v}{\theta} - \frac{u}{\theta} \right)^{n-2} \cdot 1 \\
+	&= \frac{n \cdot (n-1) \cdot (n-2)!}{(n-2)!} \frac{1}{\theta^2} \left( \frac{v-u}{\theta} \right)^{n-2} \\
+	&= n(n-1)\theta^{-2}\theta^{-(n-2)}(v-u)^{n-2} \\
+	&= n(n-1)\theta^{-n}(v-u)^{n-2}I_{1\leq u < v \leq n}(u,v)
+\end{align*}
+
+Now we set up the transformation. 
+
+\vspace{-4mm}
+\begin{align*}
+	R &= \frac{U}{V} & S &= V \\
+	U &= RS & h_2(r,s) &= S \\
+	h_1(r,s) &= RS
+\end{align*}
+
+Next up is the Jacobian.
+
+\[
+	J = \m{v}{\frac{du}{dr} & \frac{du}{ds} \\ \frac{dv}{dr} & \frac{dv}{ds}} = \m{v}{s & r \\ 0 & 1} = s
+\]
+
+Okay, now we plug it all in. So we don't lose sight of the goal, we want to be able to split this joint pdf into distinct functions of $R$ and $S$ to show independence. 
+
+\begin{align*}
+	f_{R,S}(r,s) &= f_{U,V}(h_{1}(r,s), h_2(r,s)) |J| \\
+	&= \frac{n(n-1)}{\theta^n} (s-rs)^{n-2} \cdot s \\
+	&= \frac{n(n-1)}{\theta^n} s^{n-2} \cdot (1-r)^{n-2} \cdot s \\
+	&= \frac{n(n-1)}{\theta^n} s^{n-1} \cdot (1-r)^{n-2} 
+\end{align*}
+
+Since the joint pdf can now be split into distinct functions $w_1(s) = s^{n-1}$ and $w_2(r) = (1-r)^{n-2}$, $R$ and $S$ are independent. Therefore, $\frac{X_{(1)}}{X_{(n)}}$ and $X_{(n)}$ are independent random variables.
