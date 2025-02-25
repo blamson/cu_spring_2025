@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  24 FEB 2025 21:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  24 FEB 2025 22:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -181,7 +181,8 @@ ackend-pdftex.def
 File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count274
 \l__pdf_internal_box=\box53
-) (./main.aux (./5.17.aux) (./5.18.aux) (./5.24.aux))
+) (./main.aux (./5.17.aux) (./5.18.aux) (./5.24.aux)
+(./5.44.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
@@ -224,7 +225,14 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 pstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-)) (./2.tex
+)) (./main.toc)
+\tf@toc=\write3
+\openout3 = `main.toc'.
+
+ [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/upd
+map/pdftex.map}
+
+] (./2.tex
 LaTeX Font Info:    Trying to load font information for U+msa on input line 7.
 
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsa
@@ -241,58 +249,62 @@ Overfull \hbox (28.56293pt too wide) detected at line 15
 []
  []
 
-[1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/updm
-ap/pdftex.map}
-
-]) [2]
+[2]) [3]
 \openout2 = `5.17.aux'.
 
- (./5.17.tex (./5.17a.tex [3
+ (./5.17.tex (./5.17a.tex [4
 
 ]
 Overfull \hbox (39.90904pt too wide) detected at line 77
 []
  []
 
-[4] [5]) (./5.17b.tex [6] [7] [8]
+[5] [6]) (./5.17b.tex [7] [8] [9]
 Overfull \hbox (22.83675pt too wide) detected at line 119
 []
  []
 
-) (./5.17c.tex [9]) (./5.17d.tex [10]
+) (./5.17c.tex [10]) (./5.17d.tex [11]
 Overfull \hbox (34.01863pt too wide) detected at line 65
 []
  []
 
-[11])) [12]
+[12])) [13]
 \openout2 = `5.18.aux'.
 
- (./5.18.tex [13
+ (./5.18.tex [14
 
 
 
-]) [14]
+]) [15]
 \openout2 = `5.24.aux'.
 
- (./5.24.tex [15
+ (./5.24.tex [16
 
 
 
-]) [16] (./main.aux
-(./5.17.aux) (./5.18.aux) (./5.24.aux))
+]) [17]
+\openout2 = `5.44.aux'.
+
+ (./5.44.tex [18
+
+
+
+]
+[19]) [20] (./main.aux (./5.17.aux) (./5.18.aux) (./5.24.aux) (./5.44.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2534 strings out of 474116
- 39671 string characters out of 5733619
+ 2567 strings out of 474116
+ 40224 string characters out of 5733619
  1946187 words of memory out of 5000000
- 24854 multiletter control sequences out of 15000+600000
+ 24877 multiletter control sequences out of 15000+600000
  561286 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,14n,70p,384b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,18n,70p,384b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmbx10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/
@@ -308,10 +320,10 @@ mr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/pub
 lic/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></opt/homebrew/Cellar/texlive/2024
 0312/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on main.pdf (16 pages, 176894 bytes).
+Output written on main.pdf (20 pages, 188672 bytes).
 PDF statistics:
- 116 PDF objects out of 1000 (max. 8388607)
- 73 compressed objects within 1 object stream
+ 129 PDF objects out of 1000 (max. 8388607)
+ 82 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

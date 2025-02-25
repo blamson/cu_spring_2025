@@ -1,0 +1,113 @@
+\section{5.44} 
+
+Let $X_i, i=1,2,\cdots$ be independent $Bernoulli(p)$ random variables and let $Y_n = \frac{1}{n} \sum_{i=1}^n X_i$.
+
+\subsection*{A}
+
+Show that $\sqrt{n}(Y_n - p) \xrightarrow{D} N(0, p(1-p))$
+
+Basically, the goal of this problem is to verify the key condition for the delta method. This result will be immediately useful in the next part. 
+
+We'll be using two theorems for this problem. Theorem 5.5.15 and Slutsky's Theorem. 
+
+\vspace{5mm}
+\hrule
+\vspace{5mm}
+\noindent\textbf{Theorem 5.5.15 (paraphrased)}
+
+Let $X_1, X_2, \cdots$ be a sequence of iid randm variables with $E[X_i] = \mu$ and $0 < Var(X_i) = \sigma^2 < \infty$. Define $\bar{X}_n = \frac{1}{n} \sum_{i=1}^n X_i$. Then, $\sqrt{n}(\bar{X}_n) - \mu)/\sigma$ has a limiting standard normal distribution.
+
+\vspace{5mm}
+\hrule
+\vspace{5mm}
+
+\noindent\textbf{Theorem 5.5.17 (Slutsky's Theorem)}
+
+If $X_n \xrightarrow{D} X$ and $Y_n \xrightarrow{P} c$, a constant, then:
+
+- $Y_nX_n \xrightarrow{D} cX$
+
+- $X_n + Y_n \xrightarrow{D} X+c$
+\vspace{5mm}
+\hrule
+\vspace{5mm}
+
+These two theorems make this very easy for us. Few observations, 
+
+$E[X_i] = p = \mu$
+
+$Var(X_i) = p(1-p) = \sigma^2$
+
+$\sigma \xrightarrow{P} \sigma$
+
+The big thing our initial statement is missing is the $1/\sigma$, we'll be applying that by multiplying by $1$.
+
+\begin{align*}
+	\sqrt{n}(Y_n - p) \cdot \frac{\sqrt{p(1-p)}}{\sqrt{p(1-p)}} &\xrightarrow{D} \sqrt{p(1-p)}N(0, 1) \\
+	\sqrt{n}(Y_n - p) &\xrightarrow{D} N(0, p(1-p))
+\end{align*}
+
+We're using a few things here. First is Slutsky's theorem to bring $\sigma$ to the other side of the arrow. Second is a property of the variance here, that is $Var(\sqrt{p(1-p)}X) = p(1-p)Var(X)$.
+
+Thus, we have shown that  $\sqrt{n}(Y_n - p) \xrightarrow{D} N(0, p(1-p))$.
+
+\subsection*{B}
+
+Show that for $p\neq 1/2$, the estimate of the variance $Y_n(1-Y_n)$ satisfies
+
+\[
+	\sqrt{n}[Y_n(1-Y_n) - p(1-p)] \xrightarrow{D} N(0, (1-2p)^2 p(1-p))
+\]
+
+For this we'll be taking advantage of the delta method.
+
+I will not be writing out the full delta method, here the specific part of interest. 
+
+\[
+	\sqrt{n}(g(Y_n) - g(\theta)) \xrightarrow{D} N(0, \sigma^2 \cdot (g'(\theta))^2) 
+\]
+
+The big thing here is that $g'(\theta) \neq 0$. So we'll need to watch out for that. Anyway, we have a consistent function $g$ to use, so let's set up our pieces.
+
+$g(Y_n) = Y_n(1-Y_n)$
+
+$g(p) = p(1-p)$
+
+$g'(p) = 1-2p \cdot I_{p\neq 1/2}(p)$
+
+Plugging this into the delta method gives us
+
+\begin{align*}
+	\sqrt{n}(g(Y_n) - g(p)) &\xrightarrow{D} N(0, \sigma^2 \cdot (g'(p))^2) \\
+	\sqrt{n}(Y_n(1-Y_n) - p(1-p)) &\xrightarrow{D} N(0, p(1-p) (1-2p)^2)
+\end{align*}
+
+Completing the problem.
+
+\subsection*{C}
+
+Show that for $p=1/2$, 
+
+\[n\left[Y_n(1-Y_n) - \frac{1}{4}\right] \xrightarrow{D} -\frac{1}{4} \chi^2_1\]
+
+For this we'll be using another form of the delta method, the second order variation. 
+
+If $g'(\theta) = 0$, but $g''(\theta) \neq 0$, 
+
+\[
+	n(g(Y_n) - g(\theta)) \xrightarrow{D} \sigma^2 \frac{g''(\theta)}{2} \chi^2_1
+\]
+
+As we can see, our problem is set up perfectly for this. We just need that second derivative.
+
+$g''(p) = -2$. The second derivative doesn't rely on $p$ at all, so we're good to go!
+
+So we just plug this right in.
+
+\begin{align*}
+	n(g(Y_n) - g(\theta)) &\xrightarrow{D} \sigma^2 \frac{g''(\theta)}{2} \chi^2_1 \\
+	n\left(Y_n(1-Y_n) - \frac{1}{2}\left( 1 - \frac{1}{2} \right)\right) &\xrightarrow{D} \frac{1}{2} \left( 1 - \frac{1}{2} \right) \cdot \frac{-2}{2} \chi^2_1 \\
+	&\xrightarrow{D} -\frac{1}{4} \chi^2_1
+\end{align*}
+
+Completing the problem.
