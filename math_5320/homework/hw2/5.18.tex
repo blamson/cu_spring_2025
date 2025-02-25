@@ -1,0 +1,62 @@
+\section*{5.18}
+
+Let $X$ be a random variable with a Student's $t$ distribution with $p$ degrees of freedom.
+
+\subsection*{A.i}
+
+Derive the mean and variance of $X$.
+
+For this problem we are going to avoid, at all costs, doing any direct derivations. Page 181 of the textbook gives us some useful insight into this distribution. It specifies that a $t$ random variable $X$ is made up of a standard normal random variable $U$ and a a $\chi^2_p$ random variable $V$. 
+
+\[X = \frac{U}{\sqrt{V/p}} \sim t_p\]
+
+This information gives us a lot to work with. 
+
+\begin{align*}
+	E[X] &= E\left[ \frac{U}{\sqrt{V/p}}  \right] \\
+	&= E[U] \cdot E\left[ \frac{1}{\sqrt{V/p}} \right] \\
+	&= 0 \cdot E\left[ \frac{1}{\sqrt{V/p}} \right] \\
+	&= 0
+\end{align*}
+
+Which matches the expected value of the $t$ distribution provided in the book.
+
+The variance we will return to soon. Part B will make this a lot easier for us. 
+
+\subsection*{B}
+
+Show that $X^2$ has an $F$ distribution with $1$ and $p$ degrees of freedom.
+
+Let us return to this representation:
+
+\vspace{-4mm}
+\begin{align*}
+	X &= \frac{U}{\sqrt{V/p}} \\
+	X^2 &= \frac{U^2}{V/p}
+\end{align*}
+
+Important note here, Lemme 5.3.2 states that, given a standard normal random variable $Z$, $Z^2 \sim \chi^2_1$.
+
+We know that $V \sim \chi^2_p$, so this is just the form of an $F$ distribution. Let $Q = U^2$,
+
+\vspace{-4mm}
+\begin{align*}
+	X^2 &= \frac{U^2}{V/p} \\
+	&= \frac{Q/1}{V/p} \sim F_{1,p}
+\end{align*}
+
+Thus, $X^2 \sim F_{1,p}$.
+
+\subsection*{A.ii}
+
+Derive the variance of $X$.
+
+Returning back the variance, we have:
+
+\[Var(X) = E[X^2] - E[X]^2\]
+
+We know $E[X^2]$ now as it's a random variable from the $F_{1,p}$ distribution, and $E[X]^2 = 0^2$. So,
+
+\[Var(X) = \frac{p}{p-2} I_{p>2}(p)\]
+
+Thus deriving the variance of $X$.
