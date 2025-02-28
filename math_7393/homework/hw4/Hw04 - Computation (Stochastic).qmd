@@ -1,0 +1,182 @@
+---
+title: "Homework 4 - Computation (Stochastic)"
+format: html
+self-contained: true
+---
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+packages <- c("mvtnorm", "ggplot2", "latex2exp", "glue")
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cran.rstudio.com/")
+    library(pkg, character.only = TRUE)
+  }
+}
+```
+
+# Problem 1
+
+Voter turnout has been a popular talking point in recent elections. To get a sense of voter turnout in Colorado, a national polling company contacted randomly selected registered Colorado voters until they reached 200 persons who said that they had voted. 303 persons said they had not voted, for a total sample size of 503. The response $y$ is the number of failures before getting the 200th registered voter who had voted. Thus, $y$ can be modeled as a negative binomial distribution with $n$ successes and probability of success $\theta$, where $\theta$ is the probability a registered voter stating they voted. Thus, we can describe the data distribution as $y \mid n, \theta \sim \mathrm{Neg}\text{-}\mathrm{Bin}(n,\theta)$ with
+$$p(y\mid n,\theta)=\frac{\Gamma(y+n)}{\Gamma(n)y!} \theta^n (1-\theta)^yI_{\{0,1,2\ldots\}}(y).$$
+Based on what you’ve heard, you believe that the true proportion of registered voters that actually vote is less than 50%, but you’re not super confident about this. Thus, you chose a Beta(1.1, 1.5) prior distribution for $\theta$.
+
+Let $q(\theta \mid y)=p(y\mid \theta)p(\theta)$.
+
+Implement a rejection sampler for the posterior distribution. 
+
+## (a)
+
+Determine a relevant proposal distribution. What proposal distribution will you use? You are NOT allowed to use a uniform distribution. Why did you choose this one?
+
+**Solution**
+
+My first instinct was to use a normal centered around $0.4$, but I forgot that the normal has a different support from our posterior. So instead I just went with a beta. It feels obvious so I didn't want to use it, but it's obviously a very strong candidate for a bound as we can match the shape as well as we want. 
+
+I could've derived some good values for the parameters but I thought it'd be more fun to just throw values at the wall until something stuck! I'm looking for a bounding that is mostly close but has enough room to see a good number of rejections. It'd be no fun if it was too perfect of a bound. 
+
+## (b)
+
+Determine a scale constant $M$ to create an appropriate bounding function $Mg(\theta)$. Create a plot of $Mg(\theta)$ and $q(\theta \mid y)$ versus $\theta$, making sure to clearly distinguish the two functions.
+
+**Solution**
+
+Let's start with much the same setup as before. 
+
+```{r}
+# Setup our table of prior and likelihood values
+n_trials <- 503
+n_succ <- 200
+n_fail <- n_trials - n_succ
+
+# Basic data table setup like in hw3
+theta_support <- seq(0.001,0.999, length=1000)
+prior <- dbeta(x=theta_support, shape1=1.1, shape2=1.5)
+likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta_support)
+df <- data.frame(theta_support, prior, likelihood)
+
+# Create a column for our posterior along the support of theta
+dpost <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, const = 1) {
+    prior <- dbeta(x=theta, shape1=1.1, shape2=1.5)
+    likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta)
+    posterior <- prior * likelihood / const
+    
+    posterior
+}
+
+df$posterior <- dpost(theta_support)
+```
+
+Below is the plot, we add our scaled bound to the data frame here as well. Makes it easier to test various parameter and scale values in the same block as the plot.
+
+```{r}
+M <- 0.0045
+alpha <- 10.5
+beta <- 15.5
+df$bound <- dbeta(theta_support, shape1 = alpha, shape2=beta) * M
+
+line_size <- 1.2
+ggplot(df, aes(x = theta_support)) +
+    geom_line(aes(y = posterior, color = "Posterior"), linewidth = line_size) +
+    geom_line(aes(y = bound, color = "Bounding Function"), linewidth = line_size) +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Unnormalized Posterior and Bounding Function",
+        color = ""
+    ) +
+    scale_x_continuous(breaks=seq(0,1,0.1)) +
+    scale_color_discrete(labels = c(
+        TeX(r'($g(\theta)M$)'), TeX(r'($p(\theta | y)$)')
+    )) +
+    theme_minimal() +
+    theme(legend.position = "top")
+```
+
+As you can see we ended up opting for $M=0.005$. This scalar was chosen arbitrarily, it seems to give a decent enough bound to cover our posterior here. It also gives enough wiggle room in the middle that we can still see the rejection sampling work its magic! As for $\alpha$ and $\beta$ I opted for $10.5$ and $15.5$ respectively as it gets us around the right expected value.
+
+## (c)
+
+Run the rejection sampler so that 100,000 samples are accepted. Then create a plot showing the true posterior density (the normalizing constant was determined in the previous homework) versus the approximate density coming from the rejection sampler, making sure to clearly distinguish the two densities.
+
+**Solution**
+
+
+
+# Problem 2
+
+Suppose that the unnormalized bivariate posterior distribution for parameters $\theta_1$ and $\theta_2$ is $q(\theta_1,\theta_2 \mid y)=\theta_1^2 \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1)$
+
+## (a)
+
+Derive the full conditional distribution for $\theta_1$.
+
+**Solution**
+
+## (b)
+
+Derive the full conditional distribution for $\theta_2$.
+
+**Solution**
+
+## (c)
+
+Run a Gibbs sampler for $\theta_1$ and $\theta_2$ for 100,000 cycles.  Plot the estimated density of $p(\theta_1\mid y)$ and $p(\theta_2 \mid y)$ using these samples.
+
+**Solution**
+
+## (d)
+
+Determine the posterior mean, median, variance, and 95% central posterior interval for each parameter.
+
+**Solution**
+
+## (e)
+
+Construct a plot showing the movement of the sample values for the first 100 cycles of the Gibbs sampler.  Label the axes appropriately.
+
+**Solution**
+
+# Problem 3
+
+Consider the data in `coal.txt`, which contains counts for the number of coal mine disasters over a 112-year period (1851 to 1962) in the United Kingdom. The data have relatively high disaster counts in the early era, and relatively low counts in the later era. When did technology improvements and safety practices have an actual effect on the rate of serious accidents?
+
+Assume that $y_1,y_2,\ldots,y_K\mid \lambda, K \stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\lambda)$ and $y_{K+1},y_{K+2},\ldots,y_{112}\mid \phi, k \stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\phi)$. 
+In this model, $K$ is the year that the “change” occurred when technology and/or safety improvements changed the pattern of coal mine disasters. Our interest lies in finding the posterior distributions for $\lambda$, $\phi$, and $K$. Assume a Gamma(4, 1) prior distribution for $\lambda$, a Gamma(1, 2) prior distribution for $\phi$, and a discrete uniform prior distribution on $[1,2, \ldots,112]$ for $K$, i.e., $p_K(k)=1/112$ for $k\in\{1,2,\ldots,112\}$.  
+
+## (a)
+
+Determine the full conditional distribution for $\lambda$. It is a common distribution. Hint: The distribution will depend on a sum of the counts that depends on the value of $K$.
+
+**Solution**
+
+## (b)
+
+Determine the full conditional distribution for $\phi$.  It is a common distribution. Hint: The distribution will depend on a sum of the counts that depends on the value of $K$.
+
+**Solution**
+
+## (c)
+
+Show that the full conditional distribution for $K$ is
+$$p(K\mid\lambda,\phi,y)=\frac{\exp\left(K(\phi-\lambda)\right)\left(\frac{\lambda}{\phi}\right)^{\sum_{i=1}^K y_i}}{\sum_{K=1}^{112} \exp\left(K(\phi-\lambda)\right)\left(\frac{\lambda}{\phi}\right)^{\sum_{i=1}^K y_i}}.$$
+
+**Solution**
+
+## (d)
+
+Run a 100,000 cycle Gibbs sampler using the distributions determined in parts (a) through (c) to approximate the posterior distribution of the three parameters.  Plot the estimated density/mass function of each parameter.
+
+**Solution**
+
+## (e)
+
+Determine the posterior mean, median, variance, and 95% central posterior interval for each parameter.
+
+**Solution**
+
+## (f)
+
+Let $m$ be the median of the posterior distribution for $K$.  Create a time series plot of the counts where the first $m$ years are shown in blue, while the remaining years are shown in orange.  This distinguishes the years where we have a $\mathrm{Poisson}(\lambda)$ distribution from a $\mathrm{Poisson}(\phi)$ distribution.  
+
+**Solution**
