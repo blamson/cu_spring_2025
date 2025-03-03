@@ -5,13 +5,20 @@ self-contained: true
 ---
 
 ```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-packages <- c("mvtnorm", "ggplot2", "latex2exp", "glue")
+packages <- c("mvtnorm", "ggplot2", "latex2exp", "glue", "autoimage", "remotes")
 
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
     install.packages(pkg, repos = "https://cran.rstudio.com/")
     library(pkg, character.only = TRUE)
   }
+}
+
+# see if bayesutils package is available
+if (!require("bayesutils", quietly = TRUE)) {
+  # if not, then install package
+  remotes::install_github("jfrench/bayesutils")
+  library(bayesutils)
 }
 
 options(scipen = 20) # For fixing scientific notation nonsense
@@ -355,7 +362,8 @@ ggplot(gibbs_df) +
     ) +
     scale_color_discrete(labels = c(
         TeX(r'($p(\theta_1 | y)$)'), TeX(r'($p(theta_2 | y)$)')
-    ))
+    )) +
+    scale_x_continuous(breaks=seq(-2,4,1))
 ```
 
 
@@ -365,11 +373,61 @@ Determine the posterior mean, median, variance, and 95% central posterior interv
 
 **Solution**
 
+```{r}
+#| code-fold: true
+#| code-summary: Summary results of theta
+quants <- c(0.025, 0.975)
+gibbs_summary <- function(theta_samples, name) {
+    theta_quants <- quantile(theta_samples, quants) |> round(5)
+    cat(
+        "--- Theta ", name, " Summary---\n",
+        "Mean: ", round(mean(theta_samples), 5), "\n",
+        "Median: ", round(median(theta_samples), 5), "\n",
+        "Variance: ", round(var(theta_samples), 5), "\n",
+        "95% Central Interval: [", theta_quants[1], ", ", theta_quants[2], "]\n\n",
+        sep=""
+    )
+}
+for (i in 1:2) {gibbs_summary(gibbs_df[,i], i)}
+
+```
+
+
 ## (e)
 
 Construct a plot showing the movement of the sample values for the first 100 cycles of the Gibbs sampler.  Label the axes appropriately.
 
 **Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: MCMC Path Plot
+plot_mcmc_path(
+  full_chain,
+  ncycles = 100,
+  xlim = c(-0.25, 2.5),
+  ylim = c(-1.5, 2),
+  xlab = expression(theta[1]),
+  ylab = expression(theta[2]),
+  main = "First 100 cycles of the chain"
+)
+```
+
+For fun let's look at the last 100 cycles.
+
+```{r}
+#| code-fold: true
+#| code-summary: MCMC Path Plot (Last 100 cycles)
+plot_mcmc_path(
+  full_chain[99000:100001, ],
+  ncycles = 100,
+  xlim = c(-0.25, 2.5),
+  ylim = c(-1.5, 2),
+  xlab = expression(theta[1]),
+  ylab = expression(theta[2]),
+  main = "Last 100 cycles of the chain"
+)
+```
 
 # Problem 3
 
