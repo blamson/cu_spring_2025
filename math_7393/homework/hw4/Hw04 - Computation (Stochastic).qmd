@@ -13,6 +13,8 @@ for (pkg in packages) {
     library(pkg, character.only = TRUE)
   }
 }
+
+options(scipen = 20) # For fixing scientific notation nonsense
 ```
 
 # Problem 1
@@ -44,6 +46,8 @@ Determine a scale constant $M$ to create an appropriate bounding function $Mg(\t
 Let's start with much the same setup as before. 
 
 ```{r}
+#| code-fold: true
+#| code-summary: Setting up our priors, posterior, etc.
 # Setup our table of prior and likelihood values
 n_trials <- 503
 n_succ <- 200
@@ -55,8 +59,8 @@ prior <- dbeta(x=theta_support, shape1=1.1, shape2=1.5)
 likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta_support)
 df <- data.frame(theta_support, prior, likelihood)
 
-# Create a column for our posterior along the support of theta
-dpost <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, const = 1) {
+# Create a column for our un-normalized posterior along the support of theta
+q_post <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, const = 1) {
     prior <- dbeta(x=theta, shape1=1.1, shape2=1.5)
     likelihood <- dnbinom(x=n_fail, size=n_succ, prob = theta)
     posterior <- prior * likelihood / const
@@ -64,16 +68,24 @@ dpost <- function(theta, successes=200, failures=303, shape1=1.1, shape2=1.5, co
     posterior
 }
 
-df$posterior <- dpost(theta_support)
+df$posterior <- q_post(theta_support)
 ```
 
 Below is the plot, we add our scaled bound to the data frame here as well. Makes it easier to test various parameter and scale values in the same block as the plot.
 
 ```{r}
+#| code-fold: true
+#| code-summary: Plot code
+
+# This chunk sets up our proposal distribution
+# The function is literally just the beta I'd like to just have it set for convenience.
 M <- 0.0045
-alpha <- 10.5
-beta <- 15.5
-df$bound <- dbeta(theta_support, shape1 = alpha, shape2=beta) * M
+g_alpha <- 10.5
+g_beta <- 15.5
+
+# Data columns for plots
+df$proposal_dist <- dbeta(theta_support, shape1 = g_alpha, shape2 = g_beta)
+df$bound <- df$proposal_dist * M
 
 line_size <- 1.2
 ggplot(df, aes(x = theta_support)) +
@@ -90,7 +102,7 @@ ggplot(df, aes(x = theta_support)) +
         TeX(r'($g(\theta)M$)'), TeX(r'($p(\theta | y)$)')
     )) +
     theme_minimal() +
-    theme(legend.position = "top")
+    theme(legend.position = "right")
 ```
 
 As you can see we ended up opting for $M=0.005$. This scalar was chosen arbitrarily, it seems to give a decent enough bound to cover our posterior here. It also gives enough wiggle room in the middle that we can still see the rejection sampling work its magic! As for $\alpha$ and $\beta$ I opted for $10.5$ and $15.5$ respectively as it gets us around the right expected value.
@@ -99,8 +111,141 @@ As you can see we ended up opting for $M=0.005$. This scalar was chosen arbitrar
 
 Run the rejection sampler so that 100,000 samples are accepted. Then create a plot showing the true posterior density (the normalizing constant was determined in the previous homework) versus the approximate density coming from the rejection sampler, making sure to clearly distinguish the two densities.
 
+**Some Tinkering**
+
+This parts just for fun, feel free to skip if you just want to see the solution below.
+
+First let's test for a smaller number of samples so we can plot the actual points. This will help us not blindly rely on the notes and actually verify things are working a bit.
+
+```{r}
+#| code-fold: true
+#| code-summary: Code for demonstration of rejection sampling
+
+set.seed(100)
+theta_results <- c()
+u_results <- c()
+outcome <- c()
+for(i in 1:1000) {
+    theta_star <- rbeta(1, shape1 = g_alpha, shape2 = g_beta)
+    u_star <- runif(1, min=0, max=M*dbeta(theta_star, shape1 = g_alpha, shape2 = g_beta))
+    
+    # Append results to vectors
+    outcome <- c(outcome, u_star <= q_post(theta_star))
+    u_results <- c(u_results, u_star)
+    theta_results <- c(theta_results, theta_star)
+}
+results <- data.frame(theta = theta_results, u = u_results, outcome = outcome)
+
+# Plot results under previous plot
+line_size <- 1
+ggplot(df, aes(x = theta_support)) +
+    geom_line(aes(y = posterior, color = "Posterior"), linewidth = line_size) +
+    geom_line(aes(y = bound, color = "Bounding Function"), linewidth = line_size) +
+    geom_point(aes(results$theta, results$u, color=results$outcome), size=0.5) +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Rejection Sampler Example Results",
+        color = ""
+    ) +
+    scale_x_continuous(breaks=seq(0,1,0.1)) +
+    theme_minimal() +
+    theme(legend.position = "right") +
+    scale_color_discrete(labels = c(
+        TeX(r'($g(\theta)M$)'), "Rejected", TeX(r'($p(\theta | y)$)'), "Accepted"
+    ))
+```
+
+```{r, echo=FALSE}
+prop_accepted <- sum(results$outcome) / nrow(results)
+expected_trials <- round(100000 / prop_accepted)
+cat(
+    "Proportion of samples kept: ", prop_accepted, "\n",
+    "Expected trials for 100k accepted samples: ", expected_trials, "\n",
+    sep=""
+)
+```
+
+Okay neat. Definitely some inefficiency here but nothing that will keep me up all night! Let's collect our samples!
+
 **Solution**
 
+```{r}
+#| code-fold: true
+#| code-summary: Rejection sampling code
+
+set.seed(100)
+
+B <- 100000
+
+# Preallocate vectors to store only accepted samples
+theta_results <- numeric(B)
+u_results <- numeric(B)
+
+# Setup some counters for tracking progress
+accepted <- 0 
+total_samples <- 0  
+
+while (accepted < B) {
+    total_samples <- total_samples + 1
+    
+    # Run the sample
+    theta_star <- rbeta(1, shape1 = g_alpha, shape2 = g_beta)
+    u_star <- runif(1, min = 0, max = M * dbeta(theta_star, shape1 = g_alpha, shape2 = g_beta))
+    
+    # Store accepted sampling results
+    if (u_star <= q_post(theta_star)) {
+        accepted <- accepted + 1
+        theta_results[accepted] <- theta_star
+        u_results[accepted] <- u_star
+    }
+    
+    # Log progress every B iterations due to expected 0.20 acceptance rate
+    if (total_samples %% B == 0) {
+        cat(
+            "---\n",
+            "Samples Accepted: ", accepted, "\n",
+            "Total Iterations: ", total_samples, "\n",
+            "Proportion Accepted: ", round(accepted / total_samples, 5), "\n",
+            sep=""
+        )
+    }
+}
+
+results <- data.frame(theta = theta_results, u = u_results)
+```
+
+```{r, echo=FALSE}
+cat(
+    "---FINAL RESULTS---\n",
+    "Samples Accepted: ", accepted, "\n",
+    "Total Iterations: ", total_samples, "\n",
+    "Proportion Accepted: ", round(accepted / total_samples, 5), "\n",
+    sep=""
+)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: More plotting code!
+
+true_post <- dbeta(theta_support, shape1=201.1, shape2=304.5)
+true_post <- data.frame(theta = theta_support, density = true_post)
+
+line_size <- 1.2
+ggplot(results, aes(x=theta)) +
+    geom_density(aes(color="Sampling Density"), linewidth=line_size) +
+    geom_line(data=true_post, aes(x=theta, y=density, color="True Posterior"), linetype="dashed", linewidth=line_size) +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Comparing Densities of Sampling Algorithm to True Posterior",
+        color = ""
+    ) +
+    scale_x_continuous(breaks=seq(0,1,0.1)) +
+    theme_minimal() +
+    theme(legend.position = "top")
+```
 
 
 # Problem 2
@@ -124,6 +269,95 @@ Derive the full conditional distribution for $\theta_2$.
 Run a Gibbs sampler for $\theta_1$ and $\theta_2$ for 100,000 cycles.  Plot the estimated density of $p(\theta_1\mid y)$ and $p(\theta_2 \mid y)$ using these samples.
 
 **Solution**
+
+Using our answers from part a and b where:
+
+$$
+\theta_1 | \theta_2,y \sim Gamma\left(3, \frac{1}{\theta_2^2 + 4}\right) \\
+\theta_2 | \theta_1,y \sim N\left( \frac{1}{\theta_1+1}, \frac{1}{2(\theta_1+1)} \right)
+$$
+
+```{r}
+#| code-fold: true
+#| code-summary: Gibbs Sampler Code
+gibbs <- function(B, theta) {
+    # Function takes in 
+    # - B: which is an integer to specify total iterations
+    # - theta: a 2 length vector of parameter values
+    
+    # We want a check for theta_1 here. An indicator function isn't sufficient
+    # as we aren't calculating density here. We need to throw an error and exit.
+    if (theta[1] < 0) {
+        stop(
+            paste("Invalid parameter, theta_1 must be positive. Value: ", theta[1])
+        )
+    }
+    
+    # Create matrix for samples, ncol=2 due to 2 parameters
+    theta_sims <- matrix(0, nrow=B+1, ncol=2)
+    # Set first row to be starting values of theta
+    theta_sims[1,] <- theta
+    
+    for (i in 2:(B+1)) {
+        # Simulate from full conditional distribution for theta1
+        # Note that our parameterization of the gamma uses the scale parameter, not rate
+        alpha <- 3
+        beta <- 1/(theta[2]^2 + 4)
+        theta[1] <- rgamma(1, shape=alpha, scale=beta)
+        
+        # Determine full conditional mean for theta2
+        mu_2 <- 1 / (theta[1] + 1)
+        sigma_2 <- sqrt(1 / ( 2* (theta[1] + 1) ))
+        theta[2] <- rnorm(1, mu_2, sigma_2)
+        
+        # Save sample
+        theta_sims[i, ] <- theta
+    }
+    
+    return(theta_sims)
+}
+```
+
+Let's run a sanity check here.
+
+```{r}
+#| code-fold: true
+#| code-summary: Trial run
+#| 
+theta <- c(0,0)
+B <- 1000
+chain1 <- gibbs(B, theta)
+
+plot(chain1, pch = ".",
+     xlab = expression(theta[1]),
+     ylab = expression(theta[2]))
+title("Samples from Gibbs sampler")
+```
+
+
+```{r}
+#| code-fold: true
+#| code-summary: Full Run
+
+theta <- c(0,0)
+B <- 100000
+full_chain <- gibbs(B, theta)
+gibbs_df <- as.data.frame(full_chain)
+ggplot(gibbs_df) +
+    geom_density(aes(x=V1, color="Theta 1"), linewidth=line_size) +
+    geom_density(aes(x=V2, color="Theta 2"), linewidth=line_size) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Gibbs Sampling: Densities of Theta",
+        color = ""
+    ) +
+    scale_color_discrete(labels = c(
+        TeX(r'($p(\theta_1 | y)$)'), TeX(r'($p(theta_2 | y)$)')
+    ))
+```
+
 
 ## (d)
 
