@@ -3495,11 +3495,58 @@ Proportion Accepted: 0.21006</code></pre>
 <h2 class="anchored" data-anchor-id="a-1">(a)</h2>
 <p>Derive the full conditional distribution for <span class="math inline">\(\theta_1\)</span>.</p>
 <p><strong>Solution</strong></p>
+<p>We’re given <span class="math inline">\(q(\theta_1, \theta_2 \mid y)\)</span> and we want <span class="math inline">\(q(\theta_1 \mid \theta_2, y)\)</span>. Here we’ll treat <span class="math inline">\(\theta_2\)</span> as a constant and focus on the parts of the posterior that involves <span class="math inline">\(\theta_1\)</span>.</p>
+<p><span class="math display">\[
+\begin{align}
+    q(\theta_1,\theta_2 \mid y) &amp;= \theta_1^2 \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1) \\
+    q(\theta_1 \mid \theta_2, y) &amp;\propto \theta_1^2 \exp(-\theta_1\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1) \\
+    &amp;\propto \theta_1^{3-1} \exp(-\theta_1(\theta_2^2 + 4))I_{(0,\infty)}(\theta_1)
+\end{align}
+\]</span></p>
+<p>This is the kernel of a gamma distribution with <span class="math inline">\(\alpha=3, \beta=(\theta_2^2 + 4)^{-1}\)</span>.</p>
+<p>Therefore, <span class="math inline">\(\theta_1 \mid \theta_2, y \sim gamma(\alpha=3, \beta=(\theta_2^2 + 4)^{-1})\)</span></p>
 </section>
 <section id="b-1" class="level2">
 <h2 class="anchored" data-anchor-id="b-1">(b)</h2>
 <p>Derive the full conditional distribution for <span class="math inline">\(\theta_2\)</span>.</p>
+<p>Same plan, this ones a bit more involved.</p>
 <p><strong>Solution</strong></p>
+<p><span class="math display">\[
+\begin{align}
+    q(\theta_1,\theta_2 \mid y) &amp;= \theta_1^2 \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1) \\
+    q(\theta_2 \mid \theta_1, y) &amp;\propto \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2) \\
+    &amp;\propto \exp(\theta_2^2(-\theta_1 - 1) + 2\theta_2)
+\end{align}
+\]</span></p>
+<p>Note: We have a quadratic form here of <span class="math inline">\((a\theta_2^2 + 2\theta_2)\)</span> with <span class="math inline">\(a=(-\theta_1 - 1)\)</span>. This is the big hint that we should be building towards the kernel of a normal distribution. Let’s look at the normal kernel real quick.</p>
+<p><span class="math display">\[
+    q(x) \propto \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+\]</span></p>
+<p>We thought we were done completing the square and we get sucked right back in. Let’s focus on the values in the exponent for now.</p>
+<p><span class="math display">\[
+\begin{align}
+    a\theta_2^2 + 2\theta_2 &amp;= a\left(\theta_2^2 + \frac{2}{a}\theta_2\right) \\
+    &amp;= a\left(\theta_2^2 + \frac{2}{a}\theta_2 + \frac{1}{a^2} - \frac{1}{a^2} \right) &amp; \text{(Complete the square)} \\
+    &amp;= a\left( \left(\theta_2 + \frac{1}{a}\right)^2 - \frac{1}{a^2} \right) \\
+    &amp;= a\left(\theta_2 + \frac{1}{a}\right)^2 - \frac{1}{a} &amp; \text{(Distribute }a) \\
+    &amp;=  (-\theta_1 - 1)\left(\theta_2 + \frac{1}{(-\theta_1 - 1)}\right)^2 - \frac{1}{(-\theta_1 - 1)} &amp; \text{(Substitute }a) \\
+    q(\theta_2 \mid \theta_1, y) &amp;\propto \exp\left( (-\theta_1 - 1)\left(\theta_2 + \frac{1}{(-\theta_1 - 1)}\right)^2 - \frac{1}{(-\theta_1 - 1)} \right) &amp; \text{(Plug back into exponent) } \\
+     &amp;\propto \exp\left( -(\theta_1 + 1)\left(\theta_2 - \frac{1}{\theta_1 + 1}\right)^2 + \frac{1}{\theta_1 + 1} \right) &amp;\text{(Factor out } -1) \\
+     &amp;\propto \exp\left( -(\theta_1 + 1)\left(\theta_2 - \frac{1}{\theta_1 + 1}\right)^2\right)  &amp;\text{(Remove constant)} \\
+     &amp;\propto \exp\left( -\frac{\left(\theta_2 - \frac{1}{\theta_1 + 1}\right)^2}{(\theta_1 + 1)^{-1}}\right) &amp;\text{(Rearrange)}
+\end{align}
+\]</span></p>
+<p>We’re really close now. We have <span class="math inline">\(\mu = \frac{1}{\theta_1 + 1}\)</span>.</p>
+<p>Last thing, we gotta sort out that <span class="math inline">\(1/2\sigma^2\)</span> that we need.</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{1}{2\sigma^2} &amp;= \theta_1+1 \\
+\frac{1}{2} &amp;= \sigma^2(\theta_1+1) \\
+\sigma^2 &amp;= \frac{1}{2(\theta_1+1)}
+\end{align}
+\]</span></p>
+<p>Okay, so now we have the kernel of a normal distribution with <span class="math inline">\(\mu = \frac{1}{\theta_1 + 1}, \sigma^2 = \frac{1}{2(\theta_1+1)}\)</span>.</p>
+<p>Therefore, <span class="math display">\[\theta_2 \mid \theta_1, y \sim N\left(\mu = \frac{1}{\theta_1 + 1}, \sigma^2 = \frac{1}{2(\theta_1+1)}\right)\]</span></p>
 </section>
 <section id="c-1" class="level2">
 <h2 class="anchored" data-anchor-id="c-1">(c)</h2>

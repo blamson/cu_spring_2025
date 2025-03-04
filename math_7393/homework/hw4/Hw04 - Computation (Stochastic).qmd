@@ -265,11 +265,74 @@ Derive the full conditional distribution for $\theta_1$.
 
 **Solution**
 
+We're given $q(\theta_1, \theta_2 \mid y)$ and we want $q(\theta_1 \mid \theta_2, y)$. Here we'll treat $\theta_2$ as a constant and focus on the parts of the posterior that involves $\theta_1$.
+
+$$
+\begin{align}
+    q(\theta_1,\theta_2 \mid y) &= \theta_1^2 \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1) \\
+    q(\theta_1 \mid \theta_2, y) &\propto \theta_1^2 \exp(-\theta_1\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1) \\
+    &\propto \theta_1^{3-1} \exp(-\theta_1(\theta_2^2 + 4))I_{(0,\infty)}(\theta_1)
+\end{align}
+$$
+
+This is the kernel of a gamma distribution with $\alpha=3, \beta=(\theta_2^2 + 4)^{-1}$. 
+
+Therefore, $\theta_1 \mid \theta_2, y \sim gamma(\alpha=3, \beta=(\theta_2^2 + 4)^{-1})$
+
 ## (b)
 
 Derive the full conditional distribution for $\theta_2$.
 
+Same plan, this ones a bit more involved.
+
 **Solution**
+
+$$
+\begin{align}
+    q(\theta_1,\theta_2 \mid y) &= \theta_1^2 \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2 - 4\theta_1)I_{(0,\infty)}(\theta_1) \\
+    q(\theta_2 \mid \theta_1, y) &\propto \exp(-\theta_1 \theta_2^2 -\theta_2^2 + 2\theta_2) \\
+    &\propto \exp(\theta_2^2(-\theta_1 - 1) + 2\theta_2)
+\end{align}
+$$
+
+Note: We have a quadratic form here of $(a\theta_2^2 + 2\theta_2)$ with $a=(-\theta_1 - 1)$. This is the big hint that we should be building towards the kernel of a normal distribution. Let's look at the normal kernel real quick.
+
+$$
+    q(x) \propto \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+$$
+
+We thought we were done completing the square and we get sucked right back in. Let's focus on the values in the exponent for now.
+
+$$
+\begin{align}
+    a\theta_2^2 + 2\theta_2 &= a\left(\theta_2^2 + \frac{2}{a}\theta_2\right) \\
+    &= a\left(\theta_2^2 + \frac{2}{a}\theta_2 + \frac{1}{a^2} - \frac{1}{a^2} \right) & \text{(Complete the square)} \\
+    &= a\left( \left(\theta_2 + \frac{1}{a}\right)^2 - \frac{1}{a^2} \right) \\
+    &= a\left(\theta_2 + \frac{1}{a}\right)^2 - \frac{1}{a} & \text{(Distribute }a) \\
+    &=  (-\theta_1 - 1)\left(\theta_2 + \frac{1}{(-\theta_1 - 1)}\right)^2 - \frac{1}{(-\theta_1 - 1)} & \text{(Substitute }a) \\
+    q(\theta_2 \mid \theta_1, y) &\propto \exp\left( (-\theta_1 - 1)\left(\theta_2 + \frac{1}{(-\theta_1 - 1)}\right)^2 - \frac{1}{(-\theta_1 - 1)} \right) & \text{(Plug back into exponent) } \\
+     &\propto \exp\left( -(\theta_1 + 1)\left(\theta_2 - \frac{1}{\theta_1 + 1}\right)^2 + \frac{1}{\theta_1 + 1} \right) &\text{(Factor out } -1) \\
+     &\propto \exp\left( -(\theta_1 + 1)\left(\theta_2 - \frac{1}{\theta_1 + 1}\right)^2\right)  &\text{(Remove constant)} \\
+     &\propto \exp\left( -\frac{\left(\theta_2 - \frac{1}{\theta_1 + 1}\right)^2}{(\theta_1 + 1)^{-1}}\right) &\text{(Rearrange)}
+\end{align}
+$$
+
+We're really close now. We have $\mu = \frac{1}{\theta_1 + 1}$.
+
+Last thing, we gotta sort out that $1/2\sigma^2$ that we need.
+
+$$
+\begin{align}
+\frac{1}{2\sigma^2} &= \theta_1+1 \\
+\frac{1}{2} &= \sigma^2(\theta_1+1) \\
+\sigma^2 &= \frac{1}{2(\theta_1+1)}
+\end{align}
+$$
+
+Okay, so now we have the kernel of a normal distribution with $\mu = \frac{1}{\theta_1 + 1}, \sigma^2 = \frac{1}{2(\theta_1+1)}$. 
+
+Therefore, 
+$$\theta_2 \mid \theta_1, y \sim N\left(\mu = \frac{1}{\theta_1 + 1}, \sigma^2 = \frac{1}{2(\theta_1+1)}\right)$$
 
 ## (c)
 
