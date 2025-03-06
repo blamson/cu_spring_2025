@@ -1,0 +1,50 @@
+\section*{6.4}
+
+Prove Theorem 6.2.10
+
+\vspace{5mm}
+\hrule
+\vspace{5mm}
+\noindent\textbf{Theorem 6.2.10}
+
+Let $X_1, \cdots, X_n$ be iid observations from a pdf or pmf $f(x\mid\theta)$, which belongs to an exponential family given by:
+
+\[
+	f(x\mid\theta) = h(x)c(\theta)\exp\left( \sum_{i=1}^k w_i(\theta)t_i(x) \right),
+\]
+
+where $\theta = (\theta_1, \cdots, \theta_d), d \leq k$. Then
+
+\[T(\vec{X}) = \left( \sum_{j=1}^n t_1(X_j), \cdots, \sum_{j=1}^n t_k(X_j)\right)\]
+
+is a sufficient statistic for $\theta$.
+
+\vspace{5mm}
+\hrule
+\vspace{5mm}
+
+\noindent We'll be leveraging the factorization theorem for this proof.
+
+We begin by writing out the joint pdf of the exponential family.
+
+\begin{align*}
+	f(\vec{x}\mid\theta) &= \prod_{i=1}^n h(x_i)c(\theta)\exp\left( \sum_{j=1}^k w_j(\theta)t_j(x_i) \right) \\
+	&= c(\theta)^n \left( \prod_{i=1}^n h(x_i) \right) \cdot \exp\left( \sum_{j=1}^k w_j(\theta) \sum_{i=1}^n t_j(x_i) \right) &\text{(Distribute product)} \\
+	&=\left( \prod_{i=1}^n h(x_i) \right) \cdot  c(\theta)^n \cdot \exp\left( \sum_{j=1}^k w_j(\theta) \sum_{i=1}^n t_j(x_i) \right) &\text{(Rearrange)}\\ 
+\end{align*}
+
+Giving us 
+
+\vspace{-5mm}
+\begin{align*}
+	g(T(\vec{x}) \mid \theta) &=  c(\theta)^n \cdot \exp\left( \sum_{j=1}^k w_j(\theta) \sum_{i=1}^n t_j(x_i) \right) \\
+	h(\vec{x}) &= \prod_{i=1}^n h(x_i)
+\end{align*}
+
+Therefore,
+
+\[
+	T(\vec{x}) = \left( \sum_{i=1}^n t_1(x_i), \cdots, \sum_{i=1}^n t_k(x_i)  \right)
+\]
+
+is a sufficient statistic for $\theta$ by the factorization theorem.

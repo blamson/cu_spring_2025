@@ -1,0 +1,43 @@
+% Head related stuff
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[R]{MTH 5320 - Statistical Inference}  
+\fancyhead[L]{Homework 3} 
+\fancyfoot[R]{Brady Lamson}
+\fancyfoot[L]{CU Denver}
+
+% Math packages
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{setspace}
+\usepackage{graphicx}
+\graphicspath{ {./images/}}
+
+\setstretch{1.25}
+
+% Plotting packages
+%\usepackage{pgfplots}
+%\pgfflotsset{width=10cm, compat=1.9}
+
+% Creates quick matrix of any type ----
+% NOTE: p for paran, b for brackets, B for curly braces, v for pipes, V for double pipes 
+\newcommand{\m}[2]{\begin{#1matrix}#2\end{#1matrix}}
+
+% Creates small p-matrix ----
+\newcommand{\psmall}[1]{
+	\left(\begin{smallmatrix}
+		#1
+	\end{smallmatrix} \right)
+}
+
+% makes mathbb commands faster to type
+\newcommand{\bb}{\mathbb}
+
+\newtheorem*{definition}{Definition}
+\newtheorem*{theorem}{Theorem}
+
+\setcounter{secnumdepth}{0}
+
+% Create new command for iid 
+\newcommand{\iid}{\stackrel{\text{iid}}{\sim}}

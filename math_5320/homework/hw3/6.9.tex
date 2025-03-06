@@ -1,0 +1,50 @@
+\section*{6.9 (b,c)}
+
+For each of the following distributions let $X_1, \cdots, X_n$ be a random sample. Find a minimal sufficient statistic for $\theta$. 
+
+\subsection*{B}
+
+Our goal here will be to set up the joint pdf and then utilize theorem 6.2.13 to find the minimal sufficient statistic for $\theta$. 
+
+\vspace{-5mm}
+\begin{align*}
+	f(x \mid \theta) &= e^{-(x-\theta)} I_{(\theta, \infty)}(x) \\
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n e^{-(x_i-\theta)} I_{(\theta, \infty)}(x_i) \\
+	&= e^{-\sum x_i + n\theta} \prod_{i=1}^n  I_{(\theta, \infty)}(x_i) \\
+\end{align*}
+\vspace{-10mm}
+
+Let us examine the indicator function for a moment. It states that, for all $i$, that $x_i > \theta$. What this means is that if even a single $x_i$ violates this that the entire product evaluates to 0. This means we can look at the minimum value of our sample. I'll write this as the first order statistic, $x_{(1)}$. If the minimum of our sample is greater than $\theta$ then we're in the clear. So we can rewrite our indicator function using that fact.
+
+Using that knowledge,
+
+\[f(\vec{x} \mid \theta) = e^{-\sum x_i + n\theta} I_{(\theta, \infty)}(x_{(1)})\]
+
+Now we use theorem 6.2.13.
+
+\begin{align*}
+	\frac{f(\vec{x} \mid \theta)}{f(\vec{y} \mid \theta) } &= \frac{ e^{-\sum x_i + n\theta} I_{(\theta, \infty)}(x_{(1)})}{ e^{-\sum y_i + n\theta} I_{(\theta, \infty)}(y_{(1)})} \\
+	&= e^{\sum y_i - \sum x_i} \cdot \frac{I_{(\theta, \infty)}(x_{(1)})}{I_{(\theta, \infty)}(y_{(1)})}
+\end{align*}
+
+This is only a constant with respect to $\theta$ if $x_{(1)} = y_{(1)}$, thus $T(\vec{x}) = x_{(1)}$ is a minimal sufficient statistic for $\theta$.
+
+\pagebreak
+
+\subsection*{C}
+
+\begin{align*}
+	f(x \mid \theta) &= e^{-(x-\theta)} \cdot (1+e^{-(x-\theta)})^{-2} \\
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n  e^{-(x_i-\theta)} \cdot (1+e^{-(x_i-\theta)})^{-2} \\
+	&= e^{-\sum x_i + n\theta} \prod_{i=1}^n (1+e^{-(x_i-\theta)})^{-2} \\
+	\frac{f(\vec{x} \mid \theta)}{f(\vec{y} \mid \theta)} &= \frac{ e^{-\sum x_i + n\theta} \prod_{i=1}^n (1+e^{-(x_i-\theta)})^{-2}}{ e^{-\sum y_i + n\theta} \prod_{i=1}^n (1+e^{-(y_i-\theta)})^{-2}} \\
+	&= e^{\sum y_i - \sum x_i} \left( \frac{ \prod_{i=1}^n (1+e^{-(x_i-\theta)})}{ \prod_{i=1}^n (1+e^{-(y_i-\theta)})}  \right)^2
+\end{align*}
+
+From here we can leverage the results from example 6.2.5 that state that the order statistics are sufficient statistics for $\theta$. So we get,
+
+\[
+	\frac{f(\vec{x} \mid \theta)}{f(\vec{y} \mid \theta)} =  e^{\sum y_i - \sum x_i} \left( \frac{ \prod_{i=1}^n (1+e^{-(x_{(i)}-\theta)})}{ \prod_{i=1}^n (1+e^{-(y_{(i)}-\theta)})}\right)^2
+\]
+
+This is only constant with respect to $\theta$ if $x_{(i)} = y_{(i)} \forall i$, therefore the order statistics are minimal sufficient statistics for $\theta$.

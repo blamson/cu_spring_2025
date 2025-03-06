@@ -1,0 +1,45 @@
+\section*{6.2}
+
+Let $X_i, ..., X_n$ be a random sample from the pdf
+
+$$
+f_{x_i}(x|\theta) = \begin{cases}
+	e^{i\theta - x} & x \geq i\theta \\
+	0 & x < i\theta
+\end{cases}
+$$
+
+\noindent Prove that $T=\text{min}_i(X_i/i)$ is a sufficient statistic for $\theta$
+
+First, let us rewrite the pdf using indicator functions and some rearrangement of the inequality.
+
+\vspace{-5mm}
+\begin{align*}
+	x &\geq i\theta \\
+	\frac{x}{i} &\geq \theta
+\end{align*}
+\vspace{-5mm}
+
+This allows us the use of the indicator function $I_{(\theta \leq x/i)}(x)$. 
+
+\begin{align*}
+	f_{x_i}(x \mid \theta) &= e^{i\theta - x} I_{(\theta \leq x/i)}(x) \\
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n e^{i\theta - x_i} I_{(\theta \leq x_i/i)}(x_i) \\
+	&= \exp\left( \sum_{i=1}^n i\theta \right) \cdot \exp\left(-\sum_{i=1}^n x_i\right) \cdot \prod_{i=1}^n  I_{(\theta \leq x_i/i)}(x_i) 
+\end{align*}
+
+Now we return to the indicator function but within the context of a product now. This product requires that, for all $i$, that $\theta \leq x_i / i$. This is important because if any of the values of the sample violate this the entire product evaluates to 0. So we can look at the minimum value that $x_i / i$ holds for the entire sample and create an indicator function around that. That is, we use $min_i(X_i / i)$. In other words, $\prod I_{(\theta \leq x_i/i)}(x_i) =  I_{(\theta \leq min_i(x_i / i))}$. So,
+
+\[
+	f(\vec{x} \mid \theta) = \exp\left(-\sum_{i=1}^n x_i\right) \cdot \exp\left( \sum_{i=1}^n i\theta \right) \cdot I_{(\theta \leq min_i(x_i / i))}
+\]
+
+Giving us
+
+\vspace{-5mm}
+\begin{align*}
+	h(\vec{x}) &= \exp\left(-\sum_{i=1}^n x_i\right) \\
+	g(T(\vec{x}) \mid \theta) &= \exp\left( \sum_{i=1}^n i\theta \right) \cdot I_{(\theta \leq min_i(x_i / i))} 
+\end{align*}
+
+Thus, $T(\vec{x}) = min_i(X_i/i)$ is a sufficient statistic for $\theta$.

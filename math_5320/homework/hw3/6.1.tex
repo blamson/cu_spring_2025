@@ -1,0 +1,19 @@
+\section*{6.1}
+
+Let $X$ be one observation from a $N(0, \sigma^2)$ population. Is $|X|$ a sufficient statistic?
+
+\begin{align*}
+	f(x\mid 0, \sigma^2) &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{1}{2\sigma^2} (x - 0)^2 \right) \\
+	&= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{x^2}{2\sigma^2}  \right) \\
+	&\text{Note: } x^2 = |x|^2 \\
+	&= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{|x|^2}{2\sigma^2}  \right) \cdot I_{(-\infty, \infty)}(x) \\
+\end{align*}
+
+By the factorization theorem we have,
+
+\begin{align*}
+	g(T(x) \mid \theta) &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{|x|^2}{2\sigma^2}  \right) \\
+	h(x) &= I_{(-\infty, \infty)}(x) 
+\end{align*}
+
+Thus, $T(x) = |x|$ is a sufficient statistic for theta.

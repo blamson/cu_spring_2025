@@ -1,0 +1,26 @@
+\section*{6.6}
+
+Let $X_1, \cdots, X_n \iid Gamma(\alpha, \beta)$
+
+\noindent Find a two dimension sufficient statistic for $(\alpha, \beta)$.
+
+\vspace{-5mm}
+\begin{align*}
+	f(x \mid \alpha, \beta) &= \left( \Gamma(\alpha) \beta^{\alpha} \right)^{-1} x^{\alpha - 1} e^{-x/\beta} I_{x \geq 0}(x) \\
+	f(\vec{x} \mid \alpha, \beta) &= \prod_{i=1}^n \left( \Gamma(\alpha) \beta^{\alpha} \right)^{-1}  x_i^{\alpha - 1} e^{-x_i/\beta} I_{x \geq 0}(x_i) \\
+	&= \left( \Gamma(\alpha) \beta^{\alpha} \right)^{-n} e^{-\frac{n}{\beta} \sum x_i} \left( \prod_{i=1}^n x_i \right)^{\alpha - 1} \prod_{i=1}^n I_{x \geq 0}(x_i)  
+\end{align*}
+
+Here we have 
+
+\vspace{-5mm}
+\begin{align*}
+	g(T(\vec{x}) \mid \theta) &=  \left( \Gamma(\alpha) \beta^{\alpha} \right)^{-n} e^{-\frac{n}{\beta} \sum x_i} \left( \prod_{i=1}^n x_i \right)^{\alpha - 1} \\
+	h(\vec{x}) &= \prod_{i=1}^n I_{x \geq 0}(x_i) 
+\end{align*}
+
+Therefore, by the factorization theorem, 
+
+\[T(\vec{x}) = \left( \prod_{i=1}^n x_i, \sum_{i=1}^n x_i \right)\]
+
+is a sufficient statistic for $(\alpha, \beta)$.
