@@ -5,7 +5,7 @@ self-contained: true
 ---
 
 ```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-packages <- c("mvtnorm", "ggplot2", "latex2exp", "glue", "autoimage", "remotes")
+packages <- c("mvtnorm", "ggplot2", "latex2exp", "glue", "autoimage", "remotes", "dplyr")
 
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
@@ -343,8 +343,10 @@ Run a Gibbs sampler for $\theta_1$ and $\theta_2$ for 100,000 cycles.  Plot the 
 Using our answers from part a and b where:
 
 $$
-\theta_1 | \theta_2,y \sim Gamma\left(3, \frac{1}{\theta_2^2 + 4}\right) \\
-\theta_2 | \theta_1,y \sim N\left( \frac{1}{\theta_1+1}, \frac{1}{2(\theta_1+1)} \right)
+\begin{align}
+    \theta_1 | \theta_2,y &\sim Gamma\left(3, \frac{1}{\theta_2^2 + 4}\right) \\
+    \theta_2 | \theta_1,y &\sim N\left( \frac{1}{\theta_1+1}, \frac{1}{2(\theta_1+1)} \right)
+\end{align}
 $$
 
 ```{r}
@@ -499,6 +501,19 @@ Consider the data in `coal.txt`, which contains counts for the number of coal mi
 Assume that $y_1,y_2,\ldots,y_K\mid \lambda, K \stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\lambda)$ and $y_{K+1},y_{K+2},\ldots,y_{112}\mid \phi, k \stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\phi)$. 
 In this model, $K$ is the year that the “change” occurred when technology and/or safety improvements changed the pattern of coal mine disasters. Our interest lies in finding the posterior distributions for $\lambda$, $\phi$, and $K$. Assume a Gamma(4, 1) prior distribution for $\lambda$, a Gamma(1, 2) prior distribution for $\phi$, and a discrete uniform prior distribution on $[1,2, \ldots,112]$ for $K$, i.e., $p_K(k)=1/112$ for $k\in\{1,2,\ldots,112\}$.  
 
+## Dataset
+
+First let's take a quick look at the data.
+
+```{r}
+coal <- read.table("../datasets/coal.txt", header = T)
+str(coal)
+summary(coal)
+plot(x=coal$year, y=coal$disasters, type="l")
+```
+
+Okay so the number of disasters ranges from 0-6, our data ranges 112 years from 1851-1962 and things seem to drop off somewhat around 1900 or so. Cool.
+
 ## (a)
 
 Determine the full conditional distribution for $\lambda$. It is a common distribution. Hint: The distribution will depend on a sum of the counts that depends on the value of $K$.
@@ -524,14 +539,182 @@ Run a 100,000 cycle Gibbs sampler using the distributions determined in parts (a
 
 **Solution**
 
+```{r}
+#| code-fold: true
+#| code-summary: First let's get those sums pre-computed. 
+#| 
+n <- nrow(coal)
+sums <- matrix(nrow=n, ncol=2)
+
+for (k in 1:n) {
+    sums[k,1] <- sum(coal[1:k, 2])
+    sums[k,2] <- sum(coal[(k+1):n, 2])
+}
+
+sums <- as.data.frame(sums)
+colnames(sums) <- c("sum1", "sum2")
+```
+
+Next we need to be able to sample from the pmf of K given our ever changing values of $\lambda$ and $\phi$. We want a function for that.
+
+```{r}
+#| code-fold: true
+#| code-summary: Generate function to sample from the full conditional of K
+#| 
+sample_k_full_cond <- function(lambda, phi, n=112) {
+    # The main goal here is that we need to assign probabilities to each k
+    #   so that we actually have a distribution to sample from. We don't have
+    #   a convenient rnorm or rbeta so we need to make our own.
+    
+    numerators <- vector(length=n)
+    denominator <- 0
+    
+    for (k in 1:n) {
+        
+        # Split numerator into two parts for readability
+        part_1 <- exp(k * (phi - lambda))
+        # (lambda/phi)^(sum from i:k y_i) rewritten: (we use e^(ln(x)) to sidestep some gnarly exponents)
+        part_2 <- exp(sums$sum1[k]*log(lambda / phi))
+        
+        denominator <- denominator + (part_1 * part_2)
+        numerators[k] <- part_1 * part_2
+    }
+    
+    pmf <- numerators / denominator
+    
+    # Sample from this new discrete distribution!
+    sample(1:n, size=1, prob = pmf)
+}
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Gibbs Sampler Code (Reworked)
+gibbs <- function(B, theta) {
+    # Function takes in 
+    # - B: which is an integer to specify total iterations
+    # - theta: a 3 length vector of parameter values
+    #   - (lambda, phi, K) in that order
+    
+    # Create matrix for samples, ncol=3 due to 3 parameters
+    theta_sims <- matrix(0, nrow=B+1, ncol=3)
+    # Set first row to be starting values of theta
+    theta_sims[1,] <- theta
+    n <- nrow(coal)
+    
+    for (i in 2:(B+1)) {
+        
+        # Simulate from full conditional distribution for Lambda (theta_1)
+        # Note that our parameterization of the gamma uses the scale parameter, not rate
+        alpha <- sums$sum1[theta[3]] + 4
+        beta <- 1/(theta[3]+1)
+        theta[1] <- rgamma(1, shape=alpha, scale=beta)
+        
+        # Full coniditional for Phi (theta_2)
+        alpha <- sums$sum2[theta[3]] + 1
+        beta <- 1/(n + 0.5 - theta[3])
+        theta[2] <- rgamma(1, shape=alpha, scale=beta)
+        
+        theta[3] <- sample_k_full_cond(lambda=theta[1], phi=theta[2])
+        
+        # Save simulations
+        theta_sims[i, ] <- theta
+    }
+    
+    return(theta_sims)
+}
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Trial run and basic line plot
+#| 
+theta <- c(0,0, 1)
+B <- 100
+chain1 <- gibbs(B, theta)
+
+plot(
+    chain1[,3], 
+    type="l",
+    ylab="Year Index",
+    xlab="Chain Index",
+    main="Value of K per Iteration"
+)
+```
+
+Okay nothing crazy going on and we seem to be somewhat converging. Cool, let's do the full run.
+
+```{r, warning=FALSE}
+#| code-fold: true
+#| code-summary: Full run and plots
+#| 
+theta <- c(0,0, 1)
+B <- 100000
+full_chain <- gibbs(B, theta)
+gibbs_df <- as.data.frame(full_chain)
+
+ggplot(gibbs_df) +
+    geom_density(aes(x=V1), linewidth=line_size) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($\lambda$)'),
+        y = "Density",
+        title = "Gibbs Sampling: Density of Lambda"
+    )
+
+ggplot(gibbs_df) +
+    geom_density(aes(x=V2), linewidth=line_size) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($\phi$)'),
+        y = "Density",
+        title = "Gibbs Sampling: Density of Phi"
+    )
+
+ggplot(gibbs_df, aes(x=V3)) +
+    geom_bar(aes(y=after_stat(count) / sum(after_stat(count))) ) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($K$)'), 
+        y = "Relative Frequency", 
+        title = "Gibbs Sampling: Density of K"
+    ) +
+    xlim(c(25, 55))
+```
+
 ## (e)
 
 Determine the posterior mean, median, variance, and 95% central posterior interval for each parameter.
 
 **Solution**
 
+Thank goodness we wrote a function for this.
+
+Reminder, $\theta = (\lambda, \phi, k)$. So $\text{Theta 1} = \lambda$ and so on.
+
+```{r}
+for (i in 1:3) {gibbs_summary(gibbs_df[,i], i)}
+```
+
 ## (f)
 
 Let $m$ be the median of the posterior distribution for $K$.  Create a time series plot of the counts where the first $m$ years are shown in blue, while the remaining years are shown in orange.  This distinguishes the years where we have a $\mathrm{Poisson}(\lambda)$ distribution from a $\mathrm{Poisson}(\phi)$ distribution.  
 
 **Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: More Plotting!
+
+m <- median(gibbs_df[, 3])
+coal <- coal %>% 
+    mutate(period = ifelse(year <= min(coal$year) + m, "before_k", "after_k"))
+
+ggplot(coal, aes(x=year, y=disasters, color=period)) +
+    geom_line() +
+    geom_point(size = 2) +
+    labs(x="", y="Disasters", title="Number of Disasters - Before and After K") +
+    theme_minimal() +
+    theme(legend.position = "none")
+```
+
