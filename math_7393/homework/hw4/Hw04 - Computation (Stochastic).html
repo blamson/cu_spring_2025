@@ -6,6 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Brady Lamson">
+<meta name="dcterms.date" content="2025-03-07">
 
 <title>Homework 4 - Computation (Stochastic)</title>
 <style>
@@ -3233,7 +3235,19 @@ window.Quarto = {
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Brady Lamson </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 7, 2025</p>
+    </div>
+  </div>
   
     
   </div>
@@ -3243,6 +3257,10 @@ window.Quarto = {
 </header>
 
 
+<section id="note" class="level1">
+<h1>NOTE</h1>
+<p>I should mention all of my code is included in this html file, I just have it toggleable so it isn’t constantly cluttering up the page. You’ll see various toggles as you scroll through the homework! Let me know if this is more of a hassle than just showing all the code outright. I’d never use these toggles before so I thought it’d be a fun exercise.</p>
+</section>
 <section id="problem-1" class="level1">
 <h1>Problem 1</h1>
 <p>Voter turnout has been a popular talking point in recent elections. To get a sense of voter turnout in Colorado, a national polling company contacted randomly selected registered Colorado voters until they reached 200 persons who said that they had voted. 303 persons said they had not voted, for a total sample size of 503. The response <span class="math inline">\(y\)</span> is the number of failures before getting the 200th registered voter who had voted. Thus, <span class="math inline">\(y\)</span> can be modeled as a negative binomial distribution with <span class="math inline">\(n\)</span> successes and probability of success <span class="math inline">\(\theta\)</span>, where <span class="math inline">\(\theta\)</span> is the probability a registered voter stating they voted. Thus, we can describe the data distribution as <span class="math inline">\(y \mid n, \theta \sim \mathrm{Neg}\text{-}\mathrm{Bin}(n,\theta)\)</span> with <span class="math display">\[p(y\mid n,\theta)=\frac{\Gamma(y+n)}{\Gamma(n)y!} \theta^n (1-\theta)^yI_{\{0,1,2\ldots\}}(y).\]</span> Based on what you’ve heard, you believe that the true proportion of registered voters that actually vote is less than 50%, but you’re not super confident about this. Thus, you chose a Beta(1.1, 1.5) prior distribution for <span class="math inline">\(\theta\)</span>.</p>
@@ -3773,20 +3791,126 @@ Variance: 0.33243
 </div>
 <p>Okay so the number of disasters ranges from 0-6, our data ranges 112 years from 1851-1962 and things seem to drop off somewhat around 1900 or so. Cool.</p>
 </section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<p>Let’s go ahead and collect all of our known information. Priors have been simplified already to save time.</p>
+<p><span class="math display">\[
+\begin{align}
+    y_1,y_2,\ldots,y_K\mid \lambda, K &amp;\stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\lambda) \\
+    y_{K+1},y_{K+2},\ldots,y_{112}\mid \phi, k &amp;\stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\phi) \\
+    \lambda &amp;\sim \mathrm{Gamma}(4,1) \\
+    \phi &amp;\sim \mathrm{Gamma}(1,2) \\
+    p(\lambda) &amp;= \Gamma(4)^{-1} \lambda^3e^{-\lambda} \\
+    p(\phi) &amp;= \frac{1}{2} \exp\left(-\frac{\phi}{2}\right) \\
+    p(k) &amp;= \frac{1}{112} I_{k \in \{1,2,...,112\}}(k) \\
+    I(\lambda) &amp;= I_{\lambda \geq 0}(\lambda) \\
+    I(\phi) &amp;= I_{\phi \geq 0}(\phi)
+\end{align}
+\]</span></p>
+<p>Next we need the “joint data density” for lack of a better descriptor.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(\vec{y} \mid \lambda, k) &amp;= \prod_{i=1}\frac{e^{-\lambda}\lambda^{y_i}}{y_i!}\\
+    &amp;= \frac{\exp(-k\lambda)\lambda^{\sum^k_1 y_i}}{\prod_{i=1}^ky_i}\\
+    p(\vec{y} \mid \phi, k) &amp;= \prod_{i=k+1}^{112}\frac{e^{-\phi}\phi^{y_i}}{y_i!}\\
+    &amp;= \frac{\exp(-(112-k)\phi)\phi^{\sum^{112}_{k+1} y_i}}{\prod_{i=k+1}^{112}y_i!}\\
+    p(\vec{y} \mid \lambda, \phi, k) &amp;= p(\vec{y} \mid \lambda, k) \cdot p(\vec{y} \mid  \phi, k) \\
+    &amp;= \frac{\exp(-k\lambda)\lambda^{\sum^k_1 y_i}}{\prod_{i=1}^ky_i!} \cdot \frac{\exp(-(112-k)\phi)\phi^{\sum^{112}_{k+1} y_i}}{\prod_{i=k+1}^{112}y_i!} \\
+    &amp;= \exp(-k\lambda - (112-k)\phi) \cdot \lambda^{\sum^k_1 y_i}\phi^{\sum^{112}_{k+1} y_i} \cdot \left(\prod_{i=1}^ky_i! \prod_{i=k+1}^{112}y_i!  \right)^{-1}
+\end{align}
+\]</span></p>
+<p>Also for future reference to preserve my sanity,</p>
+<p><span class="math display">\[
+\begin{align}
+    \sum^k_1 y_i &amp;= S_1 \\
+    \sum^{112}_{k+1} y_i &amp;= S_2
+\end{align}
+\]</span></p>
+<p>For sum1 and sum2 respectively.</p>
+</section>
 <section id="a-2" class="level2">
 <h2 class="anchored" data-anchor-id="a-2">(a)</h2>
 <p>Determine the full conditional distribution for <span class="math inline">\(\lambda\)</span>. It is a common distribution. Hint: The distribution will depend on a sum of the counts that depends on the value of <span class="math inline">\(K\)</span>.</p>
 <p><strong>Solution</strong></p>
+<p>I skip some setup here to save time as it’s getting late, but we include only the terms here that involve <span class="math inline">\(\lambda\)</span>.</p>
+<p><span class="math display">\[
+\begin{align}
+    q(\lambda \mid \phi, k, \vec{y}) &amp;\propto p(\vec{y} \mid \lambda, \phi, k) p(\lambda)\\
+    &amp;\propto \exp(-k\lambda) \lambda^{S_1} \lambda^3 e^{-\lambda}I(\lambda) \\
+    &amp;= \exp(-k\lambda - \lambda) \lambda^{3 + S_1}I(\lambda) \\
+    &amp;=  \lambda^{S_1 + 4 - 1} \exp(-\lambda(k+1))I(\lambda)
+\end{align}
+\]</span></p>
+<p>Is the kernel of a gamma with <span class="math inline">\(\alpha = S_1+4\)</span> and <span class="math inline">\(\beta = (k+1)^{-1}\)</span>. Therefore,</p>
+<p><span class="math display">\[
+    \lambda \mid \phi, k, \vec{y} \sim \mathrm{Gamma}(S_1+4, (k+1)^{-1})
+\]</span></p>
 </section>
 <section id="b-2" class="level2">
 <h2 class="anchored" data-anchor-id="b-2">(b)</h2>
 <p>Determine the full conditional distribution for <span class="math inline">\(\phi\)</span>. It is a common distribution. Hint: The distribution will depend on a sum of the counts that depends on the value of <span class="math inline">\(K\)</span>.</p>
 <p><strong>Solution</strong></p>
+<p>Same stuff here, focus on what involves <span class="math inline">\(\phi\)</span></p>
+<p><span class="math display">\[
+\begin{align}
+    q(\phi \mid \lambda, k, \vec{y}) &amp;\propto p(\vec{y} \mid \lambda, \phi, k) p(\phi)\\
+    &amp;\propto \exp(-(112-k)\phi)\phi^{S_2} \exp\left(-\phi/2\right)I(\phi) \\
+    &amp;= \exp(-((112-k)\phi + 0.5\phi))\phi^{S_2}I(\phi) \\
+    &amp;= \exp(-\phi(112.5-k))\phi^{S^2}I(\phi)
+\end{align}
+\]</span></p>
+<p>Kernel of a gamma with <span class="math inline">\(\alpha=S_2 + 1\)</span>, <span class="math inline">\(\beta = (112.5-k)^{-1}\)</span>. Therefore,</p>
+<p><span class="math display">\[
+    \phi \mid \lambda, k, \vec{y} \sim \mathrm{Gamma}(S_2 + 1, (112.5-k)^{-1})
+\]</span></p>
 </section>
 <section id="c-2" class="level2">
 <h2 class="anchored" data-anchor-id="c-2">(c)</h2>
 <p>Show that the full conditional distribution for <span class="math inline">\(K\)</span> is <span class="math display">\[p(K\mid\lambda,\phi,y)=\frac{\exp\left(K(\phi-\lambda)\right)\left(\frac{\lambda}{\phi}\right)^{\sum_{i=1}^K y_i}}{\sum_{K=1}^{112} \exp\left(K(\phi-\lambda)\right)\left(\frac{\lambda}{\phi}\right)^{\sum_{i=1}^K y_i}}.\]</span></p>
 <p><strong>Solution</strong></p>
+<p>Alright this is a long one. Again we focus on the terms that involve <span class="math inline">\(k\)</span>. Note that the product of the factorials from the data distribution isn’t here. That’s because though it SEEMS to depend on <span class="math inline">\(k\)</span> the two of them actually are clean partitions of 1 to 112. So the combined product no longer depends on <span class="math inline">\(k\)</span>. Therefore we don’t include it after the proportional statement. I’d like to include more of the steps but I also don’t want to do that!</p>
+<p><span class="math display">\[
+\begin{align}
+    q(k \mid \lambda, \phi, \vec{y}) &amp;\propto p(\vec{y} \mid \lambda, \phi, k) p(k)\\
+    &amp;\propto \exp(-(k\lambda+(112-k)\phi)) \lambda^{S_1}\phi^{S_2} \\
+    &amp;= \exp(-(k\lambda + 112\phi - k\phi))\lambda^{S_1}\phi^{S_2} \\
+    &amp;= \exp(k(\phi-\lambda) - 112\phi) \lambda^{S_1}\phi^{S_2} \\
+    &amp;= \exp(k(\phi-\lambda)) \cdot \exp(-112\phi) \lambda^{S_1}\phi^{S_2} \\
+    &amp;\propto \exp(k(\phi-\lambda))  \lambda^{S_1}\phi^{S_2} \\
+\end{align}
+\]</span></p>
+<p>Okay so we’re close to the form of the numerator but not quite. Let’s take note of the summations <span class="math inline">\(S_1\)</span> and <span class="math inline">\(S_2\)</span>. These neatly partition the full sum. So we can do some clever algebraic rearranging to get the form we need. We want <span class="math inline">\(S_1\)</span> to be in the exponent in the quotient involving <span class="math inline">\(\lambda/\phi\)</span>. So let’s go towards that.</p>
+<p><span class="math display">\[
+\begin{align}
+\sum_{i=1}^{112} y_i &amp;= \sum_{i=1}^{k} y_i + \sum_{i=k+1}^{112} y_i \\
+\sum_{i=k+1}^{112} y_i &amp;= \sum_{i=1}^{112} y_i - \sum_{i=1}^{k} y_i \\
+\end{align}
+\]</span></p>
+<p>Using this knowledge, we return,</p>
+<p><span class="math display">\[
+\begin{align}
+    q(k \mid \lambda, \phi, \vec{y}) &amp;\propto \exp(k(\phi-\lambda))  \lambda^{S_1}\phi^{S_2} \\
+    &amp;= \exp(k(\phi-\lambda)) \lambda^{S_1}\phi^{\sum_{i=1}^{112} - S_1} \\
+    &amp;= \exp(k(\phi-\lambda)) \lambda^{S_1}\phi^{\sum_{i=1}^{112}}\phi^{- S_1} \\
+    &amp;= \exp(k(\phi-\lambda)) \left(\frac{\lambda}{\phi}\right)^{S_1} \phi^{\sum_{i=1}^{112}} \\
+\end{align}
+\]</span></p>
+<p>Alright so I got stuck here for a while not knowing what to do next. The hint here is to really look at the denominator and think about what it is.</p>
+<p>Our numerator gives us the density for a specific k. To get our probability we need to compare that to the density of every possible k. That’s what the denominator provides, it’s there due to the total law of probability. It is our normalizing constant! So, we take that unnormalized distribution and sum over all possible values of k. That’s all it is. Note we swap now from <span class="math inline">\(q(k)\)</span> to <span class="math inline">\(p(k)\)</span>.</p>
+<p><span class="math display">\[
+\begin{align}
+    p(k \mid \lambda, \phi, \vec{y}) &amp;= \frac{\exp(k(\phi-\lambda)) \left(\frac
+    {\lambda}{\phi}\right)^{S_1} \phi^{\sum_{i=1}^{112}}}
+    {\sum_{k=1}^{112} \exp(k(\phi-\lambda)) \left(\frac{\lambda}{\phi}\right)^{S_1} \phi^{\sum_{i=1}^{112}}} \\
+    &amp;= \frac{\exp(k(\phi-\lambda)) \left(\frac
+    {\lambda}{\phi}\right)^{S_1}}
+    {\sum_{k=1}^{112} \exp(k(\phi-\lambda)) \left(\frac{\lambda}{\phi}\right)^{S_1}} \\
+    &amp;= \frac{\exp(k(\phi-\lambda)) \left(\frac
+    {\lambda}{\phi}\right)^{\sum_{i=1}^k}}
+    {\sum_{k=1}^{112} \exp(k(\phi-\lambda)) \left(\frac{\lambda}{\phi}\right)^{\sum_{i=1}^k}} \\
+\end{align}
+\]</span></p>
+<p>And with that we have the same form as our goal!</p>
 </section>
 <section id="d-1" class="level2">
 <h2 class="anchored" data-anchor-id="d-1">(d)</h2>
@@ -3967,7 +4091,7 @@ Variance: 0.33243
 <p>Determine the posterior mean, median, variance, and 95% central posterior interval for each parameter.</p>
 <p><strong>Solution</strong></p>
 <p>Thank goodness we wrote a function for this.</p>
-<p>Reminder, <span class="math inline">\(\theta = (\lambda, phi, k)\)</span>. So <span class="math inline">\(\theta_1 = \lambda\)</span> and so on.</p>
+<p>Reminder, <span class="math inline">\(\theta = (\lambda, \phi, k)\)</span>. So <span class="math inline">\(\theta_1 = \lambda\)</span> and so on.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>) {<span class="fu">gibbs_summary</span>(gibbs_df[,i], i)}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
