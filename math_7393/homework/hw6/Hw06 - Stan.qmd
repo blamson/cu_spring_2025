@@ -1,0 +1,144 @@
+---
+title: "Homework 6 - Stan"
+format: html
+self-contained: true
+---
+
+# Problem 1
+
+Voter turnout has been a popular talking point in recent elections. To get a sense of voter turnout in Colorado, a national polling company contacted randomly selected registered Colorado voters until they reached 200 persons who said that they had voted. 303 persons said they had not voted, for a total sample size of 503. The response $y$ is the number of failures before getting the 200th registered voter who had voted. Thus, $y$ can be modeled as a negative binomial distribution with $n$ successes and probability of success $\theta$, where $\theta$ is the probability a registered voter stating they voted. 
+
+Stan uses an alternative parameterization of the Negative Binomial distribution, where $y \mid n, \beta \sim \mathrm{Neg}\text{-}\mathrm{Bin}(n,\beta)$ has probability mass function
+$$
+p(y\mid n,\beta)=\binom{y+n-1}{n-1} \left(\frac{\beta}{\beta+1}\right)^n \left(\frac{1}{\theta+1}\right)^yI_{\{0,1,2\ldots\}}(y)I_{(0,\infty)}(\beta).
+$$
+In the parameterization above, the typical probability parameter $theta=\beta/(\beta+1)$. 
+
+We will determine the posterior distribution for $\theta$ when the prior is $\theta\sim\mathrm{Beta(1.1, 1.5)}$.
+
+## (a)
+
+Use Stan to approximate the posterior distribution of $\theta$. Run 5 MCMC chains for at least 100,000 iterations. Discard the first half of each chain as warmup. Please provide your Stan model code in your answer to the problem.
+
+**Solution**
+
+## (b)
+
+Provide a table containing (in order) the posterior mean, standard deviation, and the 0.025, 0.25, 0.50, 0.75, 0.975 quantiles for for $\theta$.
+
+|Statistic | Mean	| SD	| 0.025	| 0.25	| 0.50	| 0.75	| 0.975|
+|---|---|---|---|---|---|---|---|---|---|
+$\theta$ | | | | | | |
+
+**Solution**
+
+# Problem 2
+
+Suppose that you observe the realizations of a distribution with positive support stored in `y` (embedded in the qmd file but not shown for simplicity).
+
+```{r}
+#| include: false
+y <- c(3.3246186,  0.7155831,  2.1865298,
+       1.7492273,  0.9324987,  5.4863425,
+       2.7117632,  0.7926974,  1.1956440,
+       3.2383931,  1.2987860,  0.9944326,
+       0.5779083,  1.7695300,  1.0613076, 
+       2.4900453,  2.4184646,  4.8643522,
+       5.9443107,  3.9608494,  9.8182328, 
+       0.8580478,  1.0733395,  0.7586947, 
+       0.7647424,  1.3418217,  1.2706851,
+       1.0757138,  1.3392547,  1.8848462,
+       1.7100259,  8.1847849,  3.9656347,
+       0.7385681,  1.3345326,  9.1610070,
+       1.2966093,  2.8854925,  0.9075772, 
+       0.5884744,  0.8074273,  1.3512495, 
+       2.9246246,  1.5118090,  0.4647718,
+       2.8645860,  2.6774785,  3.4369286,
+       2.4903468,  2.7400405,  1.9198062, 
+       0.7503989,  3.1689262,  2.3617032,
+       1.4041014,  1.8026648,  1.1965619, 
+       2.0051503,  2.5331624,  1.1123318, 
+       2.0809009,  1.2085851,  2.4237742,
+       3.0732074,  5.4937633,  2.1416139, 
+       1.5527814,  1.2214949,  3.1004734, 
+       2.0353448,  3.8491880,  2.2600403,
+       4.7335075,  9.9232236,  0.9051508,
+       1.1716122,  0.7579334,  7.0875481,
+       2.9899513,  1.7808078,  0.9799685,
+       1.3670716,  1.6737608,  1.0508578,
+       12.0184742,  2.0558048,  3.8233638,
+       1.4540376,  1.7876661,  2.2132504,
+       0.7122299,  2.4231081,  4.6504884,
+       2.0636710,  8.8337085,  0.4970524,
+       1.5268181,  3.3103729,  0.9471728,
+       0.7164088)
+```
+
+We will model the data as $y \mid \alpha, \beta \sim \mathrm{Inv}\text{-}\mathrm{Gamma}(\alpha, \beta)$. 
+
+We will use the prior distributions $\alpha \sim U(1, 5)$ and $\beta \sim \mathrm{Gamma}(4, 4)$.
+
+## (a)
+
+Plot the estimated density of $y$.
+
+**Solution**
+
+## (b)
+
+Use Stan to approximate the posterior distributions of $\alpha$ and $\beta$. Run 5 MCMC chains for at least 100,000 iterations. Discard the first half of each chain as warmup. Please provide your Stan model code in your answer to the problem.
+
+**Solution**
+
+## (c)
+
+Provide a table containing (in order) the posterior mean, standard deviation, and the 0.025, 0.25, 0.50, 0.75, 0.975 quantiles for $\alpha$ and $\beta$.
+
+|Statistic | Mean	| SD	| 0.025	| 0.25	| 0.50	| 0.75	| 0.975|
+|---|---|---|---|---|---|---|---|---|---|
+$\alpha$ | | | | | | |
+$\beta$ | | | | | | |
+
+**Solution**
+
+# Problem 3
+
+Consider the data in `yc`, which contains counts for the number of coal mine disasters over a 112-year period (1851 to 1962) in the United Kingdom. The data have relatively high disaster counts in the early era, and relatively low counts in the later era. How did technology improvements and safety practices have an actual effect on the rate of serious accidents?
+
+Assume that $y_1,y_2,\ldots,y_{40} \mid \lambda, \stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\lambda)$ and $y_{41},y_{42},\ldots,y_{112}\mid \phi \stackrel{i.i.d.}{\sim} \mathrm{Poisson}(\phi)$. 
+In this model, a change in the rate of serious coal mine accidents occurs in the 41st year because because of technology and/or safety improvements. Our interest lies in finding the posterior distributions for $\lambda$ and $\phi$. Assume a Gamma(4, 1) prior distribution for $\lambda$ and a Gamma(1, 2) prior distribution for $\phi$.  
+
+## (a)
+
+Use Stan to approximate the posterior distributions of $\lambda$ and $\phi$. Run 5 MCMC chains for at least 100,000 iterations. Discard the first half of each chain as warmup. Please provide your Stan model code in your answer to the problem.
+
+**Solution**
+
+```{r}
+#| include: false
+yc <- c(
+4, 5, 4, 1, 0, 4, 3, 4, 0, 6, 3, 3, 4, 0, 2, 6, 3, 3, 5, 4, 5, 3, 1, 4, 4, 1, 5, 5, 3, 4, 2, 5, 2, 2, 3, 4, 2, 1, 3, 2, 2, 1, 1, 1, 1, 3, 0, 0, 1, 0, 1, 1, 0, 0, 3, 1, 0, 3, 2, 2, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 2, 1, 0, 0, 0, 1, 1, 0, 2, 3, 3, 1, 1, 2, 1, 1, 1, 1, 2, 4, 2, 0, 0, 0, 1, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1)
+```
+
+## (b)
+
+Provide a table containing (in order) the posterior mean, standard deviation, and the 0.025, 0.25, 0.50, 0.75, 0.975 quantiles for $\lambda$ and $\phi$.
+
+|Statistic | Mean	| SD	| 0.025	| 0.25	| 0.50	| 0.75	| 0.975|
+|---|---|---|---|---|---|---|---|---|---|
+$\lambda$ | | | | | | |
+$\phi$ | | | | | | |
+
+**Solution**
+
+## (c)
+
+Explain why the central posterior intervals for $\lambda$ and $\phi$ are narrower in this homework than in Homework 4.
+
+**Solution**
+
+## (d)
+
+Similar to the examples from class, generate replications of `yc` (`yrep`) from the posterior predictive distribution.  Create a histogram comparing the observed data to 8 of the replicated data sets. How do the replicated samples compare?
+
+**Solution**

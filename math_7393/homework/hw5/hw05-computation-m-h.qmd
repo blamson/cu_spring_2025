@@ -1,0 +1,374 @@
+---
+title: "Hw05- Computation (Metropolis-Hastings)"
+subtitle: Math 7393 Bayesian Statistics
+format: html
+self-contained: true
+author: Brady Lamson
+date: 3/19/2025
+---
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+packages <- c("ggplot2", "latex2exp", "coda")
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cran.rstudio.com/")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+# see if bayesutils package is available
+if (!require("bayesutils", quietly = TRUE)) {
+  # if not, then install package
+  remotes::install_github("jfrench/bayesutils")
+  library(bayesutils)
+}
+
+options(scipen = 20) # For fixing scientific notation nonsense
+```
+
+Load the `igdata` data set from the **bayesutils** package. The data are a random sample of 100 values from a distribution with positive support and the observed values in the problems below.
+
+```{r, echo=FALSE, include=FALSE}
+igdata <- bayesutils::igdata
+```
+
+
+# Problem 1
+
+Assume $y_1, y_2, \ldots,y_{100} \mid \alpha, \beta \stackrel{i.i.d.}{\sim} \text{Inv-Gamma}(\alpha,\beta)$ with $\alpha=3$. Assume $\beta\sim\text{Gamma}(4, 4)$. Use the Metropolis-Hastings algorithm to approximate the posterior distribution of $\beta$. 
+
+## (a)
+
+Decide on a proposal distribution for $\beta$. Construct a plot overlaying the proposal distribution and the unnormalized posterior density (where both have a similar scale). The proposal distribution should ideally have a similar shape, but more importantly, should be able to routinely propose values anywhere the unnormalized posterior density is positive.
+
+Okay first we need the unnormalized posterior density. 
+
+$$
+\begin{align}
+    q(\beta | \vec{y}, \alpha=3) &\propto \left( \prod_{i=1}^{100} \frac{\beta^{3}}{\Gamma(3)} y_i^{-(3+1)}e^{-\beta/y_i} \right) \cdot \left( \frac{4^4}{\Gamma(4)} \beta^3 e^{-4\beta} \right) \\
+    &\propto \prod_{i=1}^{100} \beta^3 e^{-\beta/y_i} \cdot \beta^3 e^{-4\beta} \\
+    &= \beta^{300} e^{-\beta/\sum y_i} \beta^3 e^{-4\beta} \\
+    &= \beta^{303} \exp\left(-\left( \frac{\beta}{\sum y_i} + 4\beta \right)\right) \\
+    &= \beta^{303} \exp\left(-\beta\left( \frac{1}{\sum y_i} + 4 \right)\right) \\
+\end{align}
+$$
+
+We have the kernel of a gamma here. Thus we have the following unnormalized posterior:
+
+$$
+q(\beta \mid \vec{y}, \alpha=3) \propto \text{Gamma}\left(304,4+ \sum\frac{1}{y_i}\right)
+$$
+
+```{r}
+#| code-fold: true
+#| code-summary: Setting everything up
+
+data_sum <- sum(1/igdata)
+post_alpha <- 304
+post_beta <- data_sum + 4
+theta_support <- seq(3, 6, length=1000) # found these values by tinkering
+
+q_post <- function(theta, alpha, beta, const=1) {
+    density <- dgamma(theta, shape=alpha, rate=beta) 
+    return(density / const)
+}
+
+prior_densities <- dgamma(theta_support, shape=4, rate=4)
+posterior_densities <- q_post(theta_support, post_alpha, post_beta)
+df <- data.frame(
+    theta=theta_support, 
+    qpost = posterior_densities, 
+    pprior = prior_densities
+)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Plots
+#| 
+line_size <- 1.2
+ggplot(df, aes(x = theta)) +
+    geom_line(aes(y = qpost, color = "Posterior"), linewidth = line_size) +
+    geom_line(aes(y = qpost, color = "Proposal"), linewidth = line_size, linetype="dashed") +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Unnormalized Posterior and Proposal Distribution",
+        color = ""
+    ) +
+    # scale_x_continuous(breaks=seq(0,1,0.1)) +
+    theme_minimal() +
+    theme(legend.position = "right")
+```
+
+
+## (b)
+
+What proposal distribution did you decide to use?
+
+I went with a normal distribution using the expected value and variance of the unnormalized posterior distribution. So,
+
+$$
+j_t(\theta^*|\theta^{(t-1)}) \sim N(304, 70.45)
+$$
+Or I was, until I realized the support of a normal is the whole real line and that won't work in this problem.
+
+So I don't know, I'm just going to use the unnormalized posterior because frankly I'm confused. There is nothing that indicates that I can't do this, so I will.
+
+Note that I did try using the prior as a proposal which did not go well. Very poor convergence behavior. It's also worth stating that most times we won't be able to use the posterior as the proposal because it will be some unknown distribution that is hard to sample from, but in this situation we can. 
+
+## (c)
+
+Run 5 MCMC chains with a range of starting values for at least 100,000 iterations. Discard the first half of each chain as warmup. Then combine the results into an `mcmc.list` and use the `summary` function to summarize the results.
+
+B = 100000
+
+For this I will be shamelessly stealing your independence chain code and modifying it to fit my needs.
+
+```{r}
+#| code-fold: true
+#| code-summary: MH Algorithm Code
+#| 
+
+mh = function(B, start, jump_param) {
+    # Initialize the chain
+    theta = numeric(B + 1)
+    theta[1] = start
+    
+    # Extract parameters of jump dist
+    prop_alpha <- jump_param[1]
+    prop_beta <- jump_param[2]
+    
+    # Posterior values
+    data_sum <- sum(1/igdata) #igdata is a vector
+    post_alpha <- 304
+    post_beta <- data_sum + 4
+    
+    # The algorithm itself
+    for (i in 2:length(theta)) {
+        # Sample from the proposal dist:
+        theta_star = rgamma(1, shape = prop_alpha, rate = prop_beta)
+        
+        # Calculate the acceptance ratio
+        num_logr = dgamma(theta_star, shape = post_alpha, rate = post_beta, log = T) - 
+            dgamma(theta_star, shape = prop_alpha, rate = prop_beta, log = T)
+        
+        den_logr = dgamma(theta[i - 1], shape = post_alpha, rate = post_beta, log = T) - 
+            dgamma(theta[i - 1], shape = prop_alpha, rate = prop_beta, log=T)
+        
+        logr = num_logr - den_logr
+        
+        # Accept or reject the proposal
+        if (log(runif(1)) <= min(logr, 0)) {
+            theta[i] = theta_star
+        } else {theta[i] = theta[i - 1]}
+    }
+    return(theta)
+}
+```
+
+
+```{r}
+#| code-fold: true
+#| code-summary: Running the chains
+#| 
+set.seed(100)
+B <- 100000
+keep = (B/2 + 1):(B + 1)
+jpar <- c(post_alpha, post_beta) # Using posterior as proposal
+
+chain1 = mh(B, start = 0.01, jump_param = jpar)
+chain2 = mh(B, start = 3, jump_param = jpar)
+chain3 = mh(B, start = 6, jump_param = jpar)
+chain4 = mh(B, start = 9, jump_param = jpar)
+chain5 = mh(B, start = 1, jump_param = jpar)
+
+mc = mcmc.list(mcmc(chain1[keep]),
+               mcmc(chain2[keep]),
+               mcmc(chain3[keep]),
+               mcmc(chain4[keep]),
+               mcmc(chain5[keep]))
+
+summary(mc)
+```
+
+
+## (d)
+
+Assess convergence of your chains using trace plots (don't actually provide this though, because it will make the pdf file much larger), effective sample size, and the $\hat{R}$ statistic.
+
+```{r, echo=FALSE}
+#traceplot(mc)
+```
+
+```{r}
+effectiveSize(mc)
+```
+
+```{r}
+coda::gelman.diag(mc, autoburnin=F)
+```
+
+The trace plot seems to navigate the parameter space well on all chains. Based on what I can see we didn't have huge issues with the chains getting stuck. I saw what that looked like when using the prior as the proposal and this trace plot looks a lot better.
+
+The $\hat{R}$ also is at 1 which indicates convergence. 
+
+This should be unsurprising as I used the un-normalized posterior *as* the proposal distribution. We won't always be able to do this but, like I said earlier, it seems to be fair game in this situation. 
+
+
+# Problem 2
+
+Assume $y_1, y_2, \ldots,y_{100} \mid \alpha, \beta \stackrel{i.i.d.}{\sim} \text{Inv-Gamma}(\alpha,\beta)$ with $\beta=4$. Assume $\alpha\sim\text{U}(1, 5)$. Use the Metropolis-Hastings algorithm to approximate the posterior distribution of $\alpha$. 
+
+## (a)
+
+Decide on a proposal distribution for $\alpha$. Construct a plot overlaying the proposal distribution and the unnormalized posterior density (where both have a similar scale). The proposal distribution should ideally have a similar shape, but more importantly, should be able to routinely propose values anywhere the unnormalized posterior density is positive.
+
+Let's figure out our posterior distribution.
+
+$$
+\begin{align}
+    q(\alpha | \vec{y}, \beta=4) &\propto \left( \prod_{i=1}^{100} \frac{4^{\alpha}}{\Gamma(\alpha)} y_i^{-(\alpha+1)}e^{-4/y_i} \right) \frac{1}{4} \\
+    &\propto \prod_{i=1}^{100} \frac{4^{\alpha}}{\Gamma(\alpha)} y_i^{-(\alpha+1)} \\
+    &= \left( \frac{4^{\alpha}}{\Gamma(\alpha)} \right)^{100} \prod_{i=1}^{100} y_i^{-(\alpha+1)} \\
+    \ln q(\alpha | \vec{y}, \beta=4) &\propto 100\alpha\ln(4) - 100\ln(\Gamma(\alpha)) - (\alpha+1) \sum_{i=1}^{100} \ln(y_i)
+\end{align}
+$$
+
+```{r}
+#| code-fold: true
+#| code-summary: Setting everything up
+theta_support <- seq(1, 4, length=1000)
+
+q_post_log <- function(theta, data_sum) {
+    # Theta must be greater than 0.
+    if (min(theta) <= 0) {
+        return(0)
+    }
+    log_density <- 100*theta*log(4) - 100*log(gamma(theta)) - (theta+1)*data_sum
+    return(log_density)
+}
+
+prior_densities <- dunif(theta_support, min = 1, max=5)
+posterior_densities <- q_post_log(theta_support, data_sum=sum(log(igdata)))
+proposal_densities <- dnorm(theta_support, mean=2.5, sd=0.25)
+df <- data.frame(
+    theta=theta_support, 
+    qpost = posterior_densities, 
+    pprior = prior_densities,
+    pprop = proposal_densities
+)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Plots
+#| 
+line_size <- 1.2
+ggplot(df, aes(x = theta)) +
+    geom_line(aes(y = exp(qpost) / max(exp(qpost)), color = "Posterior"), linewidth = line_size) +
+    geom_line(aes(y = pprop, color = "Proposal"), linewidth = line_size, linetype="dashed") +
+    labs(
+        x = TeX(r'($\theta$)'), 
+        y = "Density", 
+        title = "Scaled Unnormalized Posterior and Proposal Distribution",
+        color = ""
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right")
+```
+
+
+## (b)
+
+What proposal distribution did you decide to use?
+
+I'll be using a $N(2.5, 0.25^2)$ for my proposal. I mentioned in problem 1 that this is bad because the support of the normal goes outside the support of $\alpha$ and that is true. It's very unlikely though, and I'll handle this by ensuring the mh algorithm can't accept the values. My posterior function is also already written to return a density of 0 if a $\theta \leq 0$ is provided.
+
+## (c)
+
+Run 5 MCMC chains with a range of starting values for at least 100,000 iterations. Discard the first half of each chain as warmup. Then combine the results into an `mcmc.list` and use the `summary` function to summarize the results.
+
+```{r}
+#| code-fold: true
+#| code-summary: MH Algorithm Code
+#| 
+
+mh = function(B, start, jump_param) {
+    # Initialize the chain
+    theta = numeric(B + 1)
+    theta[1] = start
+    
+    # Extract parameters of jump dist
+    prop_mu <- jump_param[1]
+    prop_sigma <- jump_param[2]
+    
+    # Posterior values
+    data_sum <- sum(log(igdata))
+    
+    # The algorithm itself
+    for (i in 2:length(theta)) {
+        # Sample from the proposal dist:
+        theta_star = rnorm(1, mean=prop_mu, sd=prop_sigma)
+        if(theta_star > 0) {
+            # Calculate the acceptance ratio
+            num_logr <- q_post_log(theta_star, data_sum) - dnorm(theta_star, mean=prop_mu, sd=prop_sigma, log=T)
+            den_logr <- q_post_log(theta[i-1], data_sum) - dnorm(theta[i-1], mean=prop_mu, sd=prop_sigma, log=T)
+            logr = num_logr - den_logr
+        }
+        # This prevents theta<0 from being accepted and avoids any risk of underflow or computational error.
+        else {logr = 0}
+        
+        # Accept or reject the proposal
+        if (log(runif(1)) <= min(logr, 0)) {
+            theta[i] = theta_star
+        } else {theta[i] = theta[i - 1]}
+    }
+    return(theta)
+}
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Running the chains
+#| 
+set.seed(100)
+B <- 100000
+keep = (B/2 + 1):(B + 1)
+jpar <- c(2.5, 0.25) # N(2.5, 0.25^2)
+
+chain1 = mh(B, start = 0.01, jump_param = jpar)
+chain2 = mh(B, start = 1, jump_param = jpar)
+chain3 = mh(B, start = 3, jump_param = jpar)
+chain4 = mh(B, start = 5, jump_param = jpar)
+chain5 = mh(B, start = 7, jump_param = jpar)
+
+mc = mcmc.list(mcmc(chain1[keep]),
+               mcmc(chain2[keep]),
+               mcmc(chain3[keep]),
+               mcmc(chain4[keep]),
+               mcmc(chain5[keep]))
+
+summary(mc)
+```
+
+## (d)
+
+Assess convergence of your chains using the Heidelberg-Welch, Raftery-Lewis, and Geweke diagnostics.
+
+```{r}
+coda::heidel.diag(mc)
+```
+
+```{r}
+coda::raftery.diag(mc)
+```
+
+```{r}
+coda::geweke.diag(mc)
+```
+
+All of these diagnostics check out and seem to be within acceptable values.
+
+All of the heidel tests pass. The dependence factors are all less than 5. And all of the z-scores are between -2,2. There's one thats slightly larger than 2 but only barely. 
