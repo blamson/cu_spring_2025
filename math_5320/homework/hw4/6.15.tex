@@ -1,0 +1,68 @@
+\section*{6.1.15}
+
+Let $X_1, \cdots, X_n$ be iid $N(\theta, a\theta^2)$ where $a$ is a constant and $\theta$.
+
+\subsection*{A.}
+
+Show that the parameter space does not contain a two dimensional open set.
+
+For this to be an open set we would need to be able to fully explore the parameter space. We can't do that here as the values of $\mu$ and $\sigma^2$ are completely linked to each other. What we have here is actually a parabolic line. If we were to plot this we would be restricted to the values on the parabola, we can't explore the values above and below it. Thus, we do not have an open set.
+
+\subsection*{B.}
+
+Show that the statistic $T = \left( \bar{X}, S^2 \right)$ is a sufficient statistic for $\theta$, but the family of distributions is not complete. 
+
+For this we'll be leveraging the factorization theorem. I'll primarily be following the example in the book on page 224 as they do the bulk of the algebra work for me. From there I'll be using example 6.2.9 as a template. Our goal is to rearrange the exponent so that we can get both $\bar{x}$ and $S^2$ in there. For reference,
+
+\[S^2 = \frac{1}{n-1} \sum (x_i - \bar{x})^2\]
+
+\begin{align*}
+	f(\vec{x} \mid \theta, a\theta^2) &= \prod_{i=1}^n \frac{1}{\sqrt{2\pi a\theta^2}} \exp\left( -\frac{(x_i - \theta)^2}{2a\theta^2} \right) \\
+	&= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{1}{2a\theta^2} \sum_{i=1}^n (x_i - \theta)^2 \right) \\
+	&= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{1}{2a\theta^2} \sum_{i=1}^n (x_i + \bar{x} - \bar{x} - \theta)^2 \right) \\
+	&= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{1}{2a\theta^2} \left( n(\bar{x} - \theta)^2 + \sum_{i=1}^n (x_i - \bar{x})^2 \right)  \right) \\
+	&= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{1}{2a\theta^2} \left( n(\bar{x} - \theta)^2 + \frac{n-1}{n-1} \sum_{i=1}^n (x_i - \bar{x})^2 \right)  \right) \\
+	&= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{1}{2a\theta^2} \left( n(\bar{x} - \theta)^2 + (n-1)S^2 \right)  \right) \\
+	&= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{n}{2a\theta^2} (\bar{x} - \theta)^2 \right) \cdot \exp\left( -\frac{n-1}{2a\theta^2} S^2 \right) \cdot 1 
+\end{align*}
+
+From this, we have:
+
+\vspace{-3mm}
+\begin{align*}
+	g(T(\vec{x}) \mid \theta) &= (2\pi \theta^2)^{-n/2} \exp\left( -\frac{n}{2a\theta^2} (\bar{x} - \theta)^2 \right) \cdot \exp\left( -\frac{n-1}{2a\theta^2} S^2 \right) \\
+	h(\vec{x}) &= 1
+\end{align*}
+
+So, by the factorization theorem, $T(\vec{x}) = (\bar{x}, S^2)$ is a sufficient statistic for $\vec{\theta}$.
+
+To show that the family of distributions is not complete let us examine the definition of completeness.
+
+\vspace{3mm}
+\hrule
+\vspace{3mm}
+
+\textbf{Definition 6.2.21}: Let $f(t\mid\theta)$ be a family of pdfs or pmfs for a statistic $T(\vec{x})$. The family of probability distributions is called \textbf{complete} if:
+
+\[E(g(T)) = 0 \; \forall \theta \implies P(g(T) = 0) = 1 \; \forall \theta\]
+
+\vspace{3mm}
+\hrule
+\vspace{3mm}
+
+It's hard to explain exactly what this means without an example, so I'll save that for the conclusion of this problem. Let's directly examine the expectation of the function of the statistic provided as a hint in the problem:
+
+\[g(\bar{x}, S^2) = \left( \frac{n}{a + n} \right) \bar{X}^2 - \frac{S^2}{a}\]
+
+\vspace{-3mm}
+\begin{align*}
+	E\left[ \left( \frac{n}{a + n} \right) \bar{X}^2 - \frac{S^2}{a}  \right] &= \frac{n}{a+n} E[\bar{x}^2] - \frac{1}{a}E[S^2] \\
+	&= \frac{n}{a+n} (Var(\bar{x}) + (E[\bar{x}])^2) - \frac{1}{a} \cdot a\theta^2 \\
+	&= \frac{n}{a+n} \left( \frac{a\theta^2}{n} + \theta^2 \right) - \theta^2 & (Var(\bar{x}) = \sigma^2 / n) \\
+	&= \frac{a\theta^2}{a+n} + \frac{n\theta^2}{a + n} - \theta^2 \\
+	&= \frac{\theta^2(a+n)}{a+n} - \theta^2 \\
+	&= \theta^2 - \theta^2 \\
+	&= 0
+\end{align*}
+
+Why this is proof that the family is \textbf{not complete} is that, while this expectation is always zero, $g(\bar{x}, S^2)$ is not $0$ following from this. We can come up with a ton of situations where that linear combination of $\bar{x}$ and $S^2$ are not 0 and yet the expectation is still always 0. The implication does not hold, thus we do not have completeness.
