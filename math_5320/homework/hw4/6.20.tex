@@ -58,7 +58,7 @@ Now finally we can look at the expected value of some function of the max.
 
 \begin{align*}
 	E[g(x_{(n)})] &= \int_{x=0}^{x=\theta} g(x) \frac{2nx^{2n-1}}{\theta^{2n}} dx \\
-	&= \frac{2n}{\theta^2} \int g(x) x^{2n-1} dx
+	&= \frac{2n}{\theta^{2n}} \int g(x) x^{2n-1} dx
 \end{align*}
 
-Some notes. $\frac{2n}{\theta^2}$ will always be nonzero due to the bounds on both $\theta$ and $n$. Similarly, $x$'s bounds also force $x^{2n-1}$ to be non-zero on its support. The only way for the integrand to evaluate to 0 is for $g(x) = 0$ for all $\theta$. Thus, $T(\vec{x}) = X_{(n)}$ is complete.
+Some notes. $\frac{2n}{\theta^{2n}}$ will always be nonzero due to the bounds on both $\theta$ and $n$. Similarly, $x$'s bounds also force $x^{2n-1}$ to be non-zero on its support. The only way for the integrand to evaluate to 0 is for $g(x) = 0$ for all $\theta$. Thus, $T(\vec{x}) = X_{(n)}$ is complete.
