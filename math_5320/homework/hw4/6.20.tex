@@ -62,3 +62,27 @@ Now finally we can look at the expected value of some function of the max.
 \end{align*}
 
 Some notes. $\frac{2n}{\theta^{2n}}$ will always be nonzero due to the bounds on both $\theta$ and $n$. Similarly, $x$'s bounds also force $x^{2n-1}$ to be non-zero on its support. The only way for the integrand to evaluate to 0 is for $g(x) = 0$ for all $\theta$. Thus, $T(\vec{x}) = X_{(n)}$ is complete.
+
+\pagebreak
+\subsection*{C.}
+
+\[
+	f(x \mid \theta) = \frac{\ln(\theta) \theta^x}{\theta - 1} I_{(0,1)}(x) I_{(1, \infty)}(\theta)
+\]
+
+\begin{align*}
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n \frac{\ln(\theta) \theta^{x_i}}{\theta - 1} \\
+	&= \frac{\ln(\theta)^n \theta^{\sum x_i}}{(\theta - 1)^n} \\
+	&= 1 \cdot \left( \frac{\ln(\theta)}{\theta-1} \right)^n \cdot \exp\left( \sum x_i \ln(\theta) \right)
+\end{align*}
+
+where
+
+\begin{align*}
+	h(x) &= 1 \\
+	c(\theta) &= \left( \frac{\ln(\theta)}{\theta-1} \right)^n \\
+	t(x) &= \sum x_i \\
+	w(\theta) &= \ln(\theta)
+\end{align*}
+
+Therefore, $x$ is a member of the exponential family. The parameter space also contains an open set on $\mathbb{R}$. Therefore, according to theorem 6.2.25, $T(\vec{x}) = (\sum x_i)$ is a complete statistic for $\theta$.

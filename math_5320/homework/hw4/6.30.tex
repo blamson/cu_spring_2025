@@ -1,0 +1,39 @@
+\section*{6.30b}
+
+Let $X_1, \cdots, X_n$ be a random sample from the pdf:
+
+\[
+	f(x \mid \mu) = e^{-(x-\mu)}, \; -\infty < \mu < x < \infty
+\]
+
+\textbf{Problem:} Given that $X_{(1)} = \text{min}_iX_i$ is a complete sufficient statistic for $\mu$, use Basu's theorem to show that $X_{(1)}$ and $S^2$ are independent.
+
+\textbf{Answer:} What's useful here is the given information. Basu's theorem states that if a statistic is complete, it is independent of all ancillary statistics. What this means is we can mostly just ignore the complete statistic. What we need to do is show that $S^2$ is ancillary. 
+
+First we can think intuitively about the sample variance. Whatever value $\mu$ shifts $x$ by doesn't impact the spread at all, it just moves it around. Intuitively, we should expect it to be ancillary with respect to $\mu$.  
+
+If we look at our given pdf here we can note something useful, it's a shifted exponential pdf. What we have here is a location family according to definition 3.5.2. Theorem 3.5.6 allows us to go further with this, we have a pdf of the form $(1/\sigma) f( (x-\mu)/\sigma )$ where $\sigma=1$. So we can look at another random variable $Z$ where $X=Z+\mu$. 
+
+Why do we care about that? Well, now $X$ is a function of $\mu$. We know this as well from the bounds at the start of the problem, $\mu$ is the lower bound of $x$. So we can start to see how all this plays out with the sample variance to see if it depends on $\mu$ still. If it doesn't, we know that $S^2$ is ancillary and thus also independent of the minimum. 
+
+For reference, $S^2 = \frac{1}{n-1} \sum (x_i - \bar{x})^2$,
+
+We need the sample mean for this, so we'll evaluate that and then plug in our equivalent value of $X$. 
+
+\begin{align*}
+	\bar{x} &= \frac{1}{n} \sum x_i \\
+	&= \frac{1}{n} \sum z_i + \mu \\
+	&= \frac{1}{n} n\mu + \frac{1}{n} \sum z_i \\
+	&= \mu + \bar{z}
+\end{align*}
+
+Of note here that $\mu$ is a part of the sample mean. This would indicate to us that the sample mean is not ancillary. So let's now plug this into $S^2$.
+
+\begin{align*}
+	S^2 &= \frac{1}{n-1} \sum (x_i - \bar{x})^2 \\
+	&= \frac{1}{n-1} \sum \left( (z_i + \mu) - (\bar{z} + \mu) \right)^2 & \text{(Substitute in Z)} \\
+	&= \frac{1}{n-1} \sum \left( z_i - \bar{z} + \mu - \mu \right)^2 \\
+	&= \frac{1}{n-1} \sum (z_i - \bar{z})^2
+\end{align*}
+
+What we can see here is that the sample variance is not a function involving $\mu$. Thus, it is an ancillary statistic. Therefore, from Basu's theorem, we know that it must be independent of $X_{(1)}$.

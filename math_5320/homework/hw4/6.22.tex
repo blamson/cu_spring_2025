@@ -1,0 +1,48 @@
+\section*{6.22}
+
+Let $X_1, \cdots, X_n$ be a random sample from a population with pdf:
+
+\[f(x \mid \theta) = \theta x^{\theta - 1}, \; 0 < x < 1, \; \theta > 0\]
+
+\subsection*{A.}
+
+Is $\sum x_i$ sufficient for $\theta$. 
+
+\noindent Let's see.
+
+\vspace{-3mm}
+\begin{align*}
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n \theta x_i^{\theta - 1} \\
+	&= \theta^n \left( \prod_{i=1}^n x_i \right)^{\theta - 1} \cdot 1
+\end{align*}
+
+where
+
+\vspace{-3mm}
+\begin{align*}
+	T(\vec{x}) &= \prod_{i=1}^n x_i \\
+	g(T(\vec{x}) \mid \theta) &=  \theta^n \left( \prod_{i=1}^n x_i \right)^{\theta - 1} \\
+	h(x) &= 1
+\end{align*}
+
+By the factorization theorem, $\prod x_i$ is sufficient for $\theta$. This is, notably, not $\sum x_i$. Therefore, no, $\sum x_i$ is not sufficient for $\theta$. 
+
+\subsection*{B.}
+
+Find a complete sufficient statistic for $\theta$. 
+
+With some slight rearranging we have an exponential family here which makes this easy.
+
+\[
+	f(\vec{x} \mid \theta) = \theta^n \exp\left( (\theta - 1) \ln\left( \prod_{i=1}^n x_i \right) \right) \cdot 1
+\]
+
+Where
+
+\vspace{-5mm}
+\begin{align*}
+	t(\vec{x}) &= \prod_{i=1}^n x_i & w(\theta) &= \theta - 1 \\
+	c(\theta) &= \theta^n & h(x) &= 1 \\
+\end{align*}
+
+We also have an open set, $(0, \infty)$, in $\mathbb{R}$ for $\theta$. Therefore, according to theorem 6.2.25, $T(\vec{x}) = \prod_{i=1}^n x_i$ is a complete sufficient statistic for $\theta$.
