@@ -1,0 +1,64 @@
+\section*{6.20}
+
+For each of the following pdfs let $X_1, \cdots, X_n$ be iid observations. Find a complete sufficient statistic, or show that one does not exist.
+
+\subsection*{A}
+
+\[
+	f(x\mid\theta) = \frac{2x}{\theta^2} I_{(0, \theta)}(x) I_{(0, \infty)}(\theta)
+\]
+
+Our order of operations here will be to find a sufficient statistic and then verify that it's complete. So, let's start by finding the joint distribution. The big thing to note here is that $x$ is bounded by $\theta$. This will alter the indicator function in the joint pdf once we pass it through the product. 
+
+\begin{align*}
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n  \frac{2x_i}{\theta^2} I_{(0, \theta)}(x_i) I_{(0, \infty)}(\theta) \\
+	&= \left( \frac{2x}{\theta^2} \right)^n I_{(0, \theta)}(x_{(n)}) & \text{(Distribute the product)} \\
+	&= x^n \left( \frac{2}{\theta^2} \right)^n I_{(0, \theta)}(x_{(n)}) & \text{(Rearrange)}
+\end{align*}
+
+Which gives us:
+
+\begin{align*}
+	g(T(\vec{x}) \mid \theta) &= \left( \frac{2}{\theta^2} \right)^n I_{(0, \theta)}(x_{(n)}) \\
+	h(x) &= x^n \\
+	T(\vec{X}) &= x_{(n)}
+\end{align*}
+
+Thus, by the factorization theorem, $T(\vec{X}) = x_{(n)}$ is a sufficient statistic for $\theta$.
+
+To verify that this is complete we need to take its expected value. To do that we need a couple things. First, the pdf of the max order statistic. Second, the cdf of the pdf provided. 
+
+The pdf of the order statistics simplifies down greatly for the max. We get:
+
+\begin{align*}
+	f_{x_{(n)}}(x) &= \frac{n!}{(n-1)!} f_x(x) (F_x(x))^{n-1} \\
+	&= n f_x(x) (F_x(x))^{n-1} 
+\end{align*}
+
+Now for the cdf.
+
+\begin{align*}
+	F_X(x) &= \int_{t=0}^{t=x} f_X(t) dt \\
+	&= \int_{t=0}^{t=x} \frac{dt}{\theta^2} dt \\
+	&= \left[ \frac{dt^2}{2\theta^2} \right]_{t=0}^{t=x} \\
+	&= \frac{x^2}{\theta^2}
+\end{align*}
+
+Plugging this into the pdf for the max gives us:
+
+\begin{align*}
+	f_{x_{(n)}}(x) &= n f_x(x) (F_x(x))^{n-1} \\
+	&= n \frac{2x}{\theta^2} \left( \frac{x^2}{\theta^2} \right)^{n-1} \\
+	&= \frac{2xn}{\theta^2} \left( \frac{x}{\theta} \right)^{2n-2} \\
+	&= x^{2n-1}2n\theta^{-2n} \\
+	&= \frac{2nx^{2n-1}}{\theta^{2n}}
+\end{align*}
+
+Now finally we can look at the expected value of some function of the max.
+
+\begin{align*}
+	E[g(x_{(n)})] &= \int_{x=0}^{x=\theta} g(x) \frac{2nx^{2n-1}}{\theta^{2n}} dx \\
+	&= \frac{2n}{\theta^2} \int g(x) x^{2n-1} dx
+\end{align*}
+
+Some notes. $\frac{2n}{\theta^2}$ will always be nonzero due to the bounds on both $\theta$ and $n$. Similarly, $x$'s bounds also force $x^{2n-1}$ to be non-zero on its support. The only way for the integrand to evaluate to 0 is for $g(x) = 0$ for all $\theta$. Thus, $T(\vec{x}) = X_{(n)}$ is complete.

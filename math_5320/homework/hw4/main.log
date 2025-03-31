@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  30 MAR 2025 18:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  31 MAR 2025 12:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -181,7 +181,7 @@ ackend-pdftex.def
 File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count274
 \l__pdf_internal_box=\box53
-) (./main.aux)
+) (./main.aux (./6.15.aux) (./6.20.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
@@ -227,7 +227,10 @@ e
 )) (./1.tex) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/ma
 p/pdftex/updmap/pdftex.map}
 
-] (./6.15.tex
+]
+\openout2 = `6.15.aux'.
+
+ (./6.15.tex
 LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
 
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsa
@@ -239,41 +242,52 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsb
 .fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [2]
+) [2
+
+]
 Overfull \hbox (5.38316pt too wide) detected at line 66
 []
  []
 
-) [3] (./main.aux)
+) [3]
+\openout2 = `6.20.aux'.
+
+ (./6.20.tex [4
+
+
+
+]) [5] (./main.aux (./6.15.aux) (./6.20.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2435 strings out of 474116
- 37936 string characters out of 5733619
+ 2480 strings out of 474116
+ 38829 string characters out of 5733619
  1942187 words of memory out of 5000000
- 24785 multiletter control sequences out of 15000+600000
+ 24820 multiletter control sequences out of 15000+600000
  561286 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,12n,70p,579b,236s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,12n,70p,579b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmbx10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/
 share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></opt/homebrew/Cella
 r/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
 /opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmmi7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmr10.pfb></opt/homebrew/Cellar/texlive/20240312/share
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></opt/homebrew/Cellar/texli
-ve/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></opt/ho
-mebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmsy7.pfb>
-Output written on main.pdf (3 pages, 106824 bytes).
+nts/cm/cmmi5.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmmi7.pfb></opt/homebrew/Cellar/texlive/20240312/share
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/homebrew/Cellar/texl
+ive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></opt/hom
+ebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
+Output written on main.pdf (5 pages, 131475 bytes).
 PDF statistics:
- 59 PDF objects out of 1000 (max. 8388607)
- 35 compressed objects within 1 object stream
+ 75 PDF objects out of 1000 (max. 8388607)
+ 45 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
