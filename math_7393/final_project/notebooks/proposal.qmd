@@ -1,0 +1,254 @@
+---
+title: "Research Proposal"
+author: "Brady Lamson"
+format: html
+---
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+packages <- c("ggplot2", "haven", "dplyr", "tidycensus", "readr")
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cran.rstudio.com/")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+options(scipen = 10)
+```
+
+
+```{r}
+#| code-fold: true
+#| code-summary: Data Ingestion and cleanup
+
+# Basic code to create this csv is in the eda.qmd file in this directory
+df <- readr::read_csv("../data/poverty_data.csv.gz")
+
+
+# This code is used to get the actual state from the FIPs code
+fips_to_state <- tidycensus::fips_codes %>%
+    select("state", "state_code") %>%
+    distinct() %>%
+    mutate(state_code = as.numeric(state_code))
+
+df <- df %>%
+    rename(state_code = st) %>%
+    left_join(fips_to_state, join_by(state_code))
+
+
+# This is just to get the labels for the various categorical codes in the original dataset
+# This information can be found in spm-asc-data-dictionary.pdf
+df <- df %>%
+    mutate(
+        education = factor(education, levels=0:4, labels=c(NA, "Less than a HS degree", "HS degree", "Some college", "College degree")),
+        sex = factor(sex, levels = 1:2, labels = c("male", "female")),
+        race = factor(race, levels = 1:4, labels = c("white", "black", "asian", "other")),
+        mar = factor(mar, levels = 1:5, labels = c("married", "widowed", "divorced", "separated", "never married"))
+    )
+```
+
+# 1. Research Question
+
+I want to understand the interplay of various predictors of an individuals poverty status according to the Supplemental Poverty Measure (SPM). We know of many usual predictors of poverty; age, education, state of residence, etc. On their own that may not be too interesting, however, I think there is a lot of value in examining the relationship between these predictors in determining an SPM poverty classification. As an example, say we hold an individuals out-of-pocket medical expenses fixed, how much of an impact does education or age play into a possible poverty classification? As another example, say we have two 70 year olds. How much influence does marital status have on poverty? Is an older adult who is single at more or less risk of poverty than someone who was widowed? If two people have the same adjusted gross income, does race still play an important part in risk of poverty due to other factors? 
+
+Using this information, I intend to estimate the probability that an individual is classified as poor according to the SPM. I also intend to identify which variables are the most influential in making this prediction.
+
+Note: For more information on the supplemental poverty measure here is information from the Census Bureau: [Link](https://www.ssa.gov/policy/docs/ssb/v75n3/v75n3p55.html)
+
+Here is a general motivation for using the SPM versus the official measure taken from that link.
+
+> Critics of the official measure point out that the official income or resource measure fails to account for noncash government benefits, taxes, medical out-of-pocket (MOOP) expenses, and work expenses. Those critics also point out that the official thresholds are a very narrow measure of necessary expenditures—that is, food—and are based on very old data. They argue that the official thresholds also fail to adjust for geographic differences in the cost of living, and that the official measure's unit of analysis (the Census-defined family) is too narrow.
+
+# 2. Data Source
+
+The data I'm used is a single table acquired directly from the Census Bureau's website. The data can be found [here](https://www.census.gov/data/datasets/time-series/demo/supplemental-poverty-measure/acs-research-files.html).
+
+# 3. Observation Count
+
+My dataset has approximately 3.2million rows of observations. Each observation represents a single person. 
+
+# 4. Are you merging multiple datasets?
+
+I'm joining to a convenient dataset in the `tidycensus` package which allows me to convert state FIPS codes to their actual state. (8 -> CO for example).
+
+# 5. Variables
+
+| Variable       | Description                             | Variable Type       |
+|----------------|-----------------------------------------|---------------------|
+| spm_poor       | Poverty status under SPM (1 = poor, 0 = not) | Binary              |
+| spm_povthreshold| SPM poverty threshold for the unit      | Continuous (numeric)|
+| st             | State of residence                      | Categorical         |
+| age            | Age of individual                       | Continuous (numeric)|
+| mar            | Marital status                          | Categorical         |
+| sex            | Sex of individual                       | Binary/Categorical  |
+| education      | Educational attainment                  | Categorical         |
+| race           | Race                                    | Categorical         |
+| hispanic       | Hispanic ethnicity                      | Binary/Categorical  |
+| agi            | Adjusted gross income                   | Continuous (numeric)|
+| hi_premium     | Health insurance premium                | Continuous (numeric)|
+| moop_other     | Medical out-of-pocket expenses          | Continuous (numeric)|
+
+# 6. Response Variable
+
+My response variable will be `spm_poor`. 
+
+# 7. Data Distribution
+
+I intend to use a Bernoulli data distribution. 
+
+# 8. Response Variable Numerical Summary
+
+```{r}
+summary(df$spm_poor)
+table(df$spm_poor)
+```
+
+# 9. Response Variable Visual Summary
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=factor(spm_poor))) +
+    geom_bar() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    scale_x_discrete(labels=c("No", "Yes")) +
+    labs(x="Poverty Classification", y="Frequency")
+```
+
+# Predictor Visual Summaries
+
+## SPM Poverty Threshold
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=spm_povthreshold)) +
+    #geom_histogram(color="black", bins=75) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    scale_x_continuous(breaks=seq(0, 200000, 25000)) +
+    labs(x="SPM Poverty Threshold", y="Density")
+```
+
+## State
+
+```{r, echo=FALSE, fig.height=10}
+df %>%
+    ggplot(aes(y=forcats::fct_infreq(state))) +
+    geom_bar() +
+    labs(x="Frequency", y="State") +
+    ggtitle("Frequency Breakdown of States")
+```
+
+Note: I will likely be changing this variable to a **region** variable instead using either the Census Bureaus four statistical regions or their nine divisions. Obviously using all of these states as categories would be ill-advised. [Link to Regions](https://www2.census.gov/geo/pdfs/maps-data/maps/reference/us_regdiv.pdf).
+
+## Age
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=age)) +
+    #geom_histogram(color="black", bins=50) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="Age", y="Density")
+```
+
+## Marital Status
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=forcats::fct_infreq(mar))) +
+    geom_bar() +
+    labs(y="Frequency", x="Marital Status")
+```
+
+## Sex
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=forcats::fct_infreq(sex))) +
+    geom_bar() +
+    labs(y="Frequency", x="Sex")
+```
+
+## Education
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=forcats::fct_infreq(education))) +
+    geom_bar() +
+    labs(y="Frequency", x="Education")
+```
+
+## Race
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=forcats::fct_infreq(race))) +
+    geom_bar() +
+    labs(y="Frequency", x="Race")
+```
+
+## Hispanic
+
+```{r, echo=FALSE}
+df %>%
+    ggplot(aes(x=factor(hispanic))) +
+    geom_bar() +
+    labs(y="Frequency", x="Hispanic") +
+    scale_x_discrete(labels=c("No", "Yes"))
+```
+
+## Adjusted Gross Income
+
+```{r, echo=FALSE, warning=FALSE}
+df %>%
+    ggplot(aes(x=agi)) +
+    #geom_histogram(color="black", bins=50) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="Adjusted Gross Income", y="Density") +
+    ggtitle("AGI - Full Density")
+
+df %>%
+    ggplot(aes(x=agi)) +
+    #geom_histogram(color="black", bins=50) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="Adjusted Gross Income", y="Density") +
+    xlim(c(-10000, 500000)) +
+    ggtitle("AGI - Zoomed in to below $500000")
+```
+
+## Health Insurance Premium
+
+```{r, echo=FALSE, warning=FALSE}
+df %>%
+    ggplot(aes(x=hi_premium)) +
+    #geom_histogram(color="black", bins=50) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="Health Insurance Premium", y="Density") +
+    #ggtitle("AGI - Full Density")
+    xlim(c(0, 10)) +
+    ggtitle("HI Premium zoomed in")
+```
+
+## Medical out-of-pocket expenses
+
+```{r, echo=FALSE, warning=FALSE}
+df %>%
+    ggplot(aes(x=moop_other)) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="MOOP", y="Density") +
+    ggtitle("Medical Out of Pocket Expenses - Full Density")
+
+df %>%
+    ggplot(aes(x=moop_other)) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="MOOP", y="Density") +
+    xlim(c(0, 5000)) +
+    ggtitle("Medical Out of Pocket Expenses - Zoomed In")
+```
+
