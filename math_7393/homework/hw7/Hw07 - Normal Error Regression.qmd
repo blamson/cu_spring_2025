@@ -1,0 +1,81 @@
+---
+title: "Homework 7 - Normal Error Regression"
+format: html
+self-contained: true
+---
+
+All the questions below require you to use R and/or Stan to approximate the posterior distribution(s) of interest.  I assume that you will do things like run multiple chains, calculate the Gelman-Rubin statistic, check the ACF of draws from the MCMC chain, determine the effective sample size, etc.  However, I will only be looking at the posterior results.  I recommend a warmup of 50,000 iterations and 50,000 saved values for each parameter using 4 chains. When presenting your posterior results, use a tabular format similar to below.
+
+|Statistic | Mean	| SD	| 0.025	| 0.975|
+|---|---|---|---|---|
+$\beta_0$ | | | |
+$\beta_1$ | | | |
+$\beta_2$ | | | |
+$\beta_3$ | | | |
+$\beta_4$ | | | |
+$\sigma^2$ | | | |
+
+# Bank data
+
+Ramsey and Schafer (2013) provide data related to bank employee salary for entry-level clerical employees hired by the Harris Trust and Savings Bank between 1969 and 1977. Let the response variable be beginning salary (`bsalary`) in thousands of dollars.  Along with the intercept, there are four covariates:
+	
+- `male`: an indicator variable for whether the employee is male.
+- `education`: years of education
+- `experience`: months of experience
+- `time`: time at hiring as measured in months after January 1, 1969.  
+
+The data are available in `bank_salary` data set in the **bayesutils** package available at [https://github.com/jfrench/bayesutils](https://github.com/jfrench/bayesutils).
+
+Fit a multiple linear regression model using all four explanatory variables and the typical normal error regression model.  
+
+Assume that $\mathrm{Salary}_i \stackrel{indep.}{\sim} N(\mu_i, \sigma^2)$, where $\mu_i = \beta_0 + \beta_1 \mathrm{male}_i + \beta_2 \mathrm{education}_i + \beta_3 \mathrm{experience}_i + \beta_4 \mathrm{time}_i$, $i=1,2,\ldots,n$.
+
+Use a Gamma(.01, .01) prior distribution for the precision $\tau$ (or an Inv-Gamma(0.01, 0.01) prior distribution for the data variance $\sigma^2$).  We will change the priors for $\boldsymbol{\beta}$ in three different models below.
+
+# Problem 1 
+
+Model 1:  Use independent normal priors for the regression coefficients, with mean 0 and variance $100^2$. 
+
+Provide the code used to fit your model.
+
+**Solution**
+
+# Problem 2
+
+Provide the posterior mean, standard deviation, 0.025, and 0.975 quantiles for all regression coefficients and the variance $\sigma^2$ in a simple tabular format.
+
+**Solution**
+
+# Problem 3
+
+Provide the code used to fit a model using a general Zellner's g-prior.
+
+**Solution**
+
+# Problem 4
+
+Model 2:  Use the default Zellner’s g-prior  $\boldsymbol{\beta}$ ($c^2=n$) to fit the corresponding regression model.
+
+Provide the posterior mean, standard deviation, 0.025, and 0.975 quantiles for all regression coefficients and the variance $\sigma^2$ in a simple tabular format.
+
+**Solution**
+
+# Problem 5
+
+Model 3:  Use a conservative Zellner’s g-prior for $\boldsymbol{\beta}$ with $c^2=1000$. 
+
+Provide the posterior mean, standard deviation, 0.025, and 0.975 quantiles for all regression coefficients and the variance $\sigma^2$ in a simple tabular format.
+
+**Solution**
+
+# Problem 6
+
+Compare the posterior distributions for $R_b^2$ for all three models (with proper labeling) in a single plot. Which model appears to have the best fit?
+
+**Solution**
+
+# Problem 7
+
+Provide a point estimate (using the posterior means) of the regression equation for Model 1. Interpret $\beta_{0}$, $\beta_{2}$ for Model 1 in the context of the problem.
+
+**Solution**

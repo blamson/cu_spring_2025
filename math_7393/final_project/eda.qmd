@@ -1,0 +1,106 @@
+---
+title: "EDA"
+author: "Brady Lamson"
+format: html
+---
+
+# Poverty Data
+
+[Census Poverty data](https://www.census.gov/data/datasets/time-series/demo/supplemental-poverty-measure/acs-research-files.html)
+
+# Imports
+
+```{r}
+library(haven)
+library(dplyr)
+library(tidycensus)
+library(readr)
+```
+
+# Data Ingestion
+
+```{r}
+raw_data <- "data/spm_pu_2022.sas7bdat"
+if (file.exists(raw_data)) {
+    df <- haven::read_sas("data/spm_pu_2022.sas7bdat")
+} else {
+    print("Go download the data silly")
+}
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+df_trim <- df %>%
+    select(c(
+        , "SPM_Poor" # poverty classification
+        , "SPM_PovThreshold" # SPM unit poverty threshold
+        , "st" # state of residence
+        , "wt" # weight
+        , "Age"
+        , "Mar" # marital status
+        , "Sex"
+        , "Education"
+        , "Race"
+        , "Hispanic"
+        , "AGI" # adjusted gross income
+        , "HI_premium" # health insurance premium
+        , "Moop_other" # medical out of pocket expenses
+    )) %>%
+    rename_all(tolower)
+```
+
+```{r}
+df_trim %>% head()
+```
+
+# Write Compressed CSV
+
+We want to do the data writing here as we lose factor information on the transition to .csv and I want to save as few columns as possible due to file size constraints.
+
+```{r}
+readr::write_csv(df_trim, file="data/poverty_data.csv.gz")
+```
+
+# Data Cleaning
+
+## States
+
+```{r}
+fips_to_state <- tidycensus::fips_codes %>%
+    select("state", "state_code") %>%
+    distinct() %>%
+    mutate(state_code = as.numeric(state_code))
+
+df_trim <- df_trim %>%
+    rename(state_code = st) %>%
+    left_join(fips_to_state, join_by(state_code))
+```
+
+## General Variable Cleanup
+
+```{r}
+df_trim <- df_trim %>%
+    mutate(
+        education = factor(education, levels=0:4, labels=c(NA, "Less than a HS degree", "HS degree", "Some college", "College degree")),
+        sex = factor(sex, levels = 1:2, labels = c("male", "female")),
+        race = factor(race, levels = 1:4, labels = c("white", "black", "asian", "other")),
+        mar = factor(mar, levels = 1:5, labels = c("married", "widowed", "divorced", "separated", "never married"))
+    )
+
+```
+
+```{r}
+df_trim
+```
+
+```{r}
+df_trim$spm_poor %>% hist()
+```
+
+```{r}
+df_trim$spm_poor %>% table()
+```
+

@@ -1,6 +1,7 @@
 ---
 title: "Research Proposal"
 author: "Brady Lamson"
+date: "04-07-2025"
 format: html
 self-contained: true
 ---
@@ -229,6 +230,14 @@ df %>%
     geom_density() +
     scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
     labs(x="Health Insurance Premium", y="Density") +
+    ggtitle("HI Premium - Full Density")
+
+df %>%
+    ggplot(aes(x=hi_premium)) +
+    #geom_histogram(color="black", bins=50) +
+    geom_density() +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+    labs(x="Health Insurance Premium", y="Density") +
     #ggtitle("AGI - Full Density")
     xlim(c(0, 10)) +
     ggtitle("HI Premium zoomed in")
@@ -253,3 +262,12 @@ df %>%
     ggtitle("Medical Out of Pocket Expenses - Zoomed In")
 ```
 
+# Final Notes and Thoughts
+
+We have a lot of weird variables here. Many with extremely long tails that may need log transformations and some very unbalanced categorical variables. I'm definitely going to have to leverage some transformations and creativity to make these variables behave. For unbalanced categorical variables I'm curious to see how that goes. I have enough data that it may not be an enormous issue, but I may need to group categories together to make them more well behaved. 
+
+On the education variable I'm unsure how to handle that enormous amount of NAs. It's possible I remove them directly, though it's worth noting that changes the interpretation of my working set of data to those that fit within those 4 other educational categories. 
+
+Health Insurance premium is so packed at 0 that I'm curious to see if it makes it anywhere in the variable selection process. I think it's an interesting variable to include in theory but that density plot doesn't give me a lot of optimism. 
+
+State looks unbalanced but I believe it'll look a lot better when we factor in the regions, and that will bring the categories there down to 4.
