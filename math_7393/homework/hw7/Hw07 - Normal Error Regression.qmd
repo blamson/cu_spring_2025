@@ -2,7 +2,29 @@
 title: "Homework 7 - Normal Error Regression"
 format: html
 self-contained: true
+author: "Brady Lamson"
+date: "04-09-2025"
 ---
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+packages <- c("ggplot2", "rstan", "coda", "bayesplot", "dplyr")
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cran.rstudio.com/")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+# see if bayesutils package is available
+if (!require("bayesutils", quietly = TRUE)) {
+  # if not, then install package
+  remotes::install_github("jfrench/bayesutils")
+  library(bayesutils)
+}
+
+options(scipen = 20) # For fixing scientific notation nonsense
+```
 
 All the questions below require you to use R and/or Stan to approximate the posterior distribution(s) of interest.  I assume that you will do things like run multiple chains, calculate the Gelman-Rubin statistic, check the ACF of draws from the MCMC chain, determine the effective sample size, etc.  However, I will only be looking at the posterior results.  I recommend a warmup of 50,000 iterations and 50,000 saved values for each parameter using 4 chains. When presenting your posterior results, use a tabular format similar to below.
 
@@ -32,6 +54,12 @@ Assume that $\mathrm{Salary}_i \stackrel{indep.}{\sim} N(\mu_i, \sigma^2)$, wher
 
 Use a Gamma(.01, .01) prior distribution for the precision $\tau$ (or an Inv-Gamma(0.01, 0.01) prior distribution for the data variance $\sigma^2$).  We will change the priors for $\boldsymbol{\beta}$ in three different models below.
 
+# Data Ingestion
+
+```{r}
+df <- bayesutils::bank_salary
+```
+
 # Problem 1 
 
 Model 1:  Use independent normal priors for the regression coefficients, with mean 0 and variance $100^2$. 
@@ -40,17 +68,213 @@ Provide the code used to fit your model.
 
 **Solution**
 
+```{r}
+#| code-fold: true
+#| code-summary: Stan model
+
+stanmod = "
+data {
+  int<lower=1> n; // number of observations
+  vector[n] y; // data
+  vector[n] male; //covariate
+  vector[n] edu; //covariate
+  vector[n] exp; //covariate
+  vector[n] time; //covariate
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  real<lower=0> prec; // tau
+  real beta0;
+  real beta1;
+  real beta2;
+  real beta3;
+  real beta4;
+}
+transformed parameters{
+  real<lower=0> sigma; //get sigma from the precision
+  sigma = sqrt(1/prec);
+}
+model {
+  //specify priors
+  beta0 ~ normal(0.0, 100);
+  beta1 ~ normal(0.0, 100);
+  beta2 ~ normal(0.0, 100);
+  beta3 ~ normal(0.0, 100);
+  beta4 ~ normal(0.0, 100);
+  prec ~ gamma(0.01, 0.01);
+
+  // data distribution
+  for(i in 1:n){
+    y[i] ~ normal(beta0 + beta1*male[i] + beta2*edu[i] + beta3*exp[i] + beta4*time[i], sigma);
+  }
+}
+generated quantities {
+  real<lower=0> sigmasq; //get sigmasq from the precision
+  real Rbsq;
+  sigmasq = 1/prec;
+  Rbsq = 1 - sigmasq / v;
+}
+"
+```
+
+```{r, results=FALSE}
+#| code-fold: true
+#| code-summary: Running the model
+
+n <- nrow(df)
+v <- var(df$bsalary)
+
+stan_dat <- list(n=n, y=df$bsalary, male=df$male, edu=df$education, exp=df$experience, time=df$time, v=v)
+
+# if compiled model doesn't already exist,
+# compile the model, sample from model,
+# returns object of class stan
+# save model
+if (!file.exists("bank_mod1.rda")) {
+  # compile and sample from model
+  bank_fit = stan(model_code = stanmod,
+                             data = stan_dat,
+                             iter = 100000,
+                             chains = 4)
+  # alternatively, describe model
+  bank_mod = stan_model(model_code = stanmod)
+  save(bank_mod,
+       file = "bank_mod1.rda",
+       compress = "xz")
+} else {
+    load(file = "bank_mod1.rda")
+    # draw samples from the model
+    bank_fit = sampling(
+        bank_mod, 
+        data = stan_dat, 
+        iter = 100000, 
+        chains = 4
+    )
+}
+```
+
 # Problem 2
 
 Provide the posterior mean, standard deviation, 0.025, and 0.975 quantiles for all regression coefficients and the variance $\sigma^2$ in a simple tabular format.
 
 **Solution**
 
+```{r, echo=FALSE, include=FALSE}
+# summary of voter_fit object (all_chains)
+betas <- paste0("beta", 0:4)
+summary(bank_fit,
+        pars = c(betas, "sigmasq"),
+        probs = c(0.025, 0.975))$summary
+```
+
+| Statistic   | Mean       | SD         | 0.025     | 0.975     |
+|-------------|------------|------------|-----------|-----------|
+| $\beta_0$   | 3.52543947 | 0.33117008 | 2.87466044| 4.17709164|
+| $\beta_1$   | 0.72232391 | 0.11958235 | 0.48732577| 0.95696108|
+| $\beta_2$   | 0.09007136 | 0.02493631 | 0.04081261| 0.13896373|
+| $\beta_3$   | 0.00126836 | 0.00059607 | 0.00009726| 0.00244207|
+| $\beta_4$   | 0.02344778 | 0.00528185 | 0.01303559| 0.03381004|
+| $\sigma^2$  | 0.26369900 | 0.04070257 | 0.19559452| 0.35501293|
+
 # Problem 3
 
 Provide the code used to fit a model using a general Zellner's g-prior.
 
 **Solution**
+
+
+```{r}
+#| code-fold: true
+#| code-summary: Stan model
+
+stanmod = "
+data {
+  int<lower=1> n; // number of observations
+  vector[n] y; // data
+  matrix[n, 5] X; //covariates
+  vector[5] mu0; //prior mean for beta
+  cov_matrix[5] V; //V part of Zellner's g-prior
+  cov_matrix[n] I; //nxn identity matrix
+  real<lower=0> csq; //constant for Zellner's g-prior
+  real<lower=0> v; //sample variance
+}
+parameters {
+  real<lower=0> prec;
+  vector[5] beta;
+}
+transformed parameters{
+  real<lower=0> sigmasq; //get sigmasq from the precision
+  vector[n] mu;  // mean of responses
+  sigmasq = 1/prec;
+  mu = X * beta;
+}
+model {
+  // specify priors
+  beta ~ multi_normal(mu0, sigmasq*csq*V);
+  prec ~ gamma(0.01, 0.01);
+
+  // specify data distribution
+  // y ~ multi_normal(mu, sigmasq * I);
+  // The statement below is equivalent to what is above,
+  // but faster since we don't sample from a multivariate
+  // normal distribution internally.
+  for(i in 1:n) {
+    y[i] ~ normal(mu[i], sqrt(sigmasq));
+  }
+}
+generated quantities {
+  real Rbsq;
+  Rbsq = 1 - sigmasq / v;
+}
+"
+```
+
+```{r, results=FALSE}
+#| code-fold: true
+#| code-summary: Running the model
+
+n <- nrow(df)
+v <- var(df$bsalary)
+X <- cbind(1, df$male, df$education, df$experience, df$time)
+
+stan_dat = list(
+    n = n, 
+    y = df$bsalary,
+    X = X, 
+    mu0 = rep(0, 5),
+    V = solve(crossprod(X)),
+    I = diag(n), 
+    csq = n, v = v
+)
+
+# if compiled model doesn't already exist,
+# compile the model, sample from model,
+# returns object of class stan
+# save model
+if (!file.exists("bank_mod2.rda")) {
+  print("Compiling Model")
+  # compile and sample from model
+  bank_fit2 = stan(model_code = stanmod,
+                             data = stan_dat,
+                             iter = 100000,
+                             chains = 4)
+  # alternatively, describe model
+  bank_mod2 = stan_model(model_code = stanmod)
+  save(bank_mod2,
+       file = "bank_mod2.rda",
+       compress = "xz")
+} else {
+    print("Loading pre-compiled model")
+    load(file = "bank_mod2.rda")
+    # draw samples from the model
+    bank_fit2 = sampling(
+        bank_mod2,
+        data = stan_dat,
+        iter = 100000,
+        chains = 4
+    )
+}
+```
 
 # Problem 4
 
@@ -60,6 +284,24 @@ Provide the posterior mean, standard deviation, 0.025, and 0.975 quantiles for a
 
 **Solution**
 
+```{r, echo=FALSE, include=FALSE}
+# summary of voter_fit object (all_chains)
+# betas <- paste0("beta", 0:4)
+summary(bank_fit2,
+        pars = c("beta", "sigmasq"),
+        probs = c(0.025, 0.975))$summary
+```
+
+| Statistic   | Mean       | SD         | 0.025      | 0.975     |
+|-------------|------------|------------|------------|-----------|
+| $\beta_0$   | 3.49090280 | 0.48593480 | 2.53520700 | 4.43977668|
+| $\beta_1$   | 0.71523089 | 0.17457346 | 0.37318798 | 1.05838822|
+| $\beta_2$   | 0.08889521 | 0.03663930 | 0.01709412 | 0.16115403|
+| $\beta_3$   | 0.00125346 | 0.00087093 | -0.00045951| 0.00295790|
+| $\beta_4$   | 0.02316593 | 0.00769559 | 0.00810912 | 0.03835335|
+| $\sigma^2$  | 0.57087102 | 0.08538284 | 0.42734418 | 0.76189782|
+
+
 # Problem 5
 
 Model 3:  Use a conservative Zellner’s g-prior for $\boldsymbol{\beta}$ with $c^2=1000$. 
@@ -68,14 +310,111 @@ Provide the posterior mean, standard deviation, 0.025, and 0.975 quantiles for a
 
 **Solution**
 
+```{r, results=FALSE}
+#| code-fold: true
+#| code-summary: Running the model
+
+stan_dat = list(
+    n = n, 
+    y = df$bsalary,
+    X = X, 
+    mu0 = rep(0, 5),
+    V = solve(crossprod(X)),
+    I = diag(n), 
+    csq = 1000, 
+    v = v
+)
+
+# if compiled model doesn't already exist,
+# compile the model, sample from model,
+# returns object of class stan
+# save model
+if (!file.exists("bank_mod3.rda")) {
+  print("Compiling Model")
+  # compile and sample from model
+  bank_fit3 = stan(model_code = stanmod,
+                             data = stan_dat,
+                             iter = 100000,
+                             chains = 4)
+  # alternatively, describe model
+  bank_mod3 = stan_model(model_code = stanmod)
+  save(bank_mod3,
+       file = "bank_mod3.rda",
+       compress = "xz")
+} else {
+    print("Loading pre-compiled model")
+    load(file = "bank_mod3.rda")
+    # draw samples from the model
+    bank_fit3 = sampling(
+        bank_mod3,
+        data = stan_dat,
+        iter = 100000,
+        chains = 4
+    )
+}
+```
+
+```{r, echo=FALSE, include=FALSE}
+# summary of voter_fit object (all_chains)
+# betas <- paste0("beta", 0:4)
+summary(bank_fit3,
+        pars = c("beta", "sigmasq"),
+        probs = c(0.025, 0.975))$summary
+```
+
+| Statistic   | Mean       | SD         | 0.025      | 0.975     |
+|-------------|------------|------------|------------|-----------|
+| $\beta_0$   | 3.52439503 | 0.34071766 | 2.85408233 | 4.19248122|
+| $\beta_1$   | 0.72191150 | 0.12211989 | 0.48235411 | 0.96165738|
+| $\beta_2$   | 0.08980052 | 0.02562253 | 0.03964671 | 0.14005102|
+| $\beta_3$   | 0.00126518 | 0.00061152 | 0.00006657 | 0.00246328|
+| $\beta_4$   | 0.02339360 | 0.00539434 | 0.01278765 | 0.03399622|
+| $\sigma^2$  | 0.27931385 | 0.04180661 | 0.20916396 | 0.37239053|
+
+
 # Problem 6
 
 Compare the posterior distributions for $R_b^2$ for all three models (with proper labeling) in a single plot. Which model appears to have the best fit?
 
 **Solution**
 
+```{r}
+rbsq1 <- rstan::extract(bank_fit, pars = "Rbsq")$Rbsq
+rbsq2 <- rstan::extract(bank_fit2, pars = "Rbsq")$Rbsq
+rbsq3 <- rstan::extract(bank_fit3, pars = "Rbsq")$Rbsq
+
+ggplot() +
+    geom_density(aes(x=rbsq1, color = "one")) +
+    geom_density(aes(x=rbsq2, color = "two")) +
+    geom_density(aes(x=rbsq3, color = "three")) +
+    xlab(label = "Bayesian R-Squared")
+```
+
+None of these models seem particularly great. Models one and three are similar with model one eeking out a little further ahead in performance. Model 2 is a strange one. I want to talk about it a bit. 
+
+So we have what is primarily a negative $R_b^2$. It's also very wide. Why? If we refer back to model 2's aggregate result for its' estimate of $\sigma^2$ we get $0.571$ with the widest of the three intervals from the models. If we look the sample variance from our data we have $S^2 = 0.503$ which is smaller than our estimate. That's the problem. 
+
+```
+generated quantities {
+  real Rbsq;
+  Rbsq = 1 - sigmasq / v;
+}
+```
+
+$R_b^2$ is negative here because of that. As for why this models estimate is so much larger than the others? It must be due to the default value of Zellner's g-prior giving too much weight to the data. Model 3 is nearly identical but just uses a more conservative g-prior and doesn't show the same behavior. 
+
 # Problem 7
 
 Provide a point estimate (using the posterior means) of the regression equation for Model 1. Interpret $\beta_{0}$, $\beta_{2}$ for Model 1 in the context of the problem.
 
 **Solution**
+
+We have:
+
+$$
+\hat{y} = 3.53 + 0.72X_1 + 0.09X_2 + 0.001X_3 + 0.02X_4 + \epsilon
+$$
+
+$\beta_0$ interpretation: The expected salary a posteriori of a newly hired, non-male with 0 years of education and 0 years of experience is $3.53$ $[2.87, 4.18]$ thousand dollars.
+
+$\beta_2$ interpretation: The expected salary a posteriori increases by about $0.09$ $[0.04, 0.14]$ thousand dollars for every additional year of education assuming the same gender, years of experience, and time since being hired.
