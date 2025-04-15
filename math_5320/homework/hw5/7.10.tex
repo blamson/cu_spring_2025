@@ -1,0 +1,79 @@
+\section{7.10}
+
+The independent random variables \rs have the common distribution
+
+\[
+	P(X_i \leq x \mid \alpha, \beta) = \begin{cases}
+		0 & x < 0 \\
+		(x/\beta)^{\alpha} & 0 \leq x \leq \beta \\
+		1 & x > \beta
+	\end{cases}
+\]
+
+where the parameters $\alpha$, $\beta$ are positive. 
+
+\subsection*{A}
+
+Find a two dimensional sufficient statistic for $(\alpha, \beta)$.
+
+First we need the pdf of $x$. What we have been provided is the cdf. 
+
+\vspace{-2mm}
+\begin{align*}
+	f_X(x \mid \alpha, \beta) &= \frac{d}{dx} F_X(x) \\
+	&= \frac{d}{dx} \left( \frac{x}{\beta} \right)^{\alpha} \\
+	&= \alpha \left( \frac{x}{\beta} \right)^{\alpha - 1} \cdot \frac{d}{dx} \frac{x}{\beta} \\
+	&= \frac{\alpha}{\beta^{\alpha}} x^{\alpha - 1} \cdot I_{(0, \beta)}(x) \\
+	f_X(\vec{x} \mid \alpha, \beta) &= \prod_{i=1}^n \frac{\alpha}{\beta^{\alpha}} x^{\alpha - 1} \cdot I_{(0, \beta)}(x_i) \\
+	&= \left( \frac{\alpha}{\beta^{\alpha}} \right)^n \left( \prod_{i=1}^n x_i \right)^{\alpha - 1} I_{(0 \leq \rvmin{X})} I_{(\rvmax{X} \leq \beta)}
+\end{align*}
+
+So, we have
+
+\vspace{-2mm}
+\begin{align*}
+	T(\vec{x}) &= \left( \prod_{i=1}^n x_i, \rvmax{X} \right) \\
+	g(T(\vec{x})) &= \left( \frac{\alpha}{\beta^{\alpha}} \right)^n \left( \prod_{i=1}^n x_i \right)^{\alpha - 1} I_{(\rvmax{X} \leq \beta)} \\
+	h(\vec{x}) &= I_{(0 \leq \rvmin{X})}
+\end{align*}
+
+By the factorization theorem $T(\vec{x})$ is a sufficient statistic for $\vec{\theta}$.
+
+\pagebreak
+\subsection*{B}
+
+Find the MLEs of $\alpha$ and $\beta$.
+
+We start with the likelihood and log likelihood as always.
+
+\begin{align*}
+	L(\theta \mid \vec{x}) &= \left( \frac{\alpha}{\beta^{\alpha}} \right)^n \left( \prod_{i=1}^n x_i \right)^{\alpha - 1} I_{(0 \leq \rvmin{X})} I_{(\rvmax{X} \leq \beta)} \\
+	LL(\theta \mid \vec{x}) &= n\log\left( \frac{\alpha}{\beta^{\alpha}} \right) + (\alpha - 1)\log\left( \prod_{i=1}^n x_i \right) + \log(I(.)) \\
+	&= n\log(\alpha) - n \alpha \log(\beta) + (\alpha - 1) \log\left( \prod x_i \right) + \log(I(.))
+\end{align*}
+
+Where $I(.) =  I_{(0 \leq \rvmin{X})} I_{(\rvmax{X} \leq \beta)}$
+
+From here we will need a system of equations due to having two parameters to estimate. We first turn our attention to $\beta$ as we can logically derive its MLE. We can see from the likelihood function that maximizing it with respect to $\beta$ involves maximizing $\alpha/\beta^{\alpha}$. This is done by making $\beta$ as small as possible. However, its lower bound is dictated by $\rvmax{X}$. The max of the likelihood then with respect to $\beta$ occurs when $\hat{\beta} = \rvmax{X}$. 
+
+Thus, $\rvmax{X}$ is the MLE of $\beta$.
+
+From here we can now work on finding $\hat{\alpha}$. For this we will use $\hat{\beta} = \rvmax{X}$.
+
+\begin{align*}
+	\frac{d}{d\alpha} LL(\theta \mid \vec{x}) &= \frac{n}{\alpha} - n\log(\beta) + \log\left( \prod x_i \right) = 0 \\
+	0 &=  \frac{n}{\alpha} - n\log(\rvmax{X}) + \log\left( \prod x_i \right) \\
+	-\frac{n}{\alpha} &= - n\log(\rvmax{X}) + \log\left( \prod x_i \right) \\
+	-n &= \alpha( - n\log(\rvmax{X}) + \log\left( \prod x_i \right) ) \\
+	\hat{\alpha} &= -\frac{n}{n\log(\rvmax{X}) + \log\left( \prod x_i \right)}
+\end{align*}
+
+Now for the second derivative.
+
+\vspace{-5mm}
+\begin{align*}
+	\frac{d^2}{d \alpha^2} LL(\theta \mid \vec{x}) &= \frac{d}{d \alpha}  \frac{n}{\alpha} - n\log(\beta) + \log\left( \prod x_i \right) \\
+	&= -\frac{n}{\alpha^2}
+\end{align*}
+
+Since $n, \alpha > 0$, $-n/\alpha^2 < 0$ in $\alpha$. Therefore, $\hat{\alpha}$ is the MLE for $\alpha$.
