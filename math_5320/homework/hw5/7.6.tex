@@ -1,0 +1,58 @@
+\section*{7.6}
+
+Let \rs be a random sample from the pdf
+
+\[f(x \mid \theta) = \theta x^{-2}, \;\; 0 < \theta \leq x < \infty\]
+
+\subsection*{A}
+
+What is a sufficient statistic for $\theta$?
+
+\begin{align*}
+	f(\vec{x} \mid \theta) &= \prod_{i=1}^n \theta x_i^{-2} I_{(\theta, \infty)}(x_i) \\
+	&= \theta^n \left( \prod_{i=1}^n x_i^{-2} \right) I_{(\theta, \infty)}(\rvmin{X})
+\end{align*}
+
+We have,
+
+\begin{align*}
+	T(\vec{x}) &= \rvmin{X} \\
+	g(T(\vec{x}) \mid \theta) &= \theta^n I_{(\theta, \infty)}(\rvmin{X}) \\
+	h(\vec{x}) &= \prod_{i=1}^n x_i^{-2}
+\end{align*}
+
+Thus, by the factorization theorem, $\rvmin{X}$ is a sufficient statistic for $\theta$.
+
+\subsection*{B}
+
+Find the MLE of $\theta$.
+
+We have the likelihood function
+
+\[
+	L(\theta \mid \vec{x}) = f(\vec{x} \mid \theta) = \theta^n \left( \prod_{i=1}^n x_i^{-2} \right) I_{(\theta, \infty)}(\rvmin{X})
+\]
+
+First, we note that $\prod x_i$ does not depend on $\theta$ at all. We can think of it as a constant here. $\theta^n$ is also increasing increasing in $\theta$. 
+
+So, to maximize the likelihood function with respect to theta, we need to maximize $\theta^n$. However, $\theta$ is bound by $\rvmin{X}$. From this, the maximum of the likelihood function happens when $\hat{\theta} = \rvmin{X}$. Therefore, $\hat{\theta} = \rvmin{X}$ is the MLE of $\theta$. 
+
+\subsection*{C}
+
+Find the method of moments estimator of $\theta$.
+
+We have one parameter, so,
+
+\[m_1 = \frac{1}{n} \sum x_i = \bar{X} \equiv E[X] \]
+
+So,
+
+\begin{align*}
+	E[X] &= \int_{x=\theta}^{x=\infty} x \theta x^{-2} dx \\
+	&= \theta \int x^{-1} dx \\
+	&= \theta \left[ log(x) \right]_{\theta}^{\infty} \\
+	&= \theta \left( \log(\infty) - log(\theta) \right) \\
+	&= \infty
+\end{align*}
+
+As the expected value diverges, the method of moment estimator of $\theta$ does not exist.

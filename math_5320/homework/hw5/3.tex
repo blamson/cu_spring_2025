@@ -1,0 +1,27 @@
+\section*{3}
+
+Suppose \rs is an iid random sample from the Uniform(a,b) distribution. That is, $X_i$ has the following pdf for every $i$ from 1 to $n$.
+
+\[
+	f_x(x \mid a,b) = \frac{1}{b-a}, \;\;\; a \leq x \leq b, \;\; b>a
+\]
+
+Find the MLE of $a$ and $b$. 
+
+Same song and dance here, mostly. We'll start with the likelihood function.
+
+\[L(a,b \mid \vec{x}) = \prod_{i=1}^n \frac{1}{b-1} I_{(a,b)}(x_i)\]
+
+The indicator function here is the key. How it changes as we pass the product through it is what will provide us with our estimators. Let's think of how this works. We need all of the $x_i$ values to fall between $a$ and $b$. Any of them falling outside that range results in a likelihood of 0. So we need functions of our sample able to capture the low and high points of our bounds. That will of course be our min and max functions. 
+
+So, we have:
+
+\[a \leq \rvmin{X} < \rvmax{X} \leq b \]
+
+Which gives us,
+
+\[L(a,b \mid \vec{x}) = \left( \frac{1}{b-a} \right)^n I_{(a \leq \rvmin{X})} I_{(\rvmax{X} \leq b)} \]
+
+Maximizing the likelihood function requires that $(b-a)^{-n}$ is as large as possible which would, ideally, allow $b$ and $a$ to be as close as possible. So we want the smallest interval that captures the entire sample. That happens when, $\hat{a} = \rvmin{X}$ and $\hat{b} = \rvmax{X}$. Therefore, the MLE for $\vec{\theta}$ is:
+
+\[\hat{a} = \rvmin{X}, \;\; \hat{b} = \rvmax{X}\]

@@ -1,0 +1,28 @@
+\section{2}
+
+Suppose \rs is an iid random sample from the following probability density.
+
+\[f_X(x \mid \lambda) = \lambda e^{-\lambda x}; \;\;\; x \geq 0, \lambda > 0\]
+
+Find the MLE of $\lambda$. You may assume $\sum x_i > 0$. Show that the MLE maximizes the likelihood function.
+
+For starters we need the likelihood function, then the log likelihood for easier derivative computation. Our goal here is to take the log likelihood then take the derivative of it with respect to $\lambda$, and solve for the critical point. From there we'll use the second derivative to verify that it's the maximum. If it is, that critical point is our MLE for $\lambda$
+
+\begin{align*}
+	L(\lambda \mid \vec{x}) &= f(\vec{x} \mid \lambda) = \prod_{i=1}^n \lambda e^{-\lambda x} & \text{(likelihood function)} \\
+	&= \lambda^n e^{-\lambda \sum x_i} \\
+	LL(\lambda \mid \vec{x}) &= \log\left(  \lambda^n e^{-\lambda \sum x_i} \right) & \text{(log likelihood function)} \\
+	&= n \log(\lambda) - \lambda \sum x_i \\
+	\frac{d LL(\lambda \mid \vec{x})}{d\lambda} &= \frac{n}{\lambda} - \sum x_i & \text{(1st derivative)} \\
+	0 &= \frac{n}{\lambda} - \sum x_i \\
+	\lambda &= \frac{n}{\sum x_i} \\
+	\lambda &= \frac{1}{\bar{x}}
+\end{align*}
+
+So our candidate for $\hat{\lambda} = \frac{1}{\bar{x}} = \bar{x}^{-1}$. Now we'll look at the second derivative.
+
+\[
+	\frac{d^2 LL(\lambda \mid \vec{x})}{d\lambda^2} = -\frac{n}{\lambda^2} < 0 
+\]
+
+This is strictly less than $0$ as both $n$ and $\lambda$ are positive values. Therefore, $\hat{\lambda} = \bar{x}^{-1}$ is the MLE of $\lambda$.
