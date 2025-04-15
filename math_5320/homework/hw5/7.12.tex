@@ -1,0 +1,49 @@
+\section{7.12}
+
+Let \rs be a random sample from a population with pmf
+
+\[
+	P_{\theta}(X=x) = \theta^x(1-\theta)^{1-x}, \;\;\; x\in\{0,1\}, \; 0 \leq \theta \leq 1/2
+\]
+
+\subsection*{A}
+
+Find the method of moments and MLE of $\theta$
+
+For method of moments, we notice that $x_i \sim Bern(\theta)$. Therefore
+
+\[
+	E[X_i] = \theta \equiv \frac{1}{n} \sum x_i
+\]
+
+This one just kind of falls straight out of the setup really. So $\hat{\theta}_{\text{MOM}} = \frac{1}{n} \sum x_i$
+
+\noindent For MLE, things get a bit more interesting because of the bound on $\theta$. I'll be borrowing heavily from example 7.2.7 in the book. 
+
+\begin{align*}
+	L(\theta \mid \vec{x}) &= \prod_{i=1}^n \theta^{x_i} (1-\theta)^{1-x_i} \\
+	&= \theta^{\sum x_i} (1-\theta)^{n - \sum x_i}
+\end{align*}
+
+Let $y = \sum x_i$.
+
+\begin{align*}
+	LL(\theta \mid \vec{x}) &= y\log(\theta) + (n-y) \log(1-\theta) \\
+	\frac{d}{d\theta} LL(\theta \mid \vec{x}) &= \frac{y}{\theta} - \frac{n-y}{1-\theta} = 0 \\
+	\frac{y}{\theta} &= \frac{n-y}{1-\theta} \\
+	\frac{y}{\theta} \theta(1-\theta) &=  \frac{n-y}{1-\theta} \theta(1-\theta) \\
+	y(1-\theta) &= (n-y)\theta \\
+	y-y\theta &= n\theta - y\theta \\
+	y &= n\theta \\
+	\frac{y}{n} &= \theta
+\end{align*}
+
+So, our candidate for the MLE is $\hat{\theta} = y/n = \frac{1}{n} \sum x_i = \bar{x}$. Or, at least you would think. Important to note here is that we aren't done. We haven't accounted for the bounds on $\theta$. The textbook example only looks at the case when $0 \leq \theta \leq 1$. 
+
+\subsection*{B}
+
+Find the MSE of each of the estimators.
+
+\subsection*{C}
+
+Which estimator is preferred, justify your choice.
