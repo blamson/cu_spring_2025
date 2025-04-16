@@ -1,0 +1,575 @@
+---
+title: "Hw08 - Categorical Predictors"
+format: html
+self-contained: true
+name: Brady Lamson
+date: "04-16-2025"
+---
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+packages <- c("ggplot2", "rstan", "coda", "bayesplot", "dplyr", "pander", "loo")
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cran.rstudio.com/")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+# see if bayesutils package is available
+if (!require("bayesutils", quietly = TRUE)) {
+  # if not, then install package
+  remotes::install_github("jfrench/bayesutils")
+  library(bayesutils)
+}
+
+options(scipen = 20) # For fixing scientific notation nonsense
+```
+
+All of the questions below require you to use R and/or Stan to approximate the posterior distribution(s) of interest.  I assume that you will do things like run multiple chains, calculate the Gelman-Rubin statistic, check the ACF of draws from the MCMC chain, determine the effective sample size, etc.  However, I will only be looking at the posterior results.  I recommend a warmup of 5,000 iterations and 5,000 saved values for each parameter using 4 chains. 
+
+**Hawks data**
+
+Load the `Hawks` data set from the **Stat2Data** package. The data are a sample of 908 hawks from three different species. More details can be found by running `?Stat2Data::Hawks`. The variables in the data set include:
+
+- `Species`:	`CH`=Cooper's, `RT`=Red-tailed, `SS`=Sharp-Shinned.
+- `Wing`: length (mm) of primary wing feather from tip to wrist it attaches to.
+- `Weight`:	body weight (g).
+
+Run the following commands to load this data set and remove any `NA` values.
+
+```{r}
+data(Hawks, package = "Stat2Data")
+Hawks <- na.omit(Hawks[,c("Species", "Wing", "Weight")])
+```
+
+We will fit four different regression models to the data using `Wing` as the response variable and the other variables as explanatory variables.
+
+*Data distribution*
+
+$y_i \mid \mu_i, \sigma^2 \stackrel{indep.}{\sim} N(\mu_i, \sigma^2)$ for $i=1,2,\ldots,n$, where $\mu_i$ is based on the appropriate regression model (like in class).
+
+*Prior distributions*
+
+$\sigma^2 \sim$ Inv-Gamma(0.01, 0.01).
+
+The regression coefficients are assumed to be independent and have a $N(0,100^2)$ prior distribution.
+
+*Models*
+
+Model 1: A one-way ANOVA using `Species` as the categorical predictor and "CH" as the reference level.
+
+Model 2: A simple linear regression model using `Weight` as the only predictor.
+
+Model 3: A parallel lines (main effects) model using `Weight` as the quantitative predictor and `Species` as the categorical predictor with "CH" as the reference level.
+
+Model 4: A separate lines (interaction) model using `Weight` as the quantitative predictor and `Species` as the categorical predictor with "CH" as the reference level.
+
+# Helper Functions
+
+```{r}
+#| code-fold: true
+#| code-summary: Function to run and fit the model
+
+run_or_load_stan_model <- function(model_code, data, model_name, iter = 10000, chains = 4, verbose = TRUE) {
+  rda_file <- paste0(model_name, ".rda")
+  
+  if (!file.exists(rda_file)) {
+    if (verbose) message("Compiling model: ", model_name)
+    
+    fit <- stan(model_code = model_code, data = data, iter = iter, chains = chains)
+    mod <- stan_model(model_code = model_code)
+    
+    # This assign functions allows me to create variables in the global environment 
+    # During this process which is just kinda convenient
+    assign(model_name, mod, envir = .GlobalEnv)
+    save(list = model_name, file = rda_file, compress = "xz")
+  } else {
+    if (verbose) message("Loading pre-compiled model: ", model_name)
+    
+    load(rda_file, envir = .GlobalEnv)
+    mod <- get(model_name, envir = .GlobalEnv)
+    fit <- sampling(mod, data = data, iter = iter, chains = chains)
+  }
+  
+  return(fit)
+}
+
+```
+
+
+# Problem 1 
+
+Create a scatter plot of the data using `Wing` as the y variable, `Weight` as the x variable, and distinguishing between the `species` using appropriate symbols/colors.  Include the appropriate legend. Do you notice a relationship between the three variables?
+
+**Solution**
+
+```{r}
+Hawks %>%
+    ggplot(aes(x=Wing, y=Weight, color=Species)) +
+    geom_point()
+```
+
+RT hawks appear to be the heaviest on average, with CH falling behind in 2nd and SS hawks being the lightest. Each species also seems to have its own mostly distinct cluster. There isn't a lot of overlap between the species.
+
+As for relationships between wing length and body weight, SS hawks seem to have a pretty small relationship between there. RT hawks seem to have a stronger relationship between the two variables. RT hawks are by far the largest of the three species and with (potentially) the strongest relationship between the two variables. It's also worth noting that there are a lot of extreme points in the RT species, so we'll see how that affects the models.
+
+# Problem 2
+
+Fit a one-way ANOVA model (Model 1) using Stan. In a simple, tabular format, provide the posterior mean, the 0.025 quantile, and the 0.975 quantile for all regression coefficients and the variance $\sigma^2$.
+
+**Solution**
+
+```{r}
+#| results: false
+#| code-fold: true
+#| code-summary: Modeling
+
+stanmod <- "
+data {
+  int<lower=1> n; // number of observations
+  vector[n] y; // data
+  vector[n] rt; //indicator for red tail
+  vector[n] ss; //indicator for sharp shinned
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  real<lower=0> sigmasq;
+  real mu0;
+  real alpha2;
+  real alpha3;
+}
+transformed parameters{
+  vector[n] mu;   // mean of data distribution
+  mu = mu0 + alpha2*rt + alpha3*ss;
+}
+model {
+  //specify priors
+  mu0 ~ normal(0.0, 100);
+  alpha2 ~ normal(0.0, 100);
+  alpha3 ~ normal(0.0, 100);
+  sigmasq ~ inv_gamma(0.01, 0.01);
+
+  // data distribution
+  for(i in 1:n){
+    y[i] ~ normal(mu[i], sqrt(sigmasq));
+  }
+}
+generated quantities {
+  real Rbsq;          // goodness-of-fit
+  vector[n] log_lik;  // log likelihood of data
+  Rbsq = 1 - sigmasq/v;
+  for (i in 1:n) log_lik[i] = normal_lpdf(y[i]|mu[i], sqrt(sigmasq));
+}
+"
+
+v <- var(Hawks$Wing)
+rt <- (Hawks$Species == "RT") + 0
+ss <- (Hawks$Species == "SS") + 0
+
+stan_dat <- list(
+    n = nrow(Hawks),
+    y = Hawks$Wing,
+    rt = rt,
+    ss = ss,
+    v = v
+)
+
+model1_fit <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "hawks_model1"
+)
+```
+
+```{r, echo=FALSE, include=FALSE}
+summary(model1_fit,
+        pars = c("sigmasq", "mu0", "alpha2", "alpha3"),
+        probs = c(0.025, 0.975))$summary
+```
+
+| Statistic   | Mean       | SD         | 0.025      | 0.975     |
+|-------------|------------|------------|------------|-----------|
+| $\sigma^2$   | 844.24 | 40.43 | 768.85 | 926.63 |
+| $\mu_0$   | 244.01 | 3.56 | 237.08 | 251.01 |
+| $\alpha_2$   | 139.55 | 3.75 | 132.24 | 146.92 |
+| $\alpha_3$   | -59.14 | 4.00 | -66.93 | -51.26 |
+
+
+# Problem 3
+
+Provide a point estimate (using the posterior means) of the regression equation for the one-way ANOVA model (Model 1). Interpret each coefficient in the context of the problem.
+
+**Solution**
+
+$$
+\begin{align}
+    \mu_i &= 244.01 + 139.55\alpha_2 - 59.13\alpha_3 \\
+    \mu_1 &= 244.01 \\
+    \mu_2 &= 383.56 \\
+    \mu_3 &= 184.88
+\end{align}
+$$
+
+$\mu_0:$ The expected weight of a coopers hawk is $244.01g$.
+
+$\alpha_2:$ The expected difference in weight in the red tailed hawk in comparison to the coopers hawk is an increase in $139.55$g.
+
+$\alpha_3:$ The expected difference in weight in the sharp shinned hawk in comparison to the coopers hawk is a decrease in $59.13g$g.
+
+# Problem 4
+
+Fit a simple linear regression model (Model 2) using Stan. In a simple, tabular format, provide the posterior mean, the 0.025 quantile, and the 0.975 quantile for all regression coefficients and the variance $\sigma^2$.
+
+**Solution**
+
+```{r}
+#| results: false
+#| code-fold: true
+#| code-summary: Modeling
+
+stanmod <- "
+data {
+  int<lower=1> n; // number of observations
+  vector[n] y; // data
+  vector[n] weight;
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  real<lower=0> sigmasq;
+  real beta0;
+  real beta1;
+}
+transformed parameters{
+  vector[n] mu;   // mean of data distribution
+  mu = beta0 + beta1*weight;
+}
+model {
+  //specify priors
+  beta0 ~ normal(0.0, 100);
+  beta1 ~ normal(0.0, 100);
+  sigmasq ~ inv_gamma(0.01, 0.01);
+
+  // data distribution
+  for(i in 1:n){
+    y[i] ~ normal(mu[i], sqrt(sigmasq));
+  }
+}
+generated quantities {
+  real Rbsq;          // goodness-of-fit
+  vector[n] log_lik;  // log likelihood of data
+  Rbsq = 1 - sigmasq/v;
+  for (i in 1:n) log_lik[i] = normal_lpdf(y[i]|mu[i], sqrt(sigmasq));
+}
+"
+
+stan_dat <- list(
+    n = nrow(Hawks),
+    y = Hawks$Wing,
+    weight = Hawks$Weight,
+    v=v
+)
+
+model2_fit <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "hawks_model2"
+)
+```
+
+```{r, echo=FALSE, include=FALSE}
+summary(model2_fit,
+        pars = c("sigmasq", "beta0", "beta1"),
+        probs = c(0.025, 0.975))$summary
+```
+
+| Statistic   | Mean       | SD         | 0.025      | 0.975     |
+|-------------|------------|------------|------------|-----------|
+| $\sigma^2$   | 1146.64 | 54.71 | 1045.44 | 1258.14 |
+| $\beta_0$   | 167.34 | 2.21 | 163.06 | 171.66 |
+| $\beta_1$   | 0.19 | 0.002 | 0.19 | 0.20 |
+
+# Problem 5
+
+Provide a point estimate (using the posterior means) of the regression equation for the simple linear regression model (Model 2). Interpret each coefficient in the context of the problem.
+
+**Solution**
+
+$$
+\hat{y} = 167.34 + 0.19\text{weight}
+$$
+
+$\beta_0$: The expected weight of a hawk that has a wing length of $0$mm is $167.34$g.
+
+$\beta_1$: For every additional 1mm increase in wing length, the mean weight of a hawk is expected to increase by 0.19g. 
+
+# Problem 6
+
+Fit a parallel lines regression model (Model 3) using Stan. In a simple, tabular format, provide the posterior mean, the 0.025 quantile, and the 0.975 quantile for all regression coefficients and the variance $\sigma^2$.
+
+**Solution**
+
+```{r}
+#| results: false
+#| code-fold: true
+#| code-summary: Modeling
+
+stanmod <- "
+data {
+  int<lower=1> n; // number of observations
+  vector[n] y; // data
+  vector[n] weight;
+  vector[n] rt; //indicator for red tail
+  vector[n] ss; //indicator for sharp shinned
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  real<lower=0> sigmasq;
+  real beta0;
+  real beta1;
+  real alpha2;
+  real alpha3;
+}
+transformed parameters{
+  vector[n] mu;   // mean of data distribution
+  mu = beta0 + beta1*weight + alpha2*rt + alpha3*ss;
+}
+model {
+
+  //specify priors
+  beta0 ~ normal(0.0, 100);
+  beta1 ~ normal(0.0, 100);
+  alpha2 ~ normal(0.0, 100);
+  alpha3 ~ normal(0.0, 100);
+  sigmasq ~ inv_gamma(0.01, 0.01);
+
+  // data distribution
+  for(i in 1:n){
+    y[i] ~ normal(mu[i], sqrt(sigmasq));
+  }
+}
+generated quantities {
+  real Rbsq;          // goodness-of-fit
+  vector[n] log_lik;  // log likelihood of data
+  Rbsq = 1 - sigmasq/v;
+  for (i in 1:n) log_lik[i] = normal_lpdf(y[i]|mu[i], sqrt(sigmasq));
+}
+"
+
+stan_dat <- list(
+    n = nrow(Hawks),
+    y = Hawks$Wing,
+    weight = Hawks$Weight,
+    rt = rt,
+    ss = ss,
+    v=v
+)
+
+model3_fit <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "hawks_model3"
+)
+```
+
+```{r, echo=FALSE, include=FALSE}
+z <- summary(model3_fit,
+        pars = c("sigmasq", "beta0", "beta1", "alpha2", "alpha3"),
+        probs = c(0.025, 0.975))$summary
+
+metrics <- c("mean", "sd", "2.5%", "97.5%")
+z[, metrics] %>% pander::pandoc.table(., style="rmarkdown")
+```
+
+|   Statistic    |  Mean   |    SD    |  0.025   |  0.975  |
+|:-----------:|:-------:|:--------:|:-------:|:-------:|
+| $\sigma^2$ |  705.9  |  33.18   |  644.5  |  773.3  |
+|  $\beta_0$  |  213.5  |  3.972   |  205.6  |  221.2  |
+| $\beta_1$  | 0.07271 | 0.005508 | 0.06192 | 0.08347 |
+| $\alpha_2$  |  90.53  |  5.014   |  80.74  |  100.4  |
+| $\alpha_3$  | -39.38  |  3.918   | -47.08  | -31.63  |
+
+# Problem 7
+
+Provide a point estimate (using the posterior means) of the regression equation for the parallel lines regression model (Model 3). Interpret each coefficient related to the `CH` and `RT` species in the context of the problem.
+
+**Solution**
+
+$$
+\begin{align}
+    \mu_i &= 213.5 + 0.07X_1 + 90.53\alpha_2 - 39.38\alpha_3 \\
+    \mu_1 &= 213.5 + 0.07X_1 \\
+    \mu_2 &= 304.03 + 0.07X_1 \\
+    \mu_3 &= 174.12 + 0.07X_1
+\end{align}
+$$
+
+I'm uhhh just going to interpret everything!
+
+$\beta_0$: For a coopers hawk with a wing length of 0mm, the mean body weight is expected to be approximately $213.5[205.6, 221.2]$g. 
+
+$\beta_1$: For every additional 1mm increase in wing length, the expected weight of a hawk increased by approximately $0.07[0.06, 0.08]$g. 
+
+$\alpha_2$: The mean body weight is about $90.53[80.74, 100.4]$g higher when wing length = 0 for the red tailed species when compared to the coopers species.
+
+$\alpha_3$: The mean body weight is about $39.38[31.63, 47.08]$g lower when wing length = 0 for the sharp shinned species when compared to the coopers species.
+
+# Problem 8
+
+Fit a separate lines regression model (Model 4) using Stan. In a simple, tabular format, provide the posterior mean, the 0.025 quantile, and the 0.975 quantile for all regression coefficients and the variance $\sigma^2$.
+
+**Solution**
+
+```{r}
+#| results: false
+#| code-fold: true
+#| code-summary: Modeling
+
+stanmod <- "
+data {
+  int<lower=1> n; // number of observations
+  vector[n] y; // data
+  vector[n] weight;
+  vector[n] rt; //indicator for red tail
+  vector[n] ss; //indicator for sharp shinned
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  real<lower=0> sigmasq;
+  real beta0;
+  real beta1;
+  real alpha2;
+  real alpha3;
+  real delta2;
+  real delta3;
+}
+transformed parameters{
+  vector[n] mu;   // mean of data distribution
+  for (i in 1:n) {
+    mu[i] = beta0 + beta1*weight[i] + alpha2*rt[i] + alpha3*ss[i] + delta2*weight[i]*rt[i] + delta3*weight[i]*ss[i];
+  }
+}
+model {
+  //specify priors
+  beta0 ~ normal(0.0, 100);
+  beta1 ~ normal(0.0, 100);
+  alpha2 ~ normal(0.0, 100);
+  alpha3 ~ normal(0.0, 100);
+  sigmasq ~ inv_gamma(0.01, 0.01);
+
+  // this doesn't work due to multiple vectors
+  // mu = beta0 + beta1*weight + alpha2*rt + alpha3*ss + delta2*weight*rt + delta3*weight*ss;
+
+  // data distribution
+  for(i in 1:n){
+    y[i] ~ normal(mu[i], sqrt(sigmasq));
+  }
+}
+generated quantities {
+  real Rbsq;          // goodness-of-fit
+  vector[n] log_lik;  // log likelihood of data
+  Rbsq = 1 - sigmasq/v;
+  for (i in 1:n) log_lik[i] = normal_lpdf(y[i]|mu[i], sqrt(sigmasq));
+}
+"
+
+model4_fit <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "hawks_model4"
+)
+```
+
+```{r, echo=FALSE, include=FALSE}
+z <- summary(model4_fit,
+        pars = c("sigmasq", "beta0", "beta1", "alpha2", "alpha3", "delta2", "delta3"),
+        probs = c(0.025, 0.975))$summary
+
+metrics <- c("mean", "sd", "2.5%", "97.5%")
+z[, metrics] %>% pander::pandoc.table(., style="rmarkdown")
+```
+
+|   Statistic    |  Mean   |    SD    |  0.025   |  0.975  |
+|:-----------:|:--------:|:-------:|:--------:|:-------:|
+| $\sigma^2$ |   645    |  30.95  |  587.1   |  708.2  |
+|  $\beta_0$  |  197.8   |  8.478  |  181.2   |  214.5  |
+|  $\beta_1$  |  0.1101  | 0.0189  | 0.07262  | 0.1473  |
+| $\alpha_2$  |  124.6   |  10.5   |  103.9   |  145.3  |
+| $\alpha_3$  |  -48.58  |  9.111  |  -66.57  | -30.77  |
+| $\delta_2$  | -0.05417 | 0.01973 | -0.09294 | -0.0153 |
+| $\delta_3$  |  0.1304  | 0.02748 | 0.07665  | 0.1842  |
+
+# Problem 9
+
+Provide a point estimate (using the posterior means) of the regression equation for the separate lines regression model (Model 4). Interpret each coefficient related to the `CH` and `RT` species in the context of the problem.
+
+**Solution**
+
+$$
+\begin{align}
+    \mu_i &= 197.8 + 0.11X_1 + 124.6\alpha_2 - 48.58\alpha_3 - 0.05\delta_2 + 0.13\delta_3 \\
+    \mu_1 &= 197.8 + 0.11X_1 \\
+    \mu_2 &= 322.4 + 0.06X_1 \\
+    \mu_3 &= 149.2 + 0.24X_1\\
+\end{align}
+$$
+
+$\beta_0$: For a coopers hawk with a wing length of 0mm, the mean body weight is expected to be approximately $197.8[181.2, 214.5]$g. 
+
+$\beta_1$: For every additional 1mm increase in wing length, the mean weight of a coopers hawk increases by approximately $0.11[0.07, 0.15]$g. 
+
+$\alpha_2$: The mean body weight is about $124.6[103.9, 145.3]$g higher when wing length = 0 for the red tailed species when compared to the coopers species.
+
+$\alpha_3$: The mean body weight is about $48.58[30.77, 66.57]$g lower when wing length = 0 for the sharp shinned species when compared to the coopers species.
+
+$\delta_2$: The change in body weight per mm increase in wing length is about $0.05[0.01, 0.09]$g/mm lower for the red tailed hawk than the coopers hawk.
+
+$\delta_3$: The change in body weight per mm increase in wing length is about $0.13[0.08, 0.18]$g/mm higher for the sharp shinned hawk than the coopers hawk.
+
+# Problem 10
+
+Compute the WAIC and LOOIC of each the 4 models, summarizing your results in a simple table.  Which model do you think is most appropriate?  Why? 
+
+**Solution**
+
+```{r, warning=FALSE}
+#| warning: false
+#| code-fold: true
+#| code-summary: Collecting metrics
+#| 
+# log likelihoods
+mod1_ll <- extract_log_lik(model1_fit, merge_chains = FALSE)
+mod2_ll <- extract_log_lik(model2_fit, merge_chains = FALSE)
+mod3_ll <- extract_log_lik(model3_fit, merge_chains = FALSE)
+mod4_ll <- extract_log_lik(model4_fit, merge_chains = FALSE)
+
+# waics
+waic1 <- waic(mod1_ll)
+waic2 <- waic(mod2_ll)
+waic3 <- waic(mod3_ll)
+waic4 <- waic(mod4_ll)
+
+# relative efficiency of LLs
+r_eff1 <- exp(relative_eff(mod1_ll))
+r_eff2 <- exp(relative_eff(mod2_ll))
+r_eff3 <- exp(relative_eff(mod3_ll))
+r_eff4 <- exp(relative_eff(mod4_ll))
+
+# looic
+looic1 <- loo(mod1_ll, r_eff = r_eff1)
+looic2 <- loo(mod2_ll, r_eff = r_eff2)
+looic3 <- loo(mod3_ll, r_eff = r_eff3)
+looic4 <- loo(mod4_ll, r_eff = r_eff4)
+```
+
+```{r}
+loo_compare(waic1, waic2, waic3, waic4)
+```
+
+```{r}
+loo_compare(looic1, looic2, looic3, looic4)
+```
+
+What we see here is that the separate lines model (model 4) performs the best according to both WAIC and LOOIC metrics. Model 2, the simple linear regression, performs the worst. That makes sense as it completely disregards the species which, as we saw from the plot, seems to have a large impact on the weight and wing length of the hawks. Model 1 ignores the weight which disregards the increase in wing length as a hawk gets larger, though it still outperforms the simple linear regression according to these metrics. 
+
+Model 3 and Model 4 are pretty close, it'd be worth debating whether the increased performance is worth the increased complexity given to the interpretation and computation of the model. 
