@@ -38,12 +38,51 @@ Let $y = \sum x_i$.
 	\frac{y}{n} &= \theta
 \end{align*}
 
-So, our candidate for the MLE is $\hat{\theta} = y/n = \frac{1}{n} \sum x_i = \bar{x}$. Or, at least you would think. Important to note here is that we aren't done. We haven't accounted for the bounds on $\theta$. The textbook example only looks at the case when $0 \leq \theta \leq 1$. 
+So, our candidate for the MLE is $\hat{\theta} = y/n = \frac{1}{n} \sum x_i = \bar{x}$. Or, at least you would think. Important to note here is that we aren't done. We haven't accounted for the bounds on $\theta$. The textbook example only looks at the case when $0 \leq \theta \leq 1$. Here, $0 \leq \theta \leq 1/2$. 
+
+If we are to use $\bar{x}$ as an estimator for $\theta$, it too must be bounded. If $\bar{x}$ goes above $1/2$ for instance, it ceases to be an estimator we can use. So we have two cases for our $\hat{\theta}$, one where $\bar{x}$ falls within the proper range and it is the MLE, and one where it exceeds it. In that case, the MLE of $\theta$ will simply be the max of the possible range, or $1/2$.
+
+Therefore, what we have as our MLE is the minimum of the two estimators, or $\text{Min}(\bar{x}, \frac{1}{2})$. 
 
 \subsection*{B}
 
 Find the MSE of each of the estimators.
 
+We'll start with $\hat{\theta}_{\text{MOM}}$. This one is straightforward as this estimator is unbiased. The expected value is simply the parameter, so we can simply the MSE calculation down. 
+
+\begin{align*}
+	E_{\theta}[\hat{\theta} - \theta]^2 &= Var_{\theta}(\hat{\theta}) \\
+	&= Var_{\theta}(\bar{x}) \\
+	&= \frac{Var(x_1)}{n} & \text{(Thm 5.2.6)} \\
+	&= \frac{\theta(1-\theta)}{n}
+\end{align*}
+
+This next one is kind of hairy both because it's biased and because there are two possible estimators here. We either use $\bar{x}$ or $1/2$. So to solve this we'll actually tackle the expected value directly and see what happens. 
+
+\[
+	E_{\theta}[\hat{\theta} - \theta]^2 = \sum_{y=0}^{y=n} (\hat{\theta} - \theta)^2 {n \choose y} \theta^y (1-\theta)^{n-y} 
+\]
+
+So this sum doesn't quite tell the whole story. As mentioned we need to address our two estimators and when they would be used. Our two cases are when:
+
+- $\bar{x} \leq 1/2$ which occurs when $y \leq n/2$
+
+- $\bar{x} > 1/2$ which occurs when $y > n/2$ or, equivalently, $y \geq (n/2) + 1$
+
+So we need to bisect our sum to handle both cases and substitute in our values of $\hat{\theta}$.
+
+\[
+	E_{\theta}[\hat{\theta} - \theta]^2 = 
+	\sum_{y=0}^{y=n/2} (\bar{x} - \theta)^2 {n \choose y} \theta^y (1-\theta)^{n-y} +
+	\sum_{y=(n/2) + 1}^{y=n} \left(\frac{1}{2} - \theta \right)^2 {n \choose y} \theta^y (1-\theta)^{n-y} 
+\]
+
+I uh, don't know how to simplify this down further so I'll be leaving this answer as is. 
+
 \subsection*{C}
 
 Which estimator is preferred, justify your choice.
+
+We have to wrestle between a few things. Our MOM estimator is clean, simple and unbiased. It's easy to calculate and easy to work with. However, it doesn't respect the bounds of the parameter. We can get sample means that go beyond $1/2$ which are entirely invalid. 
+
+The MLE estimator however is more complex, but it fully respects the bounds of the paramter. I haven't directly compared the MSEs of the two estimators but I believe the MLE properly accounting for the bounds is too important to pass up. As such I would choose to go with the MLE over the MOM.

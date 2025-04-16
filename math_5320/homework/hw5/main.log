@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  14 APR 2025 22:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  15 APR 2025 17:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -274,7 +274,23 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 
 
-]) [9] (./main.aux (./2.aux) (./3.aux) (./7.6.aux) (./7.10.aux) (./7.12.aux))
+]
+
+Package amsmath Warning: Foreign command \atopwithdelims;
+(amsmath)                \frac or \genfrac should be used instead
+(amsmath)                 on input line 63.
+
+
+Overfull \hbox (1.02937pt too wide) detected at line 78
+\OML/cmm/m/it/10 E[]\OT1/cmr/m/n/10 [[] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 ^
+^R\OT1/cmr/m/n/10 ][] = []([] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 ^^R\OT1/cmr
+/m/n/10 )[][]\OML/cmm/m/it/10 ^^R[]\OT1/cmr/m/n/10 (1 \OMS/cmsy/m/n/10 ^^@ \OML
+/cmm/m/it/10 ^^R\OT1/cmr/m/n/10 )[] + [] [][] []\OML/cmm/m/it/10 ^^R[]\OT1/cmr/
+m/n/10 (1 \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 ^^R\OT1/cmr/m/n/10 )[]
+ []
+
+[9]) [10] (./main.aux (./2.aux) (./3.aux) (./7.6.aux) (./7.10.aux) (./7.12.aux)
+)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
@@ -302,10 +318,10 @@ texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></opt
 cm/cmr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1
 /public/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on main.pdf (9 pages, 138309 bytes).
+Output written on main.pdf (10 pages, 142365 bytes).
 PDF statistics:
- 89 PDF objects out of 1000 (max. 8388607)
- 55 compressed objects within 1 object stream
+ 92 PDF objects out of 1000 (max. 8388607)
+ 57 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
