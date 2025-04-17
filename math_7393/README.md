@@ -13,3 +13,9 @@ The Bayesian approach to statistical inference and data analysis has exploded in
 Full of examples of all the material covered in class. Invaluable resource.
 
 [Link](https://github.com/jfrench/BayesianStatistics)
+
+# Alternative textbook resource
+
+This textbook covers bayesian statistics in python. May be a useful resource for self-teaching in the future.
+
+[Link](https://bayesiancomputationbook.com/welcome.html)
