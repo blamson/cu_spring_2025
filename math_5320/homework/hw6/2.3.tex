@@ -1,0 +1,25 @@
+\section*{3.}
+
+What is the CRLB for unbiased estimators of the variance of a Bernoulli$(\theta)$ distribution?
+
+So we're looking for the CRLB of $\tau(\theta) = \theta(1-\theta)$. So, that gives us
+
+\[
+	\tau(\theta) = \theta(1-\theta), \;\;\;\;
+	\frac{d}{d\theta} \tau(\theta) = 1-2\theta
+\]
+
+We can thankfully reuse the bulk of the work from 2.1 here! Recall that, in this case,
+
+\[
+	\crlb \geq \frac{[\tau'(\theta)]^2}{-n E_{\theta}\left[ \frac{d^2}{d\theta^2} \ln f_{\theta}(x \mid \theta) \right]}
+\]
+
+So our denominator is the same. We just gotta change the numerator!
+
+\begin{align*}
+	\crlb &\geq \frac{(1-2\theta)^2}{\frac{n}{\theta(1-\theta)}} \\
+	&= \frac{(1-\theta)^2 \theta(1-\theta)}{n}
+\end{align*}
+
+So, the CRLB for $\tau(\theta) = \theta(1-\theta)$ is $\frac{(1-\theta)^2 \theta(1-\theta)}{n}$

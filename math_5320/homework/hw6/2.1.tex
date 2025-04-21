@@ -1,0 +1,50 @@
+\section*{1.}
+
+Find the CRLB for an unbiased estimator of $\theta$ from a random sample of size $n$ from a Bernoulli$(\theta)$ distribution.
+
+For this problem we will be leveraging three different theorems. 7.3.9, 7.3.10 and 7.3.11. 
+
+The things we want to note first is that we have an iid sample from an exponential family. So there's a lot of tools we can use to make this problem simpler. So let's go ahead and set up our framework for the lower bound.
+
+\begin{align*}
+	\crlb &\geq \frac{[\tau'(\theta)]^2}{E_{\theta}\left[ \left( \frac{d}{d\theta} \ln f_{\theta}(\vec{x}) \right)^2 \right]} \\
+	&= \frac{[\tau'(\theta)]^2}{n E_{\theta}\left[ \left( \frac{d}{d\theta} \ln f_{\theta}(x \mid \theta) \right)^2 \right]} & \text{(iid: 7.3.10)} \\
+	&= \frac{[\tau'(\theta)]^2}{-n E_{\theta}\left[ \frac{d^2}{d\theta^2} \ln f_{\theta}(x \mid \theta) \right]} & \text{(exponential: 7.3.11)}
+\end{align*}
+
+Some other boilerplate work, we have,
+\[
+	\tau(\theta) = \theta, \;\;\;\;
+	\frac{d}{d\theta} \tau(\theta) = 1
+\]
+Next, we need a few things. We need the pdf, the log of the pdf, and the first and second derivatives of the log of the pdf. Lastly will be the expected value of the last thing there. Sounds like a lot but it's not too bad!
+
+\begin{align*}
+	f(x \mid \theta) &= \theta^x(1- \theta)^{1 - x} \\
+	\ln f(x \mid \theta) &= x \ln(\theta) + (1-x) \ln(1-\theta) \\
+	\frac{d}{d\theta} \ln f(x \mid \theta) &= \frac{x}{\theta} + \frac{1-x}{1-\theta} \\
+	\frac{d^2}{d\theta^2} \ln f(x \mid \theta) &= -\frac{x}{\theta^2} - \frac{1-x}{(1-\theta)^2} \\
+\end{align*}
+
+Now for the expected value!
+
+\begin{align*}
+	E_{\theta}\left[ \frac{d^2}{d\theta^2} \ln f(x \mid \theta) \right] &= E_{\theta}\left[ -\frac{x}{\theta^2} - \frac{1-x}{(1-\theta)^2}  \right] \\
+	&= -E_{\theta}\left[ \frac{x}{\theta^2} \right] - E_{\theta}\left[ \frac{1-x}{(1-\theta)^2} \right] \\
+	&= -\frac{1}{\theta^2} E_{\theta}[x] - \frac{1}{(1-\theta)^2}\left( E[1] - E[x] \right) \\
+	&= -\frac{\theta}{\theta^2} - \frac{1-\theta}{(1-\theta)^2} \\
+	&= -\frac{1}{\theta} - \frac{1}{1-\theta} \\
+	&= -\left( \frac{1-\theta}{\theta(1-\theta)} + \frac{\theta}{\theta(1-\theta)} \right) \\
+	&= -\frac{1}{\theta(1-\theta)}
+\end{align*}
+
+Time to plug this in.
+
+\begin{align*}
+	\crlb &\geq \frac{[\tau'(\theta)]^2}{-n E_{\theta}\left[ \frac{d^2}{d\theta^2} \ln f_{\theta}(x \mid \theta) \right]} \\
+	&= \frac{1^2}{-n \cdot \frac{-1}{\theta(1-\theta)}} \\
+	&= \frac{1}{\frac{n}{\theta(1-\theta)}} \\
+	&= \frac{\theta(1-\theta)}{n}
+\end{align*}
+
+Thus, the CRLB of $\tau(\theta) = \theta$ is $\frac{\theta(1-\theta)}{n}$.

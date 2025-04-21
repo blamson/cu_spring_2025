@@ -1,0 +1,27 @@
+\section*{4.}
+
+Apply the attainment theorem (Corollary 7.3.15) to a random sample of size $n$ from a Bernoulli$(\theta)$ distribution. Is there an unbiased estimator of a function of $\theta$ that attains the CRLB?
+
+Let us start with our goal. We need to show that:
+
+\[
+	\frac{d}{d\theta} L(\theta \mid \vec{x}) = a(\theta) \left( w(\vec{x}) - \tau(\theta) \right)
+\]
+
+So we need to sort out the left hand side and try to see if it factors into the form on the right. So we need the likelihood, the log likelihood, and the first partial derivative of the log likelihood with respect to theta.
+
+\begin{align*}
+	f(x \mid \theta) &= \theta^x(1-\theta)^{1-x} \\
+	L(\theta \mid \vec{x}) &= \theta^{\sum x_i} (1-\theta)^{n - \sum x_i} \\
+	LL(\theta \mid \vec{x}) &= \sum x_i \ln(\theta) + (n-\sum x_i)\ln(1-\theta) \\
+	\frac{d}{d\theta} LL(\theta \mid \vec{x}) &= \frac{\sum x_i}{\theta} - \frac{n - \sum x_i}{1-\theta} \\
+	&= \frac{(1 - \theta) \sum x_i - \theta(n - \sum x_i)}{\theta(1-\theta)} & \text{(Combine fractions)} \\
+	&= \frac{1}{\theta(1-\theta)}\left( \sum x_i - \theta \sum x_i - \theta n + \theta \sum_i \right)  \\
+	&= \frac{1}{\theta(1-\theta)}\left( \sum x_i - \theta n \right) \\
+	&= \frac{1}{\theta(1-\theta)}\left( n\bar{x} - \theta n \right) \\
+	&= \frac{n}{\theta(1-\theta)}\left( \bar{x} - \theta \right) \\
+	&= a(\theta)\left( w(\vec{x}) - \tau(\theta) \right)
+\end{align*}
+
+By Corollary 7.3.15, $\bar{x}$ attains the CRLB for $\tau(\theta) = \theta$.
+

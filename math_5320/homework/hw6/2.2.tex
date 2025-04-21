@@ -1,0 +1,16 @@
+\section*{2.} 
+
+Show by direct calculation that the variance of the sample mean attains this CRLB.
+
+Note: $Var(x_i) = \theta(1-\theta)$.
+
+\vspace{-5mm}
+\begin{align*}
+	Var_{\theta}(\bar{x}) &= Var_{\theta}\left( \frac{1}{n} \sum x_i \right) \\
+	&= \frac{1}{n^2} Var_{\theta} \left(\sum x_i \right) \\
+	&= \frac{n}{n^2} Var_{\theta}(x_1) & \text{(iid: lemma 5.2.5)} \\
+	&= \frac{1}{n} \theta(1-\theta) \\
+	&= \frac{\theta(1-\theta)}{n}
+\end{align*}
+
+This matches our computation from the previous problem, thus $\bar{x}$ attains the CRLB.
