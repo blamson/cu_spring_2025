@@ -106,13 +106,13 @@ Create a scatter plot of the data using `Wing` as the y variable, `Weight` as th
 
 ```{r}
 Hawks %>%
-    ggplot(aes(x=Wing, y=Weight, color=Species)) +
+    ggplot(aes(y=Wing, x=Weight, color=Species)) +
     geom_point()
 ```
 
 RT hawks appear to be the heaviest on average, with CH falling behind in 2nd and SS hawks being the lightest. Each species also seems to have its own mostly distinct cluster. There isn't a lot of overlap between the species.
 
-As for relationships between wing length and body weight, SS hawks seem to have a pretty small relationship between there. RT hawks seem to have a stronger relationship between the two variables. RT hawks are by far the largest of the three species and with (potentially) the strongest relationship between the two variables. It's also worth noting that there are a lot of extreme points in the RT species, so we'll see how that affects the models.
+As for relationships, SS is hard to gauge if there is a linear relationship between weight and wing length. It's either a very strong linear relationship or there barely is one. For CH hawks, there seems to be a mild linear relationship between between weight and wing length. For RT there is a linear relationship that seems a little less steep than for CH hawks but still seems to exist. 
 
 # Problem 2
 
