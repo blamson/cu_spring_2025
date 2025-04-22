@@ -1,0 +1,61 @@
+\section*{7.38}
+
+For each of the following distributions, let \rs be a random sample. Is there a function of $\theta$, say, $g(\theta)$, for which there exists an unbiased estimator whose variance attains the CRLB? If so, find it. If not, show why not.
+
+\subsection*{A}
+
+\[
+	f(x \mid \theta) = \theta x^{\theta - 1}, \;\; 0 < x < 1, \;\; \theta > 0
+\]
+
+To start, it feels like the easiest thing to check is if we can achieve attainment using Corollary 7.3.15. This allows us to skip a lot of work and find what we need right away. 
+
+So we'll be using a similar approach to problem 2.4. A quick look over shows that our support for $x$ doesn't depend on $\theta$ and the function appears like it's well behaved.
+
+\begin{align*}
+	f(x \mid \theta) &= \theta x^{\theta - 1} \\
+	L(\theta \mid \vec{x}) &= \prod_{i=1}^n \theta x_i^{\theta - 1} \\
+	LL(\theta \mid \vec{x}) &= \ln\left(  \prod_{i=1}^n \theta x_i^{\theta - 1}  \right) \\
+	&= \sum \left( \ln(\theta) + (\theta - 1)\ln(x_i) \right)
+\end{align*}
+
+Now we'll take the first derivative with respect to $\theta$ and see if we can fit the required form.
+
+\begin{align*}
+	\frac{d}{d\theta} LL(\theta \mid \vec{x}) &= \frac{d}{d\theta} \sum \left( \ln(\theta) + (\theta - 1)\ln(x_i) \right) \\
+	&= \sum \frac{d}{d\theta} \ln(\theta) + (\theta - 1)\ln(x_i) \\
+	&= \sum \frac{1}{\theta} + \ln(x_i) \\
+	&= \frac{n}{\theta} + \sum \ln(x_i) \\
+	&= -1\left( -\sum \ln(x_i) - \frac{n}{\theta} \right) & \text{(Rearranging)} \\
+	&= -n\left( -\frac{\sum \ln(x_i)}{n} - \frac{1}{\theta} \right) \\
+	&= a(\theta) \left( w(\vec{x}) - \tau(\theta) \right)
+\end{align*}
+
+This matches the necessary form, therefore $w(\vec{x}) = -\frac{1}{n}\sum \ln(x_i)$ is an unbiased estimator that attains the CRLB for $\tau(\theta) = 1/\theta$.
+
+\subsection*{B}
+
+\[
+	f(x \mid \theta) = \frac{\ln(\theta)}{\theta - 1} \theta^x, \;\; 0 < x < 1, \;\; \theta > 1
+\]
+
+Same song and dance. There aren't any red flags that indicate to me that this won't work. Very rigorous, I know. 
+
+\begin{align*}
+	f(x \mid \theta) &= \frac{\ln(\theta)}{\theta - 1} \theta^x \\
+	L(\theta \mid \vec{x}) &= \prod_{i=1}^n \frac{\ln(\theta)}{\theta - 1} \theta^{x_i} \\
+	LL(\theta \mid \vec{x}) &= \ln \left( \prod_{i=1}^n \frac{\ln(\theta)}{\theta - 1} \theta^{x_i} \right) \\
+	&= \sum \left( \ln\ln(\theta) - \ln(\theta - 1) + x_i \ln(\theta) \right) \\
+\end{align*}
+
+\begin{align*}
+	\frac{d}{d\theta} LL(\theta \mid \vec{x}) &= \frac{d}{d\theta} \sum \left( \ln\ln(\theta) - \ln(\theta - 1) + x_i \ln(\theta) \right) \\
+	&= \sum \frac{d}{d\theta} \ln\ln(\theta) - \ln(\theta - 1) + x_i \ln(\theta) \\
+	&= \sum \frac{1}{\theta\ln(\theta)} - \frac{1}{\theta - 1} + \frac{x_i}{\theta} \\
+	&= \frac{n}{\theta\ln(\theta)} - \frac{n}{\theta - 1} + \frac{\sum x_i}{\theta} \\ 
+	&= \frac{n}{\theta} \left( \frac{1}{\ln(\theta)} - \frac{\theta}{\theta - 1} + \frac{1}{n} \sum x_i \right) \\
+	&= \frac{n}{\theta} \left( \bar{x} - \left( \frac{\theta}{\theta - 1} + \frac{1}{\ln(\theta)} \right) \right) \\
+	&= a(\theta) \left( w(\vec{x}) - \tau(\theta) \right)
+\end{align*}
+
+As we have achieved the necessary form by Corollary 7.3.15, $w(\vec{x}) = \bar{x}$ is an unbiased estimator for $\tau(\theta) =  \frac{\theta}{\theta - 1} + \frac{1}{\ln(\theta)}$ and it achieves the CRLB.This problem asks for $g(\theta)$ so I'll just specify that $\tau(\theta) = g(\theta)$ here. 
