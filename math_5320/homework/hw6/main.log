@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  21 APR 2025 18:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  21 APR 2025 18:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -181,7 +181,8 @@ ackend-pdftex.def
 File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count274
 \l__pdf_internal_box=\box53
-) (./main.aux (./2.2.aux) (./2.3.aux) (./2.4.aux) (./2.5.aux))
+) (./main.aux (./1.3.aux) (./2.2.aux) (./2.3.aux) (./2.4.aux)
+(./2.5.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
@@ -224,22 +225,22 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 pstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-)) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/u
-pdmap/pdftex.map}
-
-] (./2.1.tex
-LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
+)) (./1.1.tex) (./1.2.tex) (./1.3.tex
+LaTeX Font Info:    Trying to load font information for U+msa on input line 7.
 
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsa
 .fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 7.
 
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsb
 .fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [2]) [3]
+)) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/u
+pdmap/pdftex.map}
+
+] (./2.1.tex [2]) [3]
 \openout2 = `2.2.aux'.
 
  (./2.2.tex) [4
@@ -254,35 +255,36 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ]
 \openout2 = `2.4.aux'.
 
- (./2.4.tex) [6
+
+(./2.4.tex) [6
 
 
 
 ]
 \openout2 = `2.5.aux'.
 
- (./2.5.tex)
-[7
+ (./2.5.tex) [7
 
 
 
 ] (./3.7.38.tex [8
 
 
-] [9]) [10] (./main.aux (./2.2.aux) (./2.3.aux) (./2.4.aux) (./2.5.aux))
+] [9]) [10] (./main.aux
+(./2.2.aux) (./2.3.aux) (./2.4.aux) (./2.5.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2540 strings out of 474116
- 39716 string characters out of 5733619
+ 2565 strings out of 474116
+ 39942 string characters out of 5733619
  1944187 words of memory out of 5000000
- 24862 multiletter control sequences out of 15000+600000
+ 24875 multiletter control sequences out of 15000+600000
  560978 words of font info for 48 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,12n,70p,342b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,12n,70p,425b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmex10.pfb></opt/homebrew/Cellar/texlive/20240312/
@@ -297,7 +299,7 @@ texlive/20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></opt
 cm/cmr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1
 /public/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20240312/share/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on main.pdf (10 pages, 131610 bytes).
+Output written on main.pdf (10 pages, 133626 bytes).
 PDF statistics:
  92 PDF objects out of 1000 (max. 8388607)
  57 compressed objects within 1 object stream
