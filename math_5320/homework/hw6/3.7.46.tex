@@ -1,0 +1,125 @@
+\section*{7.46}
+
+Let $X_1, X_2, X_3$ be a random sample of size 3 from a uniform $(\theta, 2\theta)$ distribution, where $\theta > 0$.
+
+\subsection*{A.}
+
+Find the method of moments estimator for $\theta$.
+
+For this we'll keep it simple. Note that $E[X] = \frac{2\theta + \theta}{2} = \frac{3}{2} \theta$. 
+
+\begin{align*}
+	\mu_1 &= \frac{1}{n} \sum x_i = \bar{x} \\
+	\bar{x} &= E[X] \\
+	\bar{x} &= \frac{3}{2} \theta \\
+	\tilde{\theta} &= \frac{2}{3} \bar{x}
+\end{align*}
+
+So $\mom{\theta} = \frac{2}{3} \bar{x}$. Worth noting here that this estimator can end up below the lower bound of $\theta$. If, for example, $x_1=x_2=x_3=\theta$, $\frac{2}{3} \bar{x} = \frac{2}{3} \theta < \theta$. So this estimator definitely has some issues. 
+
+\subsection*{B.}
+
+\noindent Find the MLE, $\mle{\theta}$, and find a constant $k$, such that $E_{\theta}(k\hat{\theta}) = \theta$.
+
+\noindent\textbf{I}
+
+Find $\mle{\theta}$.
+
+So, as with all MLE problems we start with the standard approach. Maximize the log likelihood function. The issue we run into here is that if we try the usual derivative check we run into problems. The key here will, yet again, be digging into how the order statistics interact with the indicator function for $x$.
+
+Since we have a small sample it's tempting to use $n=3$ but honestly I consider it a distraction in these earlier steps, we'll address that at the end when solving for $k$. 
+
+\begin{align*}
+	f_X(x \mid \theta) &= \frac{1}{2\theta - \theta} I_{(\theta, 2\theta)(x)} \\
+	&= \frac{1}{\theta}  I_{(\theta, 2\theta)(x)}  \\
+	L(\theta \mid \vec{x}) &= \prod_{i=1}^n \frac{1}{\theta}  I_{(\theta, 2\theta)(x_i)}  \\
+	&= \theta^{-n} \prod I_{(\theta, 2\theta)(x_i)}  \\
+\end{align*}
+
+Now we take a step away to examine the indicator function. 
+
+\begin{align*}
+    I_{(\theta, 2\theta)}(x_i) &\implies \theta \leq x_i \leq 2\theta \\
+    \prod I_{(\theta, 2\theta)}(x_i) &\implies \theta \leq \rvmin{x} < \rvmax{x} \leq 2\theta \\
+    &\implies \theta \leq \rvmin{x} \quad \text{and} \quad \rvmax{x} \leq 2\theta \\
+    &\implies \theta \leq \rvmin{x} \quad \text{and} \quad \frac{1}{2} \rvmax{x} \leq \theta \\
+    &\implies \frac{1}{2} \rvmax{x} \leq \theta \leq \rvmin{x} \\
+    &= I_{(\frac{1}{2} \rvmax{x}, \rvmin{x})}(\theta)
+\end{align*}
+
+Note here that once the product is pushed through that the indicator function swaps from bounds on $x$ to being bounds on $\theta$. So, returning to our likelihood function we have:
+
+\[
+	L(\theta \mid \vec{x}) = \theta^{-n} I_{(\frac{1}{2} \rvmax{x}, \rvmin{x})}(\theta)
+\]
+
+Maximizing $\theta^{-n}$ requires making $\theta$ as small as possible. Thus, the maximum of the likelihood is found at $\frac{1}{2}\rvmax{x}$. Therefore, $\mle{\theta} = \frac{1}{2}\rvmax{x}$.
+
+\noindent \textbf{II}
+
+Find a constant $k$, such that $E_{\theta}(k\hat{\theta}) = \theta$.
+
+First the setup
+
+\begin{align*}
+	\theta &= E_{\theta}\left[ k \mle{\theta} \right] \\
+	&= E_{\theta}\left[ \frac{k}{2} \rvmax{x} \right] \\
+	&= \frac{k}{2} E_{\theta}\left[ \rvmax{x} \right]
+\end{align*}
+
+So now we need the pdf of the max order statistic. This requires both the pdf and cdf of $X$. I will spare you the derivation of the cdf.
+
+\begin{align*}
+	f_{\rvmax{x}}(x) &= \frac{n!}{(n-1)!} f_{X}(x) \left[ F_X(x) \right]^{n-1} \\
+	&= n \cdot \frac{1}{\theta} \cdot \left( \frac{x-\theta}{\theta} \right)^{n-1} \\
+	&= n \frac{1}{\theta} \frac{1}{\theta^{n-1}} (x-\theta)^{n-1} \\
+	&= n\theta^{-n}(x-\theta)^{n-1}
+\end{align*}
+
+From here we take the expected value.
+
+\[
+	E\left[ \rvmax{x} \right] = \int_{x=\theta}^{x=\theta} xn\theta (x-\theta)^{n-1} dx
+\]
+
+For this we need to do a u-substitution. So we'll need to tweak some stuff and update the bounds on the integral.
+
+\vspace{-5mm}
+\begin{align*}
+	u &= x - \theta & x = 2\theta &\implies u = \theta \\
+	x &= u + \theta & x = \theta &\implies u = 0 \\
+	du &= dx
+\end{align*}
+
+\vspace{-5mm}
+\begin{align*}
+	E\left[ \rvmax{x} \right] &= \int_{x=\theta}^{x=\theta} xn\theta (x-\theta)^{n-1} dx \\
+	&= \int_{u=0}^{u=\theta} (u + \theta) n\theta^{-n}u^{n-1} du \\
+	&= n\theta^{-n} \int_{u=0}^{u=\theta} (u + \theta) u^{n-1} du \\
+	&= n\theta^{-n} \int_{u=0}^{u=\theta} u^n + \theta u^{n-1} du \\
+	&= n\theta^{-n}\left[ \frac{u^{n+1}}{n+1} + \frac{\theta u^n}{n} \right]_{u=0}^{u=\theta} \\
+	&= n\theta^{-n} \left[ \frac{\theta^{n+1}}{n+1} + \frac{\theta^{n+1}}{n} - 0 \right] \\
+	&= n\theta^{-n}\left( \frac{n\theta^{n+1} + (n+1)\theta^{n+1}}{n(n+1)} \right) \\
+	&= \frac{n\theta^{n+1}(2n+1)}{(n+1)n\theta^n} \\
+	&= \frac{\theta(2n+1)}{n+1}
+\end{align*}
+
+We're almost done. 
+
+\begin{align*}
+	\frac{k}{2}E[\rvmax{x}] &= \theta \\
+	\frac{k}{2} \frac{\theta (2n+1)}{n+1} &= \theta \\
+	k &= \frac{2(n+1)}{2n+1}
+\end{align*}
+
+And, if we use $n=3$ finally. 
+
+\[
+	k = \frac{2(n+1)}{2n+1} = \frac{8}{7}
+\]
+
+\subsection*{C.}
+
+Which of the two estimators can be improved by using sufficiency? How?
+
+So, I believe that $\mom{\theta}$ can be improved as it is the one that is obviously lacking. First, we would need to scale this estimator so we know its unbiased. Then we can apply the rao-blackwell theorem. We would condition on a sufficient statistic for $U(\theta, 2\theta)$ to create a uniformly better estimator of $\tau(\theta)$. 
