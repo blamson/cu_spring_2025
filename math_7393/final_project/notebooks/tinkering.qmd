@@ -4,7 +4,7 @@ format: html
 ---
 
 ```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-packages <- c("ggplot2", "haven", "dplyr", "tidycensus", "readr")
+packages <- c("ggplot2", "haven", "dplyr", "tidycensus", "readr", "fastDummies")
 
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
@@ -15,57 +15,6 @@ for (pkg in packages) {
 
 options(scipen = 10)
 ```
-
-```{r}
-df <- readr::read_csv("../data/poverty_data.csv.gz")
-
-# This code is used to get the actual state from the FIPs code
-fips_to_state <- tidycensus::fips_codes %>%
-    select("state", "state_code") %>%
-    distinct() %>%
-    mutate(state_code = as.numeric(state_code))
-
-df <- df %>%
-    rename(state_code = st) %>%
-    left_join(fips_to_state, join_by(state_code))
-
-
-# This is just to get the labels for the various categorical codes in the original dataset
-# This information can be found in spm-asc-data-dictionary.pdf
-df <- df %>%
-    mutate(
-        education = factor(education, levels=0:4, labels=c(NA, "Less than a HS degree", "HS degree", "Some college", "College degree")),
-        sex = factor(sex, levels = 1:2, labels = c("male", "female")),
-        race = factor(race, levels = 1:4, labels = c("white", "black", "asian", "other")),
-        mar = factor(mar, levels = 1:5, labels = c("married", "widowed", "divorced", "separated", "never married"))
-    )
-```
-
-# Regions
-
-```{r}
-# Define vectors for each census region
-northeast_states <- c("CT", "ME", "MA", "NH", "RI", "VT", "NJ", "NY", "PA")
-midwest_states   <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MN", "MO", "NE", "ND", "SD")
-south_states     <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "DC", "WV", "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
-west_states      <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
-
-# Map state abbreviations to regions
-df <- df %>%
-  mutate(region = case_when(
-    state %in% northeast_states ~ "Northeast",
-    state %in% midwest_states   ~ "Midwest",
-    state %in% south_states     ~ "South",
-    state %in% west_states      ~ "West",
-    TRUE ~ NA_character_
-  ))
-```
-
-```{r}
-ggplot(df, aes(x=region)) +
-    geom_bar()
-```
-
 
 # Learning how to do stratified sampling
 
@@ -126,3 +75,35 @@ for (col in cat_columns) {
 Alright, this seems to work. We can use this to create a stratified sample! 
 
 No sense in saving a new dataframe though. We'll set a seed in the final notebook and tinker w/ sample sizes in the modeling step. 
+
+# Test Helper functions
+
+```{r}
+source("../scripts/helpers.R")
+```
+
+```{r}
+cat_columns <- c("hispanic", "spm_poor", "mar", "sex", "education", "race", "region")
+df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
+    add_state_abbreviations() %>%
+    add_region() %>%
+    apply_factor_labels() %>%
+    select(-c(state, state_code, wt)) %>%
+    stratified_sample(cat_columns = cat_columns, prop=0.05)
+```
+
+```{r}
+df %>%
+    modeldb::add_dummy_variables(region, auto_values = TRUE)
+```
+
+```{r}
+factor_columns <- setdiff(cat_columns, c("hispanic", "spm_poor"))
+df %>%
+    fastDummies::dummy_cols(
+        select_columns = factor_columns, 
+        remove_selected_columns = TRUE,
+        remove_first_dummy = TRUE
+    )
+```
+
