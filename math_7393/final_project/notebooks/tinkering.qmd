@@ -107,3 +107,8 @@ df %>%
     )
 ```
 
+```{r}
+df %>%
+    mutate(married = (mar == "married") + 0)
+```
+

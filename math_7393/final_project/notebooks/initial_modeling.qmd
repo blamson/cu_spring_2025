@@ -1,0 +1,86 @@
+---
+title: "Testing Modeling"
+author: "Brady Lamson"
+format: html
+---
+
+```{r}
+#| Echo: False
+#| Warning: False
+#| 
+source("../scripts/helpers.R")
+packages <- c("ggplot2", "dplyr", "readr", "rstanarm", "fastDummies", "janitor")
+load_and_install_packages(packages)
+```
+
+# Data Ingestion
+
+We do data cleaning AFTER reading in a file because a lot of this info can't be saved into a csv without inflating file size.
+
+```{r}
+# Seed reresents the 100% speedrun of Baten Kaitos which took 338 hours, 43 minutes and 26 seconds
+set.seed(3384326)
+
+# Used for stratified sampling 
+cat_columns <- c("hispanic", "spm_poor", "sex", "education", "race", "region", "married")
+
+# Used for dummy variable creation
+factor_columns <- setdiff(cat_columns, c("hispanic", "spm_poor", "married"))
+
+df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
+    # --- SOME DATA CLEANING HERE ---
+    # turn mar into 0/1 married or not married to make use of unbalanced categories
+    mutate(married = (mar == 1) + 0) %>%
+    add_state_abbreviations() %>%
+    add_region() %>%
+    apply_factor_labels() %>%
+    select(-c(state, state_code, wt, mar)) %>%
+    # --- STRATIFICATION AND DUMMY VARIABLE CREATION ---
+    stratified_sample(cat_columns = cat_columns, prop=0.01) %>%
+    # Save dummies for after stratification as they greatly increase dimensionality
+    fastDummies::dummy_cols(
+        select_columns = factor_columns,
+        remove_selected_columns = TRUE,
+        remove_first_dummy = TRUE,
+        ignore_na = TRUE
+    ) %>%
+    clean_names()
+```
+## Get factor columns
+```{r}
+columns <- df %>% colnames()
+
+education_columns <- columns %>%
+    regmatches(., gregexpr("^education_.*", .)) %>% unlist()
+
+region_columns <- columns %>%
+    regmatches(., gregexpr("^region_.*", .)) %>% unlist()
+
+race_columns <- columns %>%
+    regmatches(., gregexpr("^race_.*", .)) %>% unlist()
+```
+
+# Modeling
+
+```{r}
+glmod_logit <- stan_glm(
+    reformulate(
+        c("spm_poor", "age", "married", education_columns, region_columns, race_columns), 
+        response = "spm_poor"
+    ), 
+    data=df, iter=10000, chains=8, seed=100, cores=8
+)
+```
+
+```{r}
+summary(glmod_logit)
+```
+
+```{r}
+waic(glmod_logit)
+```
+
+```{r}
+posterior_interval(glmod_logit) %>% exp()
+```
+

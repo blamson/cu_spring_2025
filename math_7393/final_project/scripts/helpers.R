@@ -48,7 +48,7 @@ apply_factor_labels <- function(df) {
             education = factor(education,  levels = 0:4, labels = edu_labels, exclude = NULL),
             sex = factor(sex, levels = 1:2, labels = c("male", "female")),
             race = factor(race, levels = 1:4, labels = c("white", "black", "asian", "other")),
-            mar = factor(mar, levels = 1:5, labels = c("married", "widowed", "divorced", "separated", "never married")),
+            #mar = factor(mar, levels = 1:5, labels = c("married", "widowed", "divorced", "separated", "never married")),
             region = factor(region)
         )
 }
@@ -62,3 +62,18 @@ stratified_sample <- function(df, cat_columns, prop = 0.2) {
         ungroup()
 }
 
+
+load_and_install_packages <- function(packages) {
+    for (pkg in packages) {
+        if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+            install.packages(pkg, repos = "https://cran.rstudio.com/")
+            library(pkg, character.only = TRUE)
+        }
+    }
+}
+
+# This function allows us to get a list of columns within a dummy variable using regex
+# Cause this is really annoying to do over and over again
+extract_dummies <- function(names) {
+    
+}
