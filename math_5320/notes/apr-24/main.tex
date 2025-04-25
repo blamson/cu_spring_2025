@@ -1,0 +1,73 @@
+%        File: main.tex
+%     Created: Thu Sep 05 02:00 PM 2024 M
+% Last Change: Thu Sep 05 02:00 PM 2024 M
+%
+\documentclass[a4paper]{article}
+\include{preamble.tex}
+\begin{document}
+
+\section*{N-P Generalization for Exponential Family Proof}
+
+\subsection*{First Bullet}
+
+WLOG, assume $a(\theta), b(\vec{x})$ are positive. Consider the simple hypothesis:
+
+\[H_0: \theta = \theta_0, \;\; H_1: \theta = \theta_1, \;\; \theta_1 > \theta_0\]
+
+The N-P likelihood ratio test is:
+
+\[
+	\lambda(\vec{x} \mid \theta_0, \theta_1) = 
+	\frac{f(\vec{x}) \theta_0}{f(\vec{x})\theta_1} = 
+	\frac{a(\theta_0)}{a(\theta_1)} = 
+	\exp\left[ (c(\theta_0) - c(\theta_1))d(\vec{x}) \right]
+\]
+
+We will reject $H_0$ when:
+
+\begin{align}
+	\frac{a(\theta_0)}{a(\theta_1)} \exp\left[ (c(\theta_0) - c(\theta_1))d(\vec{x}) \right] &\leq k \\
+	\implies  \exp\left[ (c(\theta_0) - c(\theta_1))d(\vec{x}) \right] & \leq k_2 \\
+	\implies  (c(\theta_0) - c(\theta_1))d(\vec{x}) &\leq k_3 
+\end{align}
+
+Since $c(\theta)$ is increasing and $\theta_1 > \theta_0$, $c(\theta_0) - c(\theta_1) < 0$. 
+
+Therefore, we reject when $d(\vec{x}) \geq k_4$. We solve for $k_4$ s.t. $P(d(\vec{x}) \geq k_4) = \alpha$.
+
+Since the dist'n of $d(\vec{x})$ doesn't depend on $\theta$, this will be the UMP test for $\theta > \theta_0$ by the N-P lemma. 
+
+We apply this thought process to the other bullet points found in my stupid iphones photo gallery because I forgot my stupid notebook on my stupid desk at home. Oop.
+
+\section*{Corollary 8.3.B}
+
+Consider a simple test based on the N-P lemma. Suppose that $T(\vec{x})$ is a sufficient statistic for $\theta$ and $g(t \mid \theta_i)$ is the pdf or pmf of $T$ corresponding to $\theta_i$, $i = $ $0$ or $1$. Then, any test based on $T$ with rejection region $S$ is an UMP level $\alpha$ test if it satisfies:
+
+\begin{align*}
+	t &\in S \;\; \text{if}\;\; g(t \mid \theta_1) > k g(t \mid \theta_0) \\
+	t &\in S^c \;\; \text{if}\;\; g(t \mid \theta_1) < k g(t \mid \theta_0) \\
+\end{align*}
+
+for some $k \geq 0$ where $\alpha \geq P(T \in S)$. 
+
+[We have extended the like N-P likelihood ratio test to an equivalent test based on the sufficient statistic $T(\vec{x})$.]
+
+\section*{Definition:}
+
+A family of pdfs or pmfs for a univariate random variable $T$ with real-valued parameter $\theta$ has a monotone likelihood ratio (MLR) if, for every $\theta > \theta_1$, $\frac{g(t \mid \theta_2)}{t \mid \theta_1}$ is a monotone function of $t$ on $\left\{ t: g(t \mid \theta_1) > 0, \; \text{or}\; g(t \mid \theta_2) > 0 \right\}$. 
+
+Note: [$c/0$ is defined as $\infty$ when $c>0$]. 
+
+Any regular exponential family with $g(t\mid \theta) = h(t)c(\theta)\exp(w(\theta)t)$ has a MLR if $w(\theta)$ is a non-decreasing function.
+
+\section{Theorem 8.3.17 (Karlin-Rubin Theorem)}
+
+Consider testing $H_0: \theta \leq \theta_0$ vs. $H_1: \theta > \theta_0$. Suppose that $T$ is a sufficient statistic for $\theta$, and the family of pdfs $\left\{ g(t | \theta): \theta \in \Theta \right\}$ has a MLR. Then, for any $t_0$, the test that rejects $H_0$ iff $T > t_0$ is a UMP level $\alpha$ test, where $\alpha = P(T > t_0)$.
+
+\subsection*{Question}
+
+Whats the difference between the exponential family N-P lemma generalization and the K-R theorem?
+
+K-R theorem doesn't require an exponential family. K-R is a \textbf{level} $\alpha$, not \textbf{size} $\alpha$. 
+
+\end{document}
