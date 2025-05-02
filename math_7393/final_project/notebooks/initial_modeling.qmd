@@ -4,12 +4,15 @@ author: "Brady Lamson"
 format: html
 ---
 
+Quick reference for variable selection tips
+[link](https://jwmi.github.io/BMB/16-Variable-selection.pdf)
+
 ```{r}
 #| Echo: False
 #| Warning: False
 #| 
 source("../scripts/helpers.R")
-packages <- c("ggplot2", "dplyr", "readr", "rstanarm", "fastDummies", "janitor")
+packages <- c("ggplot2", "dplyr", "readr", "rstanarm", "fastDummies", "janitor", "qgraph", "corrr", "loo")
 load_and_install_packages(packages)
 ```
 
@@ -63,9 +66,14 @@ race_columns <- columns %>%
 # Modeling
 
 ```{r}
-glmod_logit <- stan_glm(
+glmod_logit_full <- stan_glm(
     reformulate(
-        c("spm_poor", "age", "married", education_columns, region_columns, race_columns), 
+        c(
+            "age", "married", 
+            "spm_povthreshold", "hispanic", "hi_premium",
+            "moop_other", "sex_female",
+            education_columns, region_columns, race_columns
+        ), 
         response = "spm_poor"
     ), 
     data=df, iter=10000, chains=8, seed=100, cores=8
@@ -73,14 +81,61 @@ glmod_logit <- stan_glm(
 ```
 
 ```{r}
-summary(glmod_logit)
+summary(glmod_logit_full)
 ```
 
 ```{r}
-waic(glmod_logit)
+posterior_interval(glmod_logit_full) %>% exp()
+```
+
+## Model 2 
+
+LETS REMOVE SOME OF THE BAD ONES
+
+```{r}
+glmod_logit_2 <- stan_glm(
+    reformulate(
+        c(
+            "spm_poor", "age", "married", 
+            "spm_povthreshold", "hispanic",
+            education_columns, race_columns
+        ), 
+        response = "spm_poor"
+    ), 
+    data=df, iter=10000, chains=8, seed=100, cores=8
+)
 ```
 
 ```{r}
-posterior_interval(glmod_logit) %>% exp()
+posterior_interval(glmod_logit_2) %>% exp()
 ```
 
+```{r}
+qgraph(cor(df), minimum=0.25)
+```
+
+```{r}
+library(corrr)
+library(dplyr)
+
+# Select only numeric columns (since you're using a tibble)
+df_numeric <- df %>% select(where(is.numeric))
+
+# Create a correlation matrix and reorder
+cor_mat <- correlate(df_numeric)
+
+# Print nicely
+print(cor_mat)
+
+# For visual inspection
+rplot(cor_mat)  # heatmap-style
+
+```
+
+```{r}
+waic(glmod_logit_full, cores=8)
+```
+
+```{r}
+waic(glmod_logit_2, cores=8)
+```
