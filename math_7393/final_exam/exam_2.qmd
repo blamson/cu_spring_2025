@@ -1,0 +1,1027 @@
+---
+title: "Exam 2"
+subtitle: Math 7393 - Bayesian Statistics
+format: html
+self-contained: true
+toc: true
+author: Brady Lamson
+date: "04-29-2025"
+---
+
+This exam is open-book and open-note and open-anything with the exception that no other human or Artificial Intelligence may help you on the exam. 
+
+Your answers must be typed in something like a Quarto, Jupyter, or $\LaTeX$. R code and output for individual problem parts should be include in the relevant section.
+
+Each problem is worth 10 points and will be graded according the the rubric provided in Canvas. Make sure to provide enough information that I can evaluate whether you adequately understand what the problem is asking and what the correct response should be. You can reference work from previous problems if it is relevant. Yes/No type answers will not receive any points. 
+
+**Please use `refresh = 0` for any Stan-related sampling so that I do not have to see the sampling process. Please be selective in the code/output you include. Include what you need, but try to remove extraneous information.**
+
+By submitting this Exam through Canvas, you are confirming that you have followed the rules of the exam.  Failing to abide by the rules of the exam will result in a zero score for the entire exam and you will be reported to the university for Academic Dishonesty.
+**
+
+\newpage
+
+# Helper Functions
+
+```{r}
+#| code-fold: true
+#| code-summary: Function to run and fit the model
+
+run_or_load_stan_model <- function(model_code, data, model_name, cores, iter = 10000, chains = 4, verbose = TRUE) {
+  rda_file <- paste0(model_name, ".rda")
+  
+  if (!file.exists(rda_file)) {
+    if (verbose) message("Compiling model: ", model_name)
+    
+    fit <- stan(model_code = model_code, data = data, iter = iter, chains = chains, cores = cores)
+    mod <- stan_model(model_code = model_code)
+    
+    # This assign functions allows me to create variables in the global environment 
+    # During this process which is just kinda convenient
+    assign(model_name, mod, envir = .GlobalEnv)
+    save(list = model_name, file = rda_file, compress = "xz")
+  } else {
+    if (verbose) message("Loading pre-compiled model: ", model_name)
+    
+    load(rda_file, envir = .GlobalEnv)
+    mod <- get(model_name, envir = .GlobalEnv)
+    fit <- sampling(mod, data = data, iter = iter, chains = chains, cores = cores)
+  }
+  
+  return(fit)
+}
+
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Function to load packages
+
+load_and_install_packages <- function(packages) {
+    for (pkg in packages) {
+        if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+            install.packages(pkg, repos = "https://cran.rstudio.com/")
+            library(pkg, character.only = TRUE)
+        }
+    }
+}
+```
+
+
+\newpage
+
+```{r}
+#| include: false
+# see if bayesutils package is available
+if (!require("bayesutils", quietly = TRUE)) {
+  # if not, then install package
+  remotes::install_github("jfrench/bayesutils")
+  library(bayesutils)
+}
+
+packages <- c("ggplot2", "latex2exp", "coda", "readr", "dplyr", "rstan", "loo", "latex2exp", "bayesplot")
+load_and_install_packages(packages)
+```
+
+\newpage
+
+# Metropolis-Hastings sampling
+
+Josh gave an exam to 40 students. The exams were scores out of 100, rounded to the nearest whole number. The scores are stored in `scores.csv`. 
+
+Data model: $Y_1, Y_2, \ldots, Y_{40} \mid \sigma \stackrel{i.i.d.}{\sim} t_{30}(75, \sigma)$. [This is a  scaled and shifted $t$ distribution. It is available in the **bayesutils** package. See `?bayesutils:: ?ScaledTDist`.]
+
+Prior: $\sigma^2 \sim \mathrm{Inv}\text{-}\mathrm{Gamma}(3, 15)$.
+
+## Problem 1
+
+### (a) 
+
+Write your own function implementing the Metropolis-Hastings algorithm to determine the posterior distribution of $\sigma$.
+
+Use an $\mathrm{Inv}\text{-}\mathrm{Gamma}(3, 15)$ proposal distribution for $\sigma^2$.
+
+Provide the code here.
+
+**Solution**
+
+```{r}
+#| include: false
+
+scores <- read_csv("data/scores.csv")
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: MH Algorithm Code
+#| 
+
+mh = function(B, start, y, jump_param = c(3, 15)) {
+    # Initialize the chain
+    theta = numeric(B + 1)
+    theta[1] = start
+    accepted = 0
+    
+    # Extract parameters of jump dist
+    prop_alpha <- jump_param[1]
+    prop_beta <- jump_param[2]
+
+    
+    # The algorithm itself
+    for (i in 2:length(theta)) {
+        # Sample from the proposal dist:
+        # This is our proposal for sigma SQUARED. Don't forget.
+        theta_star <- rinvgamma(1, shape = prop_alpha, scale = prop_beta)
+        
+        # We can use the simplified ratio below because of the properties of the independence chain
+        # discussed on page 7/23 on the MH notes from class because the prior and proposal are the same!
+        
+        # Calculate the acceptance ratio
+        num_logr <- dst(y, df=30, mean=75, sigma=sqrt(theta_star), log = T) %>%
+            sum()
+        
+        den_logr <- dst(y, df=30, mean=75, sigma=sqrt(theta[i-1]), log = T) %>%
+            sum()
+        
+        logr = num_logr - den_logr
+        
+        # Accept or reject the proposal
+        if (log(runif(1)) <= min(logr, 0)) {
+            theta[i] = theta_star
+            accepted = accepted + 1
+        } else {theta[i] = theta[i - 1]}
+    }
+    
+    acceptance_rate <- (accepted / B) %>% round(digits=5)
+    
+    # Check acceptance rate cause I'm gettin' some concerns
+    print(paste0("Acceptance Rate: ", acceptance_rate * 100, "%"))
+    return(theta)
+}
+```
+
+### (b)
+
+Using the code from the previous problem, run 2 chains of 100,000 iterations each. Use half of each chain as warmup.
+
+Provide a table summarizing the posterior mean, standard deviation, 0.025 quantile, and 0.975 quantile of your retained posterior samples rounded to 3 decimal places.
+
+**Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: Running MH
+
+set.seed(100)
+B <- 100000
+keep = (B/2 + 1):(B + 1)
+jpar <- c(3, 15)
+y <- scores$score
+
+chain1 = mh(B, start = 0.01, y = y, jump_param = jpar)
+chain2 = mh(B, start = 100, y=y, jump_param = jpar)
+
+mc = mcmc.list(
+    mcmc(chain1[keep]),
+    mcmc(chain2[keep])
+)
+```
+
+```{r}
+#| include: false
+#| 
+summary(mc)
+```
+
+
+|Variable|Mean|SD|$0.025$ Quantile|$0.975$ Quantile|
+|---|---|---|---|---|
+|$\sigma^2$|47.558|11.227|30.50|77.32|
+
+## Problem 2
+
+### (a)
+
+Assess the convergence of the MCMC chain using Gelman's $\hat{R}$ statistic. Comment on the results.
+
+**Solution**
+
+```{r}
+coda::gelman.diag(mc, autoburnin = F)
+```
+
+Value appears fine. We want this metric to fall near 1 and less than 1.1 which this does. This suggests that we have converged on an answer. 
+
+### (b)
+
+Assess the convergence of the MCMC chain using a trace plot.  Comment on the results.
+
+**Solution**
+
+```{r}
+coda::traceplot(mc)
+```
+
+This trace plot is concerning. It's very sparse. We want it to appear a lot more dense and "packed in" I suppose. What that indicates is we have explored our parameter space well which, given this plot, it is reasonable to be concerned that we have not done so.
+
+### (c)
+
+Compute the effective sample size of the posterior samples. Comment on the results.
+
+**Solution**
+
+```{r}
+coda::effectiveSize(mc)
+```
+
+The effective sample size is the first very shocking result so far. This is laughably small. What this indicates to us is similar to the trace plot. Our model was likely getting stuck a lot and so there likely aren't many observations to extract from this. A value this small is cause for a lot of alarm and indicates some severe deficiencies in our model. 
+
+### (d)
+
+Plot the proposal density as a function of $\sigma^2$ for $\sigma^2\in[1,120]$. On that plot, overlay the scaled likelihood function of the data as a function of $\sigma^2$, where the maximum of the likelihood function is scaled to match the maximum of the proposal density. Alternatively, you can scale the likelihood function to integrate to 1. The results will not be the same, but both options are acceptable.
+
+**Solution**
+
+I acquired the log likelihood here analytically. There may be a simpler way but that is not what I did. 
+
+$$
+\begin{align}
+    p(y \mid \mu, v, \sigma) &= \frac{\Gamma\left( \frac{v+1}{2} \right) }{\Gamma(v/2)\sqrt{v\pi}} \frac{1}{\sigma} 
+    \left( 1 + \frac{1}{v} \left( \frac{y - \mu}{\sigma} \right)^2 \right)^{-(v+1)/2} \\
+    p(\vec{y} \mid \mu, v, \sigma) &= \prod_{i=1}^n \frac{\Gamma\left( \frac{v+1}{2} \right) }{\Gamma(v/2)\sqrt{v\pi}} \frac{1}{\sigma} 
+    \left( 1 + \frac{1}{v} \left( \frac{y - \mu}{\sigma} \right)^2 \right)^{-(v+1)/2} \\
+    \ln p(\vec{y} \mid \mu, v, \sigma) &= n\left( \ln \Gamma\left( \frac{v+1}{2} \right) - \ln(v/2) - \ln(\sqrt{v\pi}) - \ln(\sigma) \right)
+    - \frac{v+1}{2} \ln \prod_{i=1}^n \left( 1 + \frac{1}{v} \left( \frac{y - \mu}{\sigma} \right)^2 \right) \\
+    &= n\left( \ln \Gamma\left( \frac{v+1}{2} \right) - \ln(v/2) - \ln(\sqrt{v\pi}) - \ln(\sigma) \right)
+    - \frac{v+1}{2} \sum_{i=1}^n \ln \left( 1 + \frac{1}{v} \left( \frac{y - \mu}{\sigma} \right)^2 \right) \\
+\end{align}
+$$
+
+```{r}
+#| code-fold: true
+#| code-summary: Creating a log likelihood function
+
+calc_ll_t <- function(y, mu, sigma, v, n) {
+    first_part <- log(gamma((v+1)/2)) - log(v/2) - log(sqrt(v*pi)) - log(sigma)
+    second_part <- ((v+1)/2) * sum( log( 1+(1/v)*((y-mu)/sigma)^2 ) )
+    return(n*first_part - second_part)
+}
+
+theta_vals <- seq(1, 120, length=1000)
+sigma_vals <- sqrt(theta_vals)
+
+# Compute log-likelihood values for each sigma
+log_likelihoods <- sapply(sigma_vals, function(s) {
+  calc_ll_t(y = scores$score, mu = 75, sigma = s, v = 30, n = length(scores$score))
+})
+```
+
+
+```{r}
+#| code-fold: true
+#| code-summary: Plotting code if you're curious
+
+df <- dplyr::tibble(
+    theta = theta_vals,
+    prop_density = dinvgamma(theta_vals, shape = 3, scale = 15),
+    loglikelihood = log_likelihoods
+) %>% mutate(scaled_ll = loglikelihood / max(loglikelihood) * max(prop_density))
+
+line_size <- 1.2
+ggplot(df, aes(x=theta)) +
+    geom_line(aes(y=prop_density, color="Proposal"), linewidth = line_size) +
+    geom_line(aes(y=scaled_ll, color="LogLikelihood"), linewidth = line_size) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($\sigma^2$)'),
+        y = "Density",
+        color = "",
+        title = "Densities - Proposal Dist'n and Scaled Log Likelihood"
+    ) +
+    theme(legend.position = "top")
+```
+
+
+### (e)
+
+Based on the previous parts of this problem, comment about the effectiveness of the proposal distribution. Was it a good choice? A bad choice? Why?
+
+**Solution**
+
+I don't believe this is a good proposal distribution. If we assume my implementation was correct, there are too many red flags. First, the effective sample size is pathetic. 407 samples after 2 chains with 100,000 total iterations after warmup? And those numbers check out too if we examine the mcmc list directly or check the acceptance rate during the algorithm. It gets stuck constantly. 
+
+The autocorrelation plots (not included here) show extremely high autocorrelation that barely drops at all. The trace plot is also really bad as well, and shows how often we're getting stuck. We simply aren't properly exploring the parameter space well enough. The gelman diagnostic appears fine but that on its own isn't enough to outweigh the other concerns with our model.
+
+One thing I should mention is it's also possible my implementation (an independence chain) was a contributing factor however I am not sure of that. 
+
+## Problem 3
+
+### (a)
+
+Provide the Stan code to fit the same model as Problem 1.
+
+**Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: Stan model
+
+stanmod = "
+data {
+  int<lower=0> n; // sample size
+  vector[n] y; 
+  int<lower=0> nu; // degrees of freedom
+  real<lower=0> mu; // data dist mean
+  real<lower=0> alpha; // prior shape
+  real<lower=0> beta; // prior scale
+}
+parameters {
+  real<lower=0> sigmasq;
+}
+transformed parameters {
+  real<lower=0> sigma;
+  sigma = sqrt(sigmasq);
+}
+model {
+  // priors
+  sigmasq ~ inv_gamma(alpha, beta); //prior distribution
+  
+  // data dist
+  y ~ student_t(nu, mu, sigma);  //data distribution
+}
+"
+```
+
+### (b)
+
+Run 2 chains of 10,000 iterations each. Use half of each chain as warmup.
+
+**Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: Model Running
+#| results: false
+#| 
+stan_dat <- list(
+    y = scores$score,
+    n = nrow(scores),
+    nu = 30,
+    mu = 75,
+    alpha = 3,
+    beta = 15
+)
+
+scores_model <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "scores_model",
+    chains = 2,
+    cores=2,
+    iter = 10000
+)
+```
+
+Provide a table summarizing posterior mean, standard deviation, 0.025 quantile, and 0.975 quantile of your retained posterior samples rounded to 3 decimal places.
+
+```{r}
+#| include: false
+#| echo: false
+#| 
+summary(scores_model,
+        pars = c("sigmasq", "sigma"),
+        probs = c(0.025, 0.975))$summary
+```
+
+|Variable|Mean|SD|$0.025$ Quantile|$0.975$ Quantile|
+|---|---|---|---|---|
+|$\sigma^2$|47.826|10.865|31.124|72.843|
+
+# Titanic survival
+
+The Titanic data set is a famous machine learning data set related to predicting whether a passenger survived or died based on various predictors variables. The `titanic_data.csv` file contains information about 712 observations for the following 8 variables:
+
+- `survived`: 	Survival 	0 = No, 1 = Yes
+- `pclass`: 	Ticket class 	1 = 1st, 2 = 2nd, 3 = 3rd
+- `sex`: 	Sex 	
+- `age`: 	Age in years 	
+- `sibsp`: 	# of siblings / spouses aboard the Titanic 	
+- `parch`: 	# of parents / children aboard the Titanic 	
+- `fare`: 	Passenger fare 	
+- `embarked`: 	Port of Embarkation 	C = Cherbourg, Q = Queenstown, S = Southampton.
+
+The `pclass`, `sex`, and `embarked` variables should be treated as categorical variables.
+
+## Problem 4
+
+Fit the following model (logistic model 1) to the data:
+
+Data distribution: $y_i \mid \pi_i \sim \mathrm{Bernoulli}(\pi_i)$,
+where $\mathrm{logit}(\pi_i) = \beta_0 + \beta_1 I_{\mathrm{male}}(\mathtt{sex}) + \beta_2 \mathtt{age}_i$, for $i=1,2,\ldots,n$, and all responses are independent.
+
+Prior distribution: $\beta_0, \beta_1, \beta_2 \stackrel{i.i.d.}{\sim} N(0, 100^2)$.
+
+Sample from the posterior distribution using 2 chains of 5,000 iterations each, using half of each chain as warm-up.
+
+Provide a table summarizing the posterior mean, standard deviation, 0.025 quantile, and 0.975 quantile of the retained posterior samples of $\beta_0, \beta_1, \beta_2$ rounded to 3 decimal places.
+
+**Solution**
+
+```{r}
+#| include: false
+titanic <- read_csv("data/titanic_data.csv")
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Stan model
+#| 
+stanmod = "
+data {
+  int<lower=1> n; // number of observations
+  int y[n]; // data
+  int male[n]; //covariate
+  vector[n] age; //covariate
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  real beta0;
+  real beta1;
+  real beta2;
+}
+transformed parameters {
+  vector[n] pi;
+  //pi = beta0 + beta1*male + beta2*age;
+  for (i in 1:n) {
+    pi[i] = beta0 + beta1*male[i] + beta2*age[i];
+  }
+}
+model {
+  //specify priors
+  beta0 ~ normal(0.0, 100);
+  beta1 ~ normal(0.0, 100);
+  beta2 ~ normal(0.0, 100);
+
+  // data distribution
+  y ~ bernoulli_logit(pi);
+}
+generated quantities {
+  vector[n] log_lik;
+  for (i in 1:n) log_lik[i] = bernoulli_logit_lpmf(y[i] | pi[i]);
+}
+"
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Model Running
+#| results: false
+#| 
+stan_dat <- list(
+    y = titanic$survived,
+    n = nrow(titanic),
+    male = (titanic$sex == "male") + 0,
+    age = titanic$age,
+    v = var(titanic$survived)
+)
+
+set.seed(500)
+titanic_model <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "titanic_model",
+    chains = 2,
+    cores=2,
+    iter = 5000
+)
+```
+
+```{r}
+#| include: false
+#| echo: false
+#| 
+summary(titanic_model,
+        pars = c("beta0", "beta1", "beta2"),
+        probs = c(0.025, 0.975))$summary
+```
+
+|Variable|Mean|SD|$0.025$ Quantile|$0.975$ Quantile|
+|---|---|---|---|---|
+|$\beta_0$|1.290|0.236|0.828|1.746|
+|$\beta_1$| -2.471 |0.184| -2.839| -2.118|
+|$\beta_2$| -0.006| 0.006| -0.018| 0.007|
+
+## Problem 5
+
+Using the fit from the previous model, interpret the coefficients for the intercept, `sex`, and `age` in the context of the problem.
+
+**Solution**
+
+```{r}
+#| include: false
+#| echo: false
+beta_matrix <- matrix(
+    data = c(
+        c(1.290, 0.828, 1.746),
+        c(-2.471, -2.839, -2.118),
+        c(-0.006, -0.018, 0.007)
+    ), nrow=3, byrow=T
+) %>% exp()
+colnames(beta_matrix) <- c("mean", "lower", "upper")
+rownames(beta_matrix) <- c("beta0", "beta1", "beta2")
+
+print(beta_matrix)
+```
+
+Important first that we get these coefficients into values we can interpret.
+
+|Variable|Mean|$0.025$ Quantile|$0.975$ Quantile|
+|---|---|---|---|---|
+|$\exp(\beta_0)$|3.633|2.289|5.732|
+|$\exp(\beta_1)$|0.085 |0.058| 0.120|
+|$\exp(\beta_2)$|0.994|0.982|1.007|
+
+**Intercept:** The posterior odds of survival for a female passenger of age 0 are $3.6$ times higher than the odds of not surviving. 
+
+**Sex:** The posterior odds of survival for a male passenger aboard the titanic are approximately $91.5\%[88.0\%, 94.2\%]$ lower than that of a female.
+
+**Age:** The posterior odds of survival for a passenger aboard the titanic decreases by approximately $0.60\%$ for every year increase in their age. In laymen terms, older passengers had a lower chance of survival than younger passengers. 
+
+## Problem 6
+
+### (a)
+
+Extend logistic model 1 to include the following additional predictor variables in the logit function:  
+
+- `pclass`
+- `sibsp`
+- `parch`
+- `fare`
+- `embarked`
+
+Do not include any additional interaction terms. Categorical variables should be coded using the standard approach. The resulting model will have 10 regression coefficients. Call this model logistic model 2.
+
+We assume the prior distribution for all coefficients in the resulting logit function have i.i.d. $N(0, 100^2)$ prior distributions.
+
+Sample from the posterior distribution using 2 chains of 5,000 iterations each, using half of each chain as warm-up.
+
+Provide a table summarizing the posterior mean, standard deviation, 0.025 quantile, and 0.975 quantile of the retained posterior samples of the coefficients rounded to 3 decimal places.
+
+**Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: Stan model
+#| 
+stanmod = "
+data {
+  int<lower=1> n; // number of observations
+  int y[n]; // data
+  int male[n]; //covariate
+  vector[n] age; //covariate
+  int port_q[n];
+  int port_s[n];
+  int class_2[n];
+  int class_3[n];
+  vector[n] fare;
+  int sibsq[n];
+  int parch[n];
+  real<lower=0> v; // sample variance of y
+}
+parameters {
+  // If it wasnt the end of the semester id spend a million hours finding out how
+  // to do all of this with matrices so this wasn't so tedious to set up. 
+  real beta0;
+  real beta1;
+  real beta2;
+  real beta3;
+  real beta4;
+  real beta5;
+  real beta6;
+  real beta7;
+  real beta8;
+  real beta9;
+}
+transformed parameters {
+  vector[n] pi;
+  // I am so sorry for how long this line of code is. 
+  for (i in 1:n) {
+    pi[i] = beta0 + beta1*male[i] + beta2*age[i] + beta3*port_q[i] + beta4*port_s[i] + beta5*class_2[i] + beta6*class_3[i] + beta7*fare[i] + beta8*sibsq[i] + beta9*parch[i];
+  }
+}
+model {
+  //specify priors
+  beta0 ~ normal(0.0, 100);
+  beta1 ~ normal(0.0, 100);
+  beta2 ~ normal(0.0, 100);
+  beta3 ~ normal(0.0, 100);
+  beta4 ~ normal(0.0, 100);
+  beta5 ~ normal(0.0, 100);
+  beta6 ~ normal(0.0, 100);
+  beta7 ~ normal(0.0, 100);
+  beta8 ~ normal(0.0, 100);
+  beta9 ~ normal(0.0, 100);
+
+  // data distribution
+  y ~ bernoulli_logit(pi);
+}
+generated quantities {
+  vector[n] log_lik;
+  for (i in 1:n) log_lik[i] = bernoulli_logit_lpmf(y[i] | pi[i]);
+}
+"
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Model Running
+#| results: false
+#| 
+stan_dat <- list(
+    y = titanic$survived,
+    n = nrow(titanic),
+    male = (titanic$sex == "male") + 0,
+    port_q = (titanic$embarked == "Q") + 0,
+    port_s = (titanic$embarked == "S") + 0,
+    class_2 = (titanic$pclass == "2") + 0,
+    class_3 = (titanic$pclass == "3") + 0,
+    age = titanic$age,
+    fare = titanic$fare,
+    sibsq = titanic$sibsp,
+    parch = titanic$parch,
+    v = var(titanic$survived)
+)
+
+set.seed(500)
+titanic_model2 <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "titanic_model2",
+    chains = 2,
+    cores=2,
+    iter = 5000
+)
+```
+
+```{r}
+#| include: false
+#| echo: false
+#| 
+test <- summary(
+    titanic_model2,
+    pars = paste0("beta", 0:9),
+    probs = c(0.025, 0.975)
+)$summary
+
+test2 <- dplyr::as_tibble(test) %>% 
+    setNames(colnames(test)) %>% 
+    mutate(variable = paste0("beta", 0:9)) %>%
+    select(c("variable", "mean", "sd", "2.5%", "97.5%")) %>%
+    mutate(across(2:5, round, 3))
+
+test2 %>%
+    readr::write_csv(file="data/titanic_model2_summary.csv")
+```
+
+|variable    |mean                 |sd                   |2.5%                  |97.5%                |
+|------------|---------------------|---------------------|----------------------|---------------------|
+|$\beta_0$   |4.508                |0.557                |3.44                  |5.624                |
+|$\beta_1$   |-2.692               |0.227                |-3.139                |-2.251               |
+|$\beta_2$   |-0.044               |0.008                |-0.061                |-0.028               |
+|$\beta_3$   |-0.882               |0.626                |-2.104                |0.351                |
+|$\beta_4$   |-0.408               |0.285                |-0.956                |0.16                 |
+|$\beta_5$   |-1.196               |0.343                |-1.866                |-0.536               |
+|$\beta_6$   |-2.419               |0.353                |-3.114                |-1.732               |
+|$\beta_7$   |0.002                |0.003                |-0.003                |0.008                |
+|$\beta_8$   |-0.377               |0.13                 |-0.635                |-0.127               |
+|$\beta_9$   |-0.07                |0.125                |-0.319                |0.166                |
+
+
+## (b)
+
+Compute the WAIC and LOOIC information criteria for logistic model 1 and 2. Which model is preferred and why?
+
+**Solution**
+
+```{r, warning=FALSE}
+#| warning: false
+#| code-fold: true
+#| code-summary: Collecting metrics
+#| 
+# log likelihoods
+mod1_ll <- extract_log_lik(titanic_model, merge_chains = FALSE)
+mod2_ll <- extract_log_lik(titanic_model2, merge_chains = FALSE)
+
+# waics
+waic1 <- waic(mod1_ll)
+waic2 <- waic(mod2_ll)
+waics <- list(waic1, waic2)
+
+
+# relative efficiency of LLs
+r_eff1 <- exp(relative_eff(mod1_ll))
+r_eff2 <- exp(relative_eff(mod2_ll))
+
+
+# looic
+looic1 <- loo(mod1_ll, r_eff = r_eff1)
+looic2 <- loo(mod2_ll, r_eff = r_eff2)
+looics <- list(looic1, looic2)
+```
+
+**WAIC**
+
+```{r}
+waics
+```
+
+
+```{r}
+loo_compare(waics)
+```
+
+**LOOIC**
+
+```{r}
+looics
+```
+
+
+```{r}
+loo_compare(looics)
+```
+
+According to both the waic and looic metrics, model 2 - the more complex model with 10 coefficients, is the superior model.
+
+Weirdly enough the looic and waic seem nearly identical. I am unsure if this is of concern, but I felt it worth pointing out.
+
+## Problem 6??? (Pr 6 is in here twice!)
+
+Consider logistic model 2. Based on what you know about the posterior distribution of each coefficient, which coefficients/variables have an association with the probability of survival?
+
+**Solution**
+
+We want to check out the coefficients that don't straddle 0. Those give us an indication of influence one way or the other.
+
+So here is the list of the ones that stand out: 1, 2, 5, 6, 8. 
+
+Which corresponds to: male, age, class_2, class_3, sibsq. 
+
+It's worth noting that all of these coefficients also *negatively* impact the probability of survival. 
+
+# Analysis of Child Weight versus Gestation Details
+
+We will use the Kaggle data set available at  (https://www.kaggle.com/code/jacopoferretti/analysis-of-child-weight-vs-gestation-details) to perform a cursory analysis of child birth weight versus various predictor variables. The data set contains 1,174 observations of the following 7 variables:
+
+- `bwt`: Birthweight, in ounces
+- `gestation`: Length of gestation, in days
+- `parity`: Binary indicator for a first pregnancy (0 = first pregnancy).
+- `age`: Mother's age in years
+- `height`: Mother's height in inches
+- `weight`: Mother's weight in pounds
+- `smoke`: Binary indicator for whether the mother smokes
+
+The data are available in `birthweight.csv`.
+
+## Problem 7
+
+### (a)
+
+Provide the Stan code to fit the following model to the data:
+
+Data distribution: $Y_i \mid \mu_i, \sigma^2 \sim N(\mu_i, \sigma^2)$, $i=1,2,\ldots,n$ and independent, with 
+
+$$\mu_i = \beta_0 + \beta_1 \mathtt{gestation}_i + \beta_2 \mathtt{smoke}.$$
+
+Prior distributions:
+
+$\beta_0, \beta_1, \beta_2 \stackrel{i.i.d.}{\sim} t_1(\mu = 0, \sigma = 50)$.
+
+$\sigma^2 \sim \mathrm{Inv}\text{-}\mathrm{Gamma}(0.01, 0.01)$.
+
+**Solution**
+
+```{r}
+#| include: false
+birthweight <- readr::read_csv("data/birthweight.csv")
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: Stan model
+#| 
+stanmod = "
+data {
+  int<lower=1> n;       // number of observations
+  int y[n];             // data
+  vector[n] gestation;  //covariate
+  int smoke[n];         //covariate
+  real<lower=0> alpha;  // param1 for sigmasq
+  real<lower=0> beta;   // param2 for sigmasq
+  real<lower=0> v;      // sample variance
+}
+parameters {
+  real beta0;
+  real beta1;
+  real beta2;
+  real sigmasq;
+}
+transformed parameters {
+  vector[n] mu;
+  for (i in 1:n) {
+    mu[i] = beta0 + beta1*gestation[i] + beta2*smoke[i];
+  }
+}
+model {
+  //specify priors
+  sigmasq ~ inv_gamma(alpha, beta);
+  
+  // covariate priors
+  beta0 ~ student_t(1, 0.0, 50);
+  beta1 ~ student_t(1, 0.0, 50);
+  beta2 ~ student_t(1, 0.0, 50);
+
+  // data distribution
+  y ~ normal(mu, sqrt(sigmasq));
+}
+generated quantities {
+  real Rbsq;
+  Rbsq = 1 - sigmasq / v;
+}
+"
+```
+
+
+### (b)
+
+Run 2 chains of 10,000 iterations each. Use half of each chain as warmup.
+
+Provide a table summarizing the posterior mean, standard deviation, 0.025 quantile, and 0.975 quantile of your retained posterior samples rounded to 3 decimal places.
+
+**Solution**
+
+```{r}
+#| code-fold: true
+#| code-summary: Model Running
+#| results: false
+
+
+set.seed(700)
+stan_dat <- list(
+    y = birthweight$bwt,
+    n = nrow(birthweight),
+    gestation = birthweight$gestation,
+    smoke = birthweight$smoke,
+    alpha = 0.01,
+    beta = 0.01,
+    v = var(birthweight$bwt)
+)
+
+baby_model <- run_or_load_stan_model(
+    model_code = stanmod,
+    data = stan_dat,
+    model_name = "baby_model",
+    chains = 2,
+    cores=2,
+    iter = 10000
+)
+```
+
+```{r}
+#| include: false
+#| echo: false
+#| 
+summary(
+    baby_model,
+    pars = c(paste0("beta", 0:2), "sigmasq"),
+    probs = c(0.025, 0.975)
+)$summary
+```
+
+|Variable|Mean|SD|$0.025$ Quantile|$0.975$ Quantile|
+|---|---|---|---|---|
+|$\beta_0$|-2.979|8.144|-18.983|12.984|
+|$\beta_1$| 0.450 |0.029| 0.393| 0.507|
+|$\beta_2$| -8.391| 0.988| -10.332| -6.478|
+|$\sigma^2$| 264.331| 10.980| 243.459| 286.902|
+
+## Problem 8
+
+### (a)
+
+Interpret each of the coefficients for the model in the context of the problem.
+
+**Solution**
+
+Let's write out the full equation.
+
+$$
+    \hat{y} = -2.979 + 0.45X_1 - 8.391X_2
+$$
+
+$\beta_0$: We expect, a posteriori, that a baby born with 0 days of gestation from a nonsmoking mother to have a birthweight of $-2.979$ ounces.
+
+**Intercept Note:** Important to point out that this intercept on its own is a weird value because a gestation period of 0 days doesn't make a lot of sense within the context of the data. Our minimum gestation period in this dataset is 148 days.
+
+$\beta_1$: We expect, a posteriori, that for every additional day of gestation, that a baby's birthweight will increase by around $0.45$ ounces, given the same smoking status of the parent.
+
+$\beta_2$: We expect, a posteriori, that a baby born from a mother who is a smoker will weigh approximately $8.391$ ounces less than a baby born from a nonsmoking mother given the same length of gestation. 
+
+### (b)
+
+Do you think this model fits the data well? Why?
+
+**Solution**
+
+**1st check:** All of the gelman-rubin statistics are as follows:
+
+|Variable|$\hat{R}$|
+|---|---|
+|$\beta_0$|1.0002|
+|$\beta_1$|1.0002 |
+|$\beta_2$|1.0010|
+|$\sigma^2$|1.0003|
+
+All of these are extremely close to one which indicates convergence. This doesn't necessarily mean we converged to something good though.
+
+```{r}
+#| include: false
+#| echo: false
+#| 
+summary(
+    baby_model,
+    pars = c("sigmasq", "Rbsq"),
+    probs = c(0.025, 0.975)
+)$summary
+```
+
+**2nd check:** $R_b^2$
+
+```{r}
+#| code-fold: true
+#| code-summary: Plotting rbsq
+
+rbsq <- rstan::extract(baby_model, pars = "Rbsq")$Rbsq
+
+ggplot() +
+    geom_density(aes(x=rbsq), color="blue", linewidth = 1.1) +
+    theme_minimal() +
+    labs(
+        x = TeX(r'($R_b^2$)'),
+        y = "Density",
+        color = "",
+        title = ""
+    ) +
+    xlim(0, 1)
+```
+
+Okay this is a pretty bad score for $R_b^2$. We would ideally like to see this closer to 1. It's likely that our model is struggling to account for all of the variance in the data. 
+
+**Check 3:** Creating a replicated sample
+
+Shamelessly copied yrep code from `a-soda-regression-low-information.R`.
+
+```{r}
+#| code-fold: true
+#| code-summary: Creating yrep
+
+# extracting the MCMC samples from the soda_fit object
+samples = extract(baby_model)
+ncycles = length(samples[[1]])
+
+# each row of yrep is a sample from the pp distribution
+yrep = matrix(0, ncol = nrow(birthweight), nrow = ncycles)
+for (i in seq_len(nrow(birthweight))) {
+  mui = samples$beta0 + samples$beta1 * birthweight$gestation[i] + samples$beta2 * birthweight$smoke[i]
+  yrep[, i] = rnorm(ncycles, mean = mui, sd = sqrt(samples$sigmasq))
+}
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: More plots!
+
+ggplot() +
+    geom_density(aes(x=yrep[,1], color="yrep", ), linewidth = line_size) +
+    geom_density(aes(x=birthweight$bwt, color="y"), linewidth = line_size) +
+    theme_minimal() +
+    labs(
+        x = "Bodyweight (ounces)",
+        y = "Density",
+        color = "Dataset",
+        title = "Density - Comparing original dataset to replicated data"
+    )
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: More plots!
+
+bayesplot::ppc_scatter_avg(birthweight$bwt, yrep)
+```
+
+The density plot doesn't look that bad to be totally honest. The replicated dataset appears to be shifted to the right relative to the actual dataset though. This indicates that we're overestimating bodyweights a bit. The scatterplot also definitely doesn't look great. It doesn't follow the line as well as I would like to see, it definitely appears to be more of a random scattering around the central cluster. 
+
+**Conclusion:** 
+
+This model is lacking. This shouldn't be too surprising. We're only looking at two covariates and there is a lot more at play that determines a baby's bodyweight. 
