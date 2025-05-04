@@ -1,0 +1,14 @@
+\section*{8.6}
+
+Suppose that we have two independent random samples: \rs are exponential$(\theta)$, and $Y_1, \cdots, Y_m$ are exponential$(\mu)$.
+
+\subsection*{A}
+
+Find the LRT of $H_0: \theta = \mu$ versus $H_1: \theta \neq \mu$.
+
+\begin{align*}
+	\lambda(\vec{x}, \vec{y}) &= \frac{L(\theta)L(\mu)}{L(\theta = \hat{\theta})L(\mu = \hat{\mu})} \\
+	&= \frac
+	{\theta^{-n} e^{-\frac{1}{\theta} \sum x_i} \theta^{-m} e^{-\frac{1}{\theta} \sum y_j}}
+	{\hat{\theta}^{-n} e^{-\frac{1}{\hat{\theta}} \sum x_i} \hat{\mu}^{-m} e^{-\frac{1}{\hat{\mu}} \sum y_j}}
+\end{align*}<++>

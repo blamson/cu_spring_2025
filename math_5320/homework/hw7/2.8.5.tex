@@ -1,0 +1,118 @@
+\section*{8.5}
+
+A random sample \rs is drawn from a pareto population with pdf
+
+\[
+	f(x \mid \theta, v) = \frac{\theta v^{\theta}}{x^{\theta + 1}} I_{[v,\infty)}(x), \;\; \theta > 0, \;\; v > 0
+\]
+
+\subsection*{A}
+
+Find the MLEs of $\theta$ and $v$.
+
+First we'll start with the likelihood function.
+
+\[
+	L(\theta, v \mid \vec{x}) = \left( \theta v^{\theta} \right)^n \left( \prod_{i=1}^n x_i^{-(\theta + 1)} \right) \left( \prod_{i=1}^n  I_{[v,\infty)}(x_i) \right)
+\]
+
+Maximizing this function with respect to $v$ requires making $v$ as large as possible. However, $v$ has an upper bound of $\rvmin{x}$. Therefore, $\mle{v} = \rvmin{x}$.
+
+As for $\theta$, we proceed with the usual workflow.
+
+\begin{align*}
+	LL(\theta, v \mid \vec{x}) &= n(\ln\theta + \theta\ln v) + \left( \ln \prod x_i^{-(\theta + 1)} \right), \;\; v \leq \rvmin{x} \\
+	&= n\ln\theta + n\theta\ln v - (\theta + 1) \sum \ln(x_i) \\
+	\frac{d}{d\theta} LL(\theta, v \mid \vec{x}) &= \frac{n}{\theta} + n\ln v - \sum \ln x_i \\
+	0 &= \frac{n}{\theta} + n\ln v - \sum \ln x_i \\
+	\frac{n}{\theta} &= \sum \ln x_i - n\ln v \\
+	\theta &= \frac{n}{\sum \ln x_i - n\ln v} \\
+	\theta &= \frac{n}{\sum \ln x_i - n\ln \rvmin{x}} \\
+	\frac{d^2}{d\theta^2} LL(\theta, v \mid \vec{x}) &= -\frac{n}{\theta^2} < 0 \; \forall \; \theta
+\end{align*}
+
+Therefore,
+
+\[
+	\mle{\theta} = \frac{n}{\sum \ln x_i - n\ln \rvmin{x}}
+\]
+
+and
+
+\[
+	\mle{v} = \rvmin{x}
+\]
+
+\subsection{B}
+
+Show that the LRT of $H_0: \theta = 1$, $v$ unknown. Versus. $H_1: \theta \neq 1$, $v$ unknown, has critical region of the form
+
+\[
+	\left\{ \vec{x}: T(\vec{x}) \leq c_1 \; \text{or} \; T(\vec{x}) \geq c_2 \right\}
+\]
+
+
+where $0 < c_1 < c_2$ and
+
+\[
+	T = \ln\left[ \frac{\prod_{i=1}^n x_i}{x_{(1)}^n} \right]
+\]
+
+Before we start, let us examine $T$ and how it relates to $\mle{\theta}$.
+
+\begin{align*}
+	\mle{\theta} &= \frac{n}{\sum \ln x_i - n\ln \rvmin{x}} \\
+	&= \frac{n}{\ln \prod x_i - n\ln \rvmin{x}} \\
+	&= \frac{n}{\ln \prod x_i - \ln \rvmin{x}^n} \\
+	&= \frac{n}{\ln\left( \frac{\prod x_i}{\rvmin{x}^n} \right)} \\
+	&= \frac{n}{T}
+\end{align*}
+
+Now we set up the numerator and denominator of the LRT.
+
+\begin{align*}
+	\lambda(\vec{x}) &= \frac{L(\hat{\theta}_0, \hat{v} \mid \vec{x})}{L(\hat{\theta}, \hat{v} \mid \vec{x})} \\
+	L(\hat{\theta}_0 = 1, \hat{v} \mid \vec{x}) &= (1v^1)^n \prod_{i=1}^n x_i^{-(1+1)}, \;\; v \leq \rvmin{x} \\
+	&= \rvmin{x}^n \prod_{i=1}^n x^{-2} \\
+	L(\hat{\theta}, \hat{v} \mid \vec{x}) &= \left( \frac{n}{T} \rvmin{x}^{n/T} \right)^n \prod_{i=1}^n x_i^{-\left( \frac{n}{T} + 1 \right)} \\
+	&= \left( \frac{n}{T} \right)^n \rvmin{x}^{n^2/T} \prod_{i=1}^n x_i^{-\left( \frac{n}{T} + 1 \right)} 
+\end{align*}
+
+Now we get into the bulk of the work. Before we dive into the algebra we need to know our goal. We want to get $\lambda(\vec{x})$ into as simple a function of $T$ as possible. All of the rearranging were doing is with that in mind.
+
+\begin{align*}
+	\lambda(\vec{x}) &= \frac{L(\hat{\theta}_0, \hat{v} \mid \vec{x})}{L(\hat{\theta}, \hat{v} \mid \vec{x})} \\
+	&= \frac{\rvmin{x}^n \prod_{i=1}^n x^{-2}}
+	{\left( \frac{n}{T} \right)^n \rvmin{x}^{n^2/T} \prod_{i=1}^n x_i^{-\left( \frac{n}{T} + 1 \right)}} \\
+	&= \left( \frac{T}{n} \right)^n \rvmin{x}^{n - \frac{n^2}{T}} \left( \prod_{i=1}^n x_i \right)^{\frac{n}{T} - 1} \\
+	&= \left( \frac{T}{n} \right)^n \rvmin{x}^{-n(\frac{n}{T} - 1)} \left( \prod_{i=1}^n x_i \right)^{\frac{n}{T} - 1} \\
+	&= \left( \frac{T}{n} \right)^n \left(  \frac{\prod x_i}{\rvmin{x}^n} \right)^{\frac{n}{T} - 1} \\
+	&= \left( \frac{T}{n} \right)^n \exp\left( \left( \frac{n}{T} - 1 \right) \ln \left(  \frac{\prod x_i}{\rvmin{x}^n} \right) \right) \\
+	&= \left( \frac{T}{n} \right)^n  \exp\left( \left( \frac{n}{T} - 1 \right) T\right) \\
+	&= \left( \frac{T}{n} \right)^n  \exp\left( n - T \right) \\
+	&= \left( \frac{T}{n} \right)^n e^{n - T}
+\end{align*}
+
+Now for the critical region. We want to show that the critical region has the form:
+
+\[
+	\left\{ \vec{x}: T(\vec{x}) \leq c_1 \; \text{or} \; T(\vec{x}) \geq c_2 \right\}
+\]
+
+What we need to acknowledge is that we reject the null hypothesis when $\lambda(\vec{x})$ is small. So we want to find the max of this function so we can figure out where these small values are.
+
+\begin{align*}
+	\lambda(\vec{x}) &= \left( \frac{T}{n} \right)^n e^{n - T} \\
+	L\lambda(\vec{x}) &= n\ln T - n\ln n + n - T \\
+	\frac{d}{dT} &= \frac{n}{T} - 1 \\
+	0 &= \frac{n}{T} - 1 \\
+	n &= T \\
+	\frac{d^2}{dT^2} \lambda(\vec{x}) &= -\frac{n}{T^2} < 0 \; \forall \; T 
+\end{align*}
+
+So we have $n=T$ is the max of this function. What we can glean from this is our really small values are at the tails of this function. So when $T$ is way smaller or way larger than $n$. So we have our two sided rejection region. As for how much larger than $n$ it needs to be, we would scale that depending on the size or level test we want. Which gives us our $c_1$ and $c_2$. So our critical region has the form:
+
+\[
+	\left\{ \vec{x}: T(\vec{x}) \leq c_1 \; \text{or} \; T(\vec{x}) \geq c_2 \right\}
+\]
+
