@@ -6,9 +6,197 @@ Suppose that we have two independent random samples: \rs are exponential$(\theta
 
 Find the LRT of $H_0: \theta = \mu$ versus $H_1: \theta \neq \mu$.
 
+The key thing to take advantage of here is the fact that $X$ is independent of $Y$. This makes the joint pdf and joint likelihood way simpler to deal with as it's just the product of their respective functions. 
+
+First things first though is figuring out the MLEs of $X$ and $Y$. What's nice is they're basically identical so we just need to find one of em. 
+
+\subsubsection*{MLES}
+
+\begin{align*}
+	f_X(x \mid \theta) &= \frac{1}{\theta} e^{-x/\theta} \\
+	L(\theta \mid \vec{x}) &= \theta^{-n} \exp\left( -\theta^{-1} \sum x_i \right) \\
+	LL(\theta \mid \vec{x}) &= -n\ln(\theta) - \theta^{-1} \sum x_i \\
+	\frac{d}{d\theta} LL(\theta \mid \vec{x}) &= -\frac{n}{\theta} + \frac{1}{\theta^2} \sum x_i \\
+	0 &= -\frac{n}{\theta} + \frac{1}{\theta^2} \sum x_i \\
+	\frac{\sum x_i}{\theta^2} &= \frac{n}{\theta} \\
+	\frac{1}{\theta^2} &= \frac{n}{\sum x_i} \frac{1}{\theta} \\
+	1 &= \frac{n\theta}{\sum x_i} \\
+	\theta &= \frac{1}{n} \sum x_i \\
+	\hat{\theta} &= \bar{x}
+\end{align*}
+
+So our $\hat{\theta} = \bar{x}$. Let's verify that it's a maximum.
+
+\begin{align*}
+	\frac{d^2}{d\theta^2} &= \frac{n}{\theta^2} - \frac{2\sum x_i}{\theta^3} \\
+	&= \frac{n}{\bar{x}^2} - \frac{2n\bar{x}}{\bar{x}^3} \\
+	&= \frac{n}{\bar{x}^2} - \frac{2n}{\bar{x}^2} \\
+	&= \frac{n - 2n}{\bar{x}^2} \\
+	&= -\frac{n}{\bar{x}^2} < 0
+\end{align*}
+
+Therefore $\mle{\theta} = \bar{x}$ and, by extension, $\mle{\mu} = \bar{y}$.
+
+Let's take a look at our test here.
+
 \begin{align*}
 	\lambda(\vec{x}, \vec{y}) &= \frac{L(\theta)L(\mu)}{L(\theta = \hat{\theta})L(\mu = \hat{\mu})} \\
 	&= \frac
 	{\theta^{-n} e^{-\frac{1}{\theta} \sum x_i} \theta^{-m} e^{-\frac{1}{\theta} \sum y_j}}
 	{\hat{\theta}^{-n} e^{-\frac{1}{\hat{\theta}} \sum x_i} \hat{\mu}^{-m} e^{-\frac{1}{\hat{\mu}} \sum y_j}}
-\end{align*}<++>
+\end{align*}
+
+So we took care of the denominator, when $\theta \neq \mu$, but what about our numerator? Let's take a look. In this case $\theta = \mu = \phi$. 
+
+\begin{align*}
+	L(\theta = \phi \mid \vec{x}) \cdot L(\mu = \phi \mid \vec{y}) &= \phi^{-n}\exp\left( -\frac{1}{\phi} \sum x_i \right) \phi^{-m}\exp\left( -\frac{1}{\phi} \sum y_j \right) \\
+	LL(\theta = \phi \mid \vec{x}) \cdot L(\mu = \phi \mid \vec{y}) &= -n\ln(\phi) - \frac{1}{\phi} \sum x_i  m\ln(\phi) - \frac{1}{\phi} \sum y_j \\
+	&= -\ln(\phi)(n+m) - \frac{1}{\phi}\left( \sum x_i + \sum y_j \right) \\
+	\frac{d}{d\phi}	LL(\theta = \phi \mid \vec{x}) \cdot L(\mu = \phi \mid \vec{y}) &= -\frac{n+m}{\phi} + \frac{\sum x_i + \sum y_j}{\phi^2} \\
+	\implies \hat{\phi} &= \frac{\sum x_i + \sum y_j}{n + m}
+\end{align*}
+
+Following the same logic as our previous MLE derivation.
+
+\pagebreak
+\subsubsection{LRT}
+
+So now that we have our components we can tackle the LRT. Some definitions first.
+
+\vspace{-5mm}
+\begin{align*}
+	\sum x_i &= S_X & n+m &= N \\
+	\sum y_j &= S_Y \\
+	S_X + S_Y &= S \\
+\end{align*}
+\vspace{-5mm}
+
+This is just to save my poor sanity as we proceed through the algebra. Alright. Let's do this. Note that $S_X = \sum x_i = n \bar{x}$.
+
+\begin{align*}
+	\lambda(\vec{x}, \vec{y}) &= \frac{L(\theta = \hat{\phi})L(\mu = \hat{\phi})}{L(\theta = \hat{\theta})L(\mu = \hat{\mu})} \\
+	&= \frac
+	{\hat{\phi}^{-n} e^{-\frac{1}{\hat{\phi}} S_X} \hat{\phi}^{-m} e^{-\frac{1}{\hat{\phi}} S_Y}}
+	{\hat{\theta}^{-n} e^{-\frac{1}{\hat{\theta}} S_X} \hat{\mu}^{-m} e^{-\frac{1}{\hat{\mu}} S_Y}} \\
+	&= \frac
+	{\left( \frac{S}{N} \right)^{-n} \exp\left( -\frac{N}{S} S_X \right) \left( \frac{S}{N} \right)^{-m} \exp\left( -\frac{N}{S} S_Y \right)  }
+	{\bar{x}^{-n} \exp\left(-\frac{1}{\bar{x}} S_X\right) \bar{y}^{-m} \exp\left(-\frac{1}{\bar{y}} S_Y\right)} \\
+	&= \frac{\left( \frac{S}{N} \right)^{-(n+m)} \exp\left( -\frac{N}{S}\left( S_X + S_Y \right) \right) }
+	{\left( \frac{S_X}{n} \right)^{-n} \exp\left(-\frac{n}{S_X} S_X\right) \left( \frac{S_Y}{m} \right)^{-m} \exp\left(-\frac{m}{S_Y} S_Y\right)} \\
+	&= \frac{\left( \frac{S}{N} \right)^{-N} \exp\left( -\frac{N}{S} S \right)}{\left( \frac{S_X}{n} \right)^{-n} \left( \frac{S_Y}{m} \right)^{-m} \exp\left( -(n+m) \right) } \\ 
+	&= \frac{\left( \frac{S}{N} \right)^{-N} \exp\left( -N \right)}{\left( \frac{S_X}{n} \right)^{-n} \left( \frac{S_Y}{m} \right)^{-m} \exp\left( -N \right) } \\ 
+	&= \frac{\left( \frac{S}{N} \right)^{-N}}{\left( \frac{S_X}{n} \right)^{-n} \left( \frac{S_Y}{m} \right)^{-m}} 
+\end{align*}
+
+And so we reject $H_0$ if $\lambda(\vec{x}, \vec{y}) < c$ for some desired $\alpha$.
+
+\pagebreak
+\subsection*{B}
+
+Show that the test in the previous part can be based on the statistic:
+
+\[
+	T = \frac{\sum X_i}{\sum X_i + \sum Y_i}
+\]
+
+Okay so this is just more algebra. Using our earlier definitions we're looking for:
+
+\[
+	T = \frac{S_X}{S}
+\]
+
+So let's get to work.
+
+\begin{align*}
+	\lambda(\vec{x}, \vec{y}) &= \frac{\left( \frac{S}{N} \right)^{-N}}{\left( \frac{S_X}{n} \right)^{-n} \left( \frac{S_Y}{m} \right)^{-m}} \\
+	&= \frac{N^N S^{-N}}{S_X^{-n} n^n S_Y^{-m} m^m} \\
+	&= \frac{N^N}{n^nm^m} \frac{S_X^n S_Y^m}{S^N} \\
+	&=  \frac{N^N}{n^nm^m} \left( \frac{S_X}{S} \right)^n \left( \frac{S_Y}{S} \right)^m \\
+	&=  \frac{N^N}{n^nm^m} T^n \left( \frac{S_Y}{S} \right)^m \\
+\end{align*}
+
+Because $S = S_X + S_Y$, 
+\[\frac{S_Y}{S} = 1 - \frac{S_X}{S} = 1 - T\]
+
+So,
+
+\[
+	\lambda(\vec{x}, \vec{y}) = \frac{N^N}{n^nm^m} T^n \left( 1-T \right)^m   
+\]
+
+And with that we're done.
+
+\pagebreak
+\subsection{C}
+
+Find the distribution of $T$ when $H_0$ is true.
+
+Yet again we look at $T$.
+
+\[
+	T = \frac{S_X}{S_X + S_Y}
+\]
+
+Some things to consider, what is the distribution of $S_X$? $S_X + S_Y$? We'll need this information before we can proceed. 
+
+Lets start with $S_X$. Using the mgf of $X$, 
+
+\[
+	M_{\sum x}(t) = \left( \frac{1}{1 - \theta t} \right)^n
+\]
+
+Which is the mgf of a gamma distribution with $\alpha=n, \beta=\theta$. Similar logic for $S_Y$, but $\alpha = m$ instead. They both share $\beta$ as we assume $H_0$ is true for this problem. So, for the distribution of $S_X + S_Y$,
+
+\[
+	M_{S_X + S_Y}(t) = \left( \frac{1}{1 - \theta t} \right)^n \cdot \left( \frac{1}{1 - \theta t} \right)^m
+\]
+
+Giving us a gamma distribution with $\alpha = n+m, \beta=\theta$.
+
+With that we can set up a bivariate transformation to get the distribution of $T$. 
+
+\begin{align*}
+	U &= \frac{S_X}{S_X + S_Y} & S_X &= UV & S_Y &= V - S_X \\
+	V &= S_X + S_Y &&& &= V - VU \\
+	&&&&&= V(1-U)
+\end{align*}
+
+\begin{align*}
+	J &= \m{v}{\frac{dS_X}{dU} & \frac{dS_X}{dV} \\ \frac{dS_Y}{dU} & \frac{dS_Y}{dV} } \\
+	&= \m{v}{v & u \\ -v & 1-u} \\
+	&= v(1-u) + uv \\
+	&= v
+\end{align*}
+
+Now for the actual bulk of the work. We'll get the joint pdf for the transformation and then get the marginal distribution of $T$. 
+
+\begin{align*}
+	f_{u,v}(u,v) &= F_{S_X, S_Y}(S_X = uv, S_Y = v(1-u)) \cdot |J| \\
+	&= F_{S_X}(uv)F_{S_Y}(v(1-u)) v \\
+	&= (\Gamma(n)\theta^n)^{-1} (uv)^{n-1} \exp\left( -\frac{uv}{\theta} \right) (\Gamma(m)\theta^m) (v(1-u))^{m-1} \exp\left( -\frac{v(1-u)}{\theta} \right) v \\ 
+	&= (\Gamma(n)\Gamma(m)\theta^{n+m})^{-1} (uv)^{n-1} (v(1-u))^{m-1} \exp\left( -\frac{1}{\theta}(uv + v - vu) \right) v \\
+	&= (\Gamma(n)\Gamma(m)\theta^{n+m})^{-1} u^{n-1} v^{n-1} v^{m-1} (1-u)^{m-1} v e^{-v/\theta} \\
+	&= (\Gamma(n)\Gamma(m)\theta^{n+m})^{-1} u^{n-1} v^{n+m-1} (1-u)^{m-1} e^{-v/\theta}
+\end{align*}
+
+I swear it's not as bad as it looks. 
+
+Okay, so now we just get the marginal distribution and pray to the higher beings that watch over the end of the semester that this becomes a distribution we recognize.
+
+\begin{align*}
+	f_u(u) &= \int_{0}^{\infty} (\Gamma(n)\Gamma(m)\theta^{n+m})^{-1} u^{n-1} v^{n+m-1} (1-u)^{m-1} e^{-v/\theta} dv \\
+	&= (\Gamma(n)\Gamma(m)\theta^{n+m})^{-1} u^{n-1}  (1-u)^{m-1} \int_{0}^{\infty} v^{n+m-1} e^{-v/\theta} dv \\
+\end{align*}
+
+The integrand there is of the form of an unnormalized gamma distribution with $\alpha = n+m, \beta = \theta$. Thus, the integrand evaluates to the inverse normalizing constant of the gamma distribution, $\Gamma(\alpha)\beta^{\alpha}$.
+
+\begin{align*}
+	f_u(u) &= (\Gamma(n)\Gamma(m)\theta^{n+m})^{-1} u^{n-1}  (1-u)^{m-1} \cdot \Gamma(n+m)\theta^{n+m} \\
+	&= \frac{\Gamma(n+m)}{\Gamma(n)\Gamma(m)} u^{n-1} (1-u)^{m-1}
+\end{align*}
+
+Which is the pdf of a beta distribution with $\alpha = n, \beta = m$. Therefore,
+
+\[
+	T \sim Beta(n,m)
+\]
