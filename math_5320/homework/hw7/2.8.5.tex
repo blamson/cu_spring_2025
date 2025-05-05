@@ -116,3 +116,18 @@ So we have $n=T$ is the max of this function. What we can glean from this is our
 	\left\{ \vec{x}: T(\vec{x}) \leq c_1 \; \text{or} \; T(\vec{x}) \geq c_2 \right\}
 \]
 
+\subsection{Additional Question}
+
+Explain how you could use the fact that $2T$ has a chi-squared distribution with $2n-2$ degrees of freedom to specify the rejection region for the likelihod ratio test described in part b.
+
+What's great about this is it gives us a straightforward and concrete way to actually get our $c_1$ and $c_2$. We can set it up similar to how we would pick our constants with a standard normal or whatever. 
+
+So if $2T \sim \chi^2_{2n-2}$, $T \sim \frac{1}{2} \chi^2_{2n-2}$
+
+we can modify our critical region to look like:
+
+\[
+	\left\{ \vec{x}: T(\vec{x}) \leq \chi^2_{2n-2, \alpha/2} \; \text{or} \; T(\vec{x}) \geq \chi^2_{2n-2, 1-\alpha/2}  \right\}
+\]
+
+So now we have an intuitive and reliable way to get $c_1$ and $c_2$ based on some desired $\alpha$.
