@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  4 MAY 2025 21:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2024.3.20)  4 MAY 2025 21:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -181,7 +181,8 @@ ackend-pdftex.def
 File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count274
 \l__pdf_internal_box=\box53
-) (./main.aux (./2.8.6.aux) (./2.8.18.aux))
+) (./main.aux (./1.2.aux) (./1.3.aux) (./2.8.6.aux)
+(./2.8.18.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
@@ -224,32 +225,41 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 pstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-)) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/map/pdftex/u
-pdmap/pdftex.map}
+)) (./1.1.tex) [1{/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/
+map/pdftex/updmap/pdftex.map}
 
-] (./2.8.5.tex
-LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
+]
+\openout2 = `1.2.aux'.
+
+ (./1.2.tex
+LaTeX Font Info:    Trying to load font information for U+msa on input line 9.
 
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsa
 .fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 9.
 
 (/opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/tex/latex/amsfonts/umsb
 .fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [2] [3] [4]) [5]
+)) [2
+
+] (./1.3.tex) (./1.4.tex) [3
+
+
+] (./2.8.5.tex [4] [5] [6]) [7]
 \openout2 = `2.8.6.aux'.
 
- (./2.8.6.tex [6
 
-] [7] [8] [9]
+(./2.8.6.tex [8
+
+] [9] [10] [11]
 Overfull \hbox (35.92323pt too wide) detected at line 180
 []
  []
 
-[10]) [11]
+[12]) [13]
 \openout2 = `2.8.18.aux'.
 
  (./2.8.18.tex
@@ -257,24 +267,24 @@ Overfull \hbox (57.76219pt too wide) detected at line 35
 []
  []
 
-[12
+[14
 
 
 
-] [13]) [14] (./main.aux (./2.8.6.aux) (./2.8.18.aux))
+] [15]) [16] (./main.aux (./1.2.aux) (./2.8.6.aux) (./2.8.18.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2487 strings out of 474116
- 38972 string characters out of 5733619
+ 2539 strings out of 474116
+ 39650 string characters out of 5733619
  1949187 words of memory out of 5000000
- 24826 multiletter control sequences out of 15000+600000
+ 24858 multiletter control sequences out of 15000+600000
  561286 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 64i,14n,70p,459b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 64i,14n,70p,702b,238s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmbx10.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmbx12.pfb></opt/homebrew/Cellar/texlive/20240312/
@@ -290,10 +300,10 @@ s/cm/cmr5.pfb></opt/homebrew/Cellar/texlive/20240312/share/texmf-dist/fonts/typ
 e1/public/amsfonts/cm/cmr7.pfb></opt/homebrew/Cellar/texlive/20240312/share/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive
 /20240312/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on main.pdf (14 pages, 173045 bytes).
+Output written on main.pdf (16 pages, 179899 bytes).
 PDF statistics:
- 110 PDF objects out of 1000 (max. 8388607)
- 69 compressed objects within 1 object stream
+ 116 PDF objects out of 1000 (max. 8388607)
+ 73 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
