@@ -1,0 +1,81 @@
+\section{8.18}
+
+Let \rs be as random sample from an $N(\theta, \sigma^2)$ population, with $\sigma^2$ known. An LRT of $H_0: \theta = \theta_0$ versus $H_1: \theta \neq \theta_0$ is a test that rejects $H_0$ if
+
+\[
+	\frac{|\bar{X} - \theta_0|}{\sigma / \sqrt{n}} > c
+\]
+
+\subsection{A}
+
+Find an expression, in terms of standard normal probabilities, for the power function of this test. 
+
+So our goal here is to look at the power function and see if we can't write it in the form of $Z$, a standard normal random variable. This problem is primarily just algebraic rearranging.
+
+What this means is that we want $\bar{X} - \theta$ in the numerator there, not $\theta_0$. 
+
+\begin{align*}
+	\beta(\theta) &= P\left( \frac{|\bar{X} - \theta_0|}{\sigma / \sqrt{n}} > c \right) \\ 
+	\beta(\theta) &= 1 - P\left( \frac{|\bar{X} - \theta_0|}{\sigma / \sqrt{n}} \leq c \right) & \text{(Flip probability)} \\
+	&= 1- P\left(|\bar{X} - \theta_0| \leq \frac{c\sigma}{\sqrt{n}} \right) \\
+	&= 1 - P\left( -\frac{c\sigma}{\sqrt{n}} \leq \bar{X} - \theta_0 \leq \frac{c\sigma}{\sqrt{n}} \right) & \text{(Undo Absolute Val)} \\
+	&= 1 - P\left( -\frac{c\sigma}{\sqrt{n}} + \theta_0 \leq \bar{X} \leq \frac{c\sigma}{\sqrt{n}} + \theta_0 \right) \\
+	&= 1 - P\left( -\frac{c\sigma}{\sqrt{n}} + \theta_0 \leq \bar{X} + \theta - \theta \leq \frac{c\sigma}{\sqrt{n}} + \theta_0 \right) & \text{(Add } \theta - \theta) \\
+	&= 1 - P\left( -\frac{c\sigma}{\sqrt{n}} + \theta_0 - \theta \leq \bar{X} - \theta \leq \frac{c\sigma}{\sqrt{n}} + \theta_0 - \theta \right) \\
+	&= 1 - P\left( -\frac{c\sigma}{\sqrt{n}} + \theta_0 - \theta \leq (\bar{X} - \theta) \frac{\sigma/\sqrt{n}}{\sigma/\sqrt{n}} \leq \frac{c\sigma}{\sqrt{n}} + \theta_0 - \theta \right)
+	& \text{(Mult by 1)} \\
+	&= 1 - P\left( 
+	-\frac{c(\sigma/\sqrt{n}) + \theta_0 - \theta}{\sigma/\sqrt{n}} 
+	\leq \frac{\bar{X} - \theta}{\sigma/\sqrt{n}} 
+	\leq -\frac{c(\sigma/\sqrt{n}) + \theta_0 - \theta}{\sigma/\sqrt{n}}  
+	\right) \\
+	&= 1 - P\left( -c + \frac{\theta_0 - \theta}{\sigma/\sqrt{n}} \leq Z \leq c + \frac{\theta_0 - \theta}{\sigma/\sqrt{n}} \right) \\
+	&= 1 + P\left( Z \leq -c + \frac{\theta_0 - \theta}{\sigma/\sqrt{n}} \right) -  P\left( Z \leq c + \frac{\theta_0 - \theta}{\sigma/\sqrt{n}} \right) \\
+	&= 1 + F_{Z}\left( -c + \frac{\theta_0 - \theta}{\sigma/\sqrt{n}} \right) - F_{Z}\left(  c + \frac{\theta_0 - \theta}{\sigma/\sqrt{n}} \right)
+\end{align*}
+
+Phew. Alright, that's done.
+
+\subsection{B}
+
+The experimenter desires a Type I error probability of $.05$, and a maximum Type II error probability of $.25$ at $\theta = \theta_0 + \sigma$. Find values of $n,c$ that will achieve this.
+
+To find $c$ we will examine the power function given the null hypothesis where $\theta = \theta_0$. This simplifies things down quite a bit.
+
+\begin{align*}
+	\beta(\theta) &= 1 + F_Z(-c) - F_Z(c) \\
+	0.05 &= 1 + F_Z(-c) - F_Z(c) \\
+	0.05 &= 1 + (1 - F_Z(c)) - F_Z(c) \\
+	0.05 &= 2 - 2F_Z(c) \\
+	-1.95 &= -2F_Z(c) \\
+	0.975 &= F_Z(c) \\
+	c &= F_Z^{-1}(0.975) \\
+	c &= 1.96
+\end{align*}
+
+Important note here that we used the inverse norm. We could've done this using calculus but it is the final homework so I used my calculator for this. This gives us the constant we need given a specific probability. 
+
+Now, for $n$ we need to look at the Type II error rate. Here we'll substitute $\theta = \theta_0 + \sigma$. 
+
+Really important to point out here that a Type II error rate of $0.25$ gives us $\beta(\theta \mid H_1) = 1 - P(\text{Type II error}) = 1 - 0.25 = 0.75$.
+
+\begin{align*}
+	\beta(\theta_0 + \sigma) &= 1 + F_{Z}\left( -c + \frac{\theta_0 - \theta_0 - \sigma}{\sigma/\sqrt{n}} \right) - F_{Z}\left(  c + \frac{\theta_0 - \theta_0 - \sigma}{\sigma/\sqrt{n}} \right) \\
+	&= 1 + F_{Z}\left( -c + \frac{-\sigma}{\sigma/\sqrt{n}} \right) - F_{Z}\left(  c + \frac{-\sigma}{\sigma/\sqrt{n}} \right) \\
+	&= 1 + F_{Z}\left( -c - \sqrt{n} \right) - F_{Z}\left(  c - \sqrt{n} \right) \\
+	0.75 &= 1 + F_{Z}\left( -1.96 - \sqrt{n} \right) - F_{Z}\left(  1.96 - \sqrt{n} \right) \\
+\end{align*}
+
+Note here that $F_Z(-1.96 - \sqrt{n})$ is going to be approximately $0$ for nearly any $n$. For example, $n=10$ already puts this value at $1.5e^{-7}$. So we can simplify this further.
+
+\begin{align*}
+	0.75 &=  1 - F_{Z}\left(  1.96 - \sqrt{n} \right) \\
+	-.25 &= - F_{Z}\left(  1.96 - \sqrt{n} \right) \\
+	.25 &=  F_{Z}\left(  1.96 - \sqrt{n} \right) \\
+	F_Z^{-1}(.25) &= 1.96 - \sqrt{n} \\
+	-.675 &= 1 - \sqrt{n} \\
+	n &= 6.94 \\
+	n &\approx 7
+\end{align*}
+
+So we would need $c = 1.96$ and $n=7$ to achieve these results.
