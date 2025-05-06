@@ -12,7 +12,10 @@ Quick reference for variable selection tips
 #| Warning: False
 #| 
 source("../scripts/helpers.R")
-packages <- c("ggplot2", "dplyr", "readr", "rstanarm", "fastDummies", "janitor", "qgraph", "corrr", "loo")
+packages <- c(
+    "ggplot2", "dplyr", "readr", "fastDummies", "janitor", "tidyr",
+    "rstanarm",  "qgraph", "corrr", "loo", "bayesplot", "tidybayes"
+)
 load_and_install_packages(packages)
 ```
 
@@ -38,8 +41,15 @@ df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
     add_region() %>%
     apply_factor_labels() %>%
     select(-c(state, state_code, wt, mar)) %>%
+    # --- SCALE NUMERIC COLUMNS ---
+    mutate(
+        hi_premium = scale(hi_premium),
+        moop_other = scale(moop_other),
+        agi = scale(agi),
+        spm_povthreshold = scale(spm_povthreshold)
+    ) %>%
     # --- STRATIFICATION AND DUMMY VARIABLE CREATION ---
-    stratified_sample(cat_columns = cat_columns, prop=0.01) %>%
+    stratified_sample(cat_columns = cat_columns, prop=0.005) %>%
     # Save dummies for after stratification as they greatly increase dimensionality
     fastDummies::dummy_cols(
         select_columns = factor_columns,
@@ -49,6 +59,7 @@ df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
     ) %>%
     clean_names()
 ```
+
 ## Get factor columns
 ```{r}
 columns <- df %>% colnames()
@@ -65,50 +76,119 @@ race_columns <- columns %>%
 
 # Modeling
 
-```{r}
+```{r, include=FALSE}
 glmod_logit_full <- stan_glm(
     reformulate(
         c(
-            "age", "married", 
+            "age", "married", "agi",
             "spm_povthreshold", "hispanic", "hi_premium",
             "moop_other", "sex_female",
             education_columns, region_columns, race_columns
         ), 
         response = "spm_poor"
     ), 
+    prior=lasso(),
     data=df, iter=10000, chains=8, seed=100, cores=8
 )
 ```
 
 ```{r}
-summary(glmod_logit_full)
+modsum <- summary(glmod_logit_full)
+modsum
 ```
 
 ```{r}
 posterior_interval(glmod_logit_full) %>% exp()
 ```
 
-## Model 2 
-
-LETS REMOVE SOME OF THE BAD ONES
+```{r}
+coef(glmod_logit_full) %>% exp()
+```
 
 ```{r}
-glmod_logit_2 <- stan_glm(
-    reformulate(
-        c(
-            "spm_poor", "age", "married", 
-            "spm_povthreshold", "hispanic",
-            education_columns, race_columns
-        ), 
-        response = "spm_poor"
-    ), 
-    data=df, iter=10000, chains=8, seed=100, cores=8
+posterior_samples <- as.matrix(glmod_logit_full)
+
+mcmc_intervals(
+    exp(posterior_samples), 
+    pars = names(coef(glmod_logit_full))
+) +
+    ggtitle("Posterior intervals for odds ratios") +
+    geom_vline(xintercept = 1, linetype = "dashed")
+
+rm(posterior_samples)
+```
+
+
+## Model 2 
+
+LETS REMOVE SOME OF THE BAD ONES and rerun the lasso
+
+```{r, include=FALSE}
+glmod_logit_2 <- update(
+  glmod_logit_full,
+  formula = reformulate(
+    c(
+      "married", "agi",
+      "spm_povthreshold", "hispanic",
+      "moop_other", "sex_female",
+      education_columns, region_columns, race_columns
+    ),
+    response = "spm_poor"
+  )#,
+  #prior = NULL  # Optional: removes the lasso prior
 )
 ```
 
 ```{r}
 posterior_interval(glmod_logit_2) %>% exp()
 ```
+
+```{r}
+posterior_samples <- as.matrix(glmod_logit_2)
+
+mcmc_intervals(
+    exp(posterior_samples), 
+    pars = names(coef(glmod_logit_2))
+) +
+    ggtitle("Posterior intervals for odds ratios") +
+    geom_vline(xintercept = 1, linetype = "dashed")
+
+rm(posterior_samples)
+```
+
+# Model 3
+
+```{r, include=FALSE}
+glmod_logit_3 <- update(
+  glmod_logit_full,
+  formula = reformulate(
+    c(
+      "married", "agi",
+      "spm_povthreshold",
+      education_columns, region_columns, race_columns
+    ),
+    response = "spm_poor"
+  ),
+  prior = NULL  # Optional: removes the lasso prior
+)
+```
+
+```{r}
+posterior_samples <- as.matrix(glmod_logit_3)
+
+mcmc_intervals(
+    exp(posterior_samples)[,2:14], 
+    pars = setdiff(names(coef(glmod_logit_3)), "(Intercept)")
+) +
+    ggtitle("Posterior intervals for odds ratios") +
+    geom_vline(xintercept = 1, linetype = "dashed")
+
+rm(posterior_samples)
+```
+
+# Correlation stuff
+
+To justify removing hispanic from the model, we point out that it's highly correlated with race_other and the latter likely contains a lot of the same information.
 
 ```{r}
 qgraph(cor(df), minimum=0.25)
@@ -132,10 +212,42 @@ rplot(cor_mat)  # heatmap-style
 
 ```
 
+# WAIC Scores
+
 ```{r}
-waic(glmod_logit_full, cores=8)
+ll_full <- log_lik(glmod_logit_full)
+print(waic(ll_full, cores=8))
+rm(ll_full)
 ```
 
 ```{r}
-waic(glmod_logit_2, cores=8)
+ll_2 <- log_lik(glmod_logit_2)
+waic(ll_2, cores=8)
+rm(ll_2)
 ```
+
+```{r}
+ll_3 <- log_lik(glmod_logit_3)
+waic(ll_3, cores=8)
+rm(ll_3)
+```
+
+## Comparing them
+
+| Model         | WAIC   | SE    | p\_waic | elpd\_waic |
+| ------------- | ------ | ----- | ------- | ---------- |
+| Full          | 8154.6 | 256.3 | 21.5    | -4077.3    |
+| Model 2       | 8168.6 | 256.3 | 19.8    | -4084.3    |
+| Model 3       | 8209.7 | 256.2 | 16.2    | -4104.8    |
+
+| Models | Diff|
+|---|---|
+|Full - 3| -55.1|
+|Full - 2| -14. |
+|2 - 3   | -41.1|
+
+The loss in WAIC doesn't seem substantial going from the full model to model 3 because the difference falls well within the standard error of the WAICs. Thus there isn't substantial evidence to indicate that the full model is an improvement over the simplified model. 
+
+# Final Model
+
+So our final model has the covariates: married, agi, pov_threshold, region, race, education.
