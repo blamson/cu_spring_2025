@@ -17,7 +17,7 @@ Here is a general motivation for using the SPM versus the official measure taken
 
 # Main Dataset
 
-For this project I opted to use one of the many research datasets provided by the Census Bureau themselves [found here][here](https://www.census.gov/data/datasets/time-series/demo/supplemental-poverty-measure/acs-research-files.html). The data I'm using includes a variety of information the bureau uses in their SPM classification. I am exclusively using their table from 2023.
+For this project I opted to use one of the many research datasets provided by the Census Bureau themselves [found here](https://www.census.gov/data/datasets/time-series/demo/supplemental-poverty-measure/acs-research-files.html). The data I'm using includes a variety of information the bureau uses in their SPM classification. I am exclusively using their table from 2023.
 
 ## Directory Navigation
 
