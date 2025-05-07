@@ -4,8 +4,6 @@ The goal of this project is to take publicly available data, analyze it, and use
 
 # Research Question
 
-# 1. Research Question
-
 I want to understand the interplay of various predictors of an individuals poverty status according to the Supplemental Poverty Measure (SPM). We know of many usual predictors of poverty; age, education, state of residence, etc. On their own that may not be too interesting, however, I think there is a lot of value in examining the relationship between these predictors in determining an SPM poverty classification. As an example, say we hold an individuals out-of-pocket medical expenses fixed, how much of an impact does education or age play into a possible poverty classification? As another example, say we have two 70 year olds. How much influence does marital status have on poverty? Is an older adult who is single at more or less risk of poverty than someone who was widowed? If two people have the same adjusted gross income, does race still play an important part in risk of poverty due to other factors? 
 
 Using this information, I intend to estimate the probability that an individual is classified as poor according to the SPM. I also intend to identify which variables are the most influential in making this prediction.
