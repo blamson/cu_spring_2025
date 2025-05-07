@@ -77,3 +77,42 @@ load_and_install_packages <- function(packages) {
 extract_dummies <- function(names) {
     
 }
+
+
+load_final_dataset <- function(prop=0.005) {
+    # Seed represents the 100% speedrun of Baten Kaitos which took 338 hours, 43 minutes and 26 seconds
+    set.seed(3384326)
+    
+    # Used for stratified sampling 
+    cat_columns <- c("hispanic", "spm_poor", "sex", "education", "race", "region", "married")
+    
+    # Used for dummy variable creation
+    factor_columns <- setdiff(cat_columns, c("hispanic", "spm_poor", "married"))
+    
+    df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
+        # --- SOME DATA CLEANING HERE ---
+        # turn mar into 0/1 married or not married to make use of unbalanced categories
+        mutate(married = (mar == 1) + 0) %>%
+        add_state_abbreviations() %>%
+        add_region() %>%
+        # Remove NA education rows
+        filter(education != 0) %>%
+        apply_factor_labels() %>%
+        select(-c(state, state_code, wt, mar)) %>%
+        # --- SCALE NUMERIC COLUMNS ---
+        mutate(
+            agi = scale(agi),
+            spm_povthreshold = scale(spm_povthreshold)
+        ) %>%
+        # --- STRATIFICATION AND DUMMY VARIABLE CREATION ---
+        stratified_sample(cat_columns = cat_columns, prop=0.005) %>%
+        # Save dummies for after stratification as they greatly increase dimensionality
+        fastDummies::dummy_cols(
+            select_columns = factor_columns,
+            remove_selected_columns = TRUE,
+            remove_first_dummy = TRUE,
+            ignore_na = TRUE
+        ) %>%
+        clean_names() %>%
+        select(-c(sex_female, hispanic, moop_other, hi_premium, age))
+}

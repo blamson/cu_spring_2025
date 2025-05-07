@@ -35,19 +35,19 @@ head(df)
 ```{r}
 df_trim <- df %>%
     select(c(
-        , "SPM_Poor" # poverty classification
-        , "SPM_PovThreshold" # SPM unit poverty threshold
-        , "st" # state of residence
-        , "wt" # weight
+        , "SPM_Poor"
+        , "SPM_PovThreshold"
+        , "st"
+        , "wt"
         , "Age"
-        , "Mar" # marital status
+        , "Mar"
         , "Sex"
         , "Education"
         , "Race"
         , "Hispanic"
-        , "AGI" # adjusted gross income
-        , "HI_premium" # health insurance premium
-        , "Moop_other" # medical out of pocket expenses
+        , "AGI"
+        , "HI_premium"
+        , "Moop_other"
     )) %>%
     rename_all(tolower)
 ```
@@ -95,12 +95,3 @@ df_trim <- df_trim %>%
 ```{r}
 df_trim
 ```
-
-```{r}
-df_trim$spm_poor %>% hist()
-```
-
-```{r}
-df_trim$spm_poor %>% table()
-```
-

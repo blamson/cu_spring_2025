@@ -1,0 +1,93 @@
+---
+title: "Model Assessment"
+author: "Brady Lamson"
+format: html
+---
+
+# Imports
+
+```{r}
+#| Echo: False
+#| Warning: False
+#| Include: False
+source("../scripts/helpers.R")
+packages <- c(
+    "ggplot2", "dplyr", "readr", "fastDummies", "janitor", "tidyr",
+    "rstanarm",  "qgraph", "corrr", "loo", "bayesplot", "tidybayes"
+)
+load_and_install_packages(packages)
+```
+
+# Data Ingestion
+
+```{r}
+df <- load_final_dataset()
+```
+
+## Get factor columns
+```{r}
+columns <- df %>% colnames()
+
+education_columns <- columns %>%
+    regmatches(., gregexpr("^education_.*", .)) %>% unlist()
+
+region_columns <- columns %>%
+    regmatches(., gregexpr("^region_.*", .)) %>% unlist()
+
+race_columns <- columns %>%
+    regmatches(., gregexpr("^race_.*", .)) %>% unlist()
+```
+
+# Model Creation
+
+```{r, include=FALSE}
+glmod_logit <- stan_glm(
+  formula = reformulate(
+    c(
+      "married", "agi","spm_povthreshold",
+      education_columns, region_columns, race_columns
+    ),
+    response = "spm_poor"
+  ), 
+  data=df, iter=10000, chains=4, seed=100, cores=4
+)
+```
+
+# Trace Plots
+
+```{r}
+bayesplot::mcmc_trace(glmod_logit) +
+    scale_x_continuous(breaks = c(0, 2500, 5000))
+```
+# Violin Plots
+
+```{r}
+bayesplot::mcmc_violin(glmod_logit)
+```
+
+# Autocorrelation Plots
+
+```{r}
+bayesplot::mcmc_acf_bar(glmod_logit, pars = education_columns)
+```
+
+# Effective Sample Size
+
+Effective sample sizes from summary looked good, let's examine them with respect to 
+
+Plot from RSTANARM documentation
+[link](https://cran.r-project.org/web/packages/bayesplot/vignettes/visual-mcmc-diagnostics.html)
+
+```{r}
+ratios <- bayesplot::neff_ratio(glmod_logit)
+bayesplot::mcmc_neff(ratios) + yaxis_text(hjust=1)
+```
+
+All of these values are well within safe ranges according to the docs.
+
+# Shinystan
+
+```{r}
+#shinystan::launch_shinystan(glmod_logit)
+```
+

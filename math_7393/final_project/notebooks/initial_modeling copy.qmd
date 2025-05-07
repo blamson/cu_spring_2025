@@ -39,8 +39,6 @@ df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
     mutate(married = (mar == 1) + 0) %>%
     add_state_abbreviations() %>%
     add_region() %>%
-    # Remove NA education rows
-    filter(education != 0) %>%
     apply_factor_labels() %>%
     select(-c(state, state_code, wt, mar)) %>%
     # --- SCALE NUMERIC COLUMNS ---
@@ -90,7 +88,7 @@ glmod_logit_full <- stan_glm(
         response = "spm_poor"
     ), 
     prior=lasso(),
-    data=df, iter=10000, chains=4, seed=100, cores=4
+    data=df, iter=10000, chains=8, seed=100, cores=8
 )
 ```
 
@@ -236,19 +234,19 @@ rm(ll_3)
 
 ## Comparing them
 
-| Model         | WAIC   | SE    | 
-| ------------- | ------ | ----- | 
-| Full          | 5094 | 117.2 | 
-| Model 2       | 5094 | 117.2 | 
-| Model 3       | 5107.4 | 117.1 |
+| Model         | WAIC   | SE    | p\_waic | elpd\_waic |
+| ------------- | ------ | ----- | ------- | ---------- |
+| Full          | 8154.6 | 256.3 | 21.5    | -4077.3    |
+| Model 2       | 8168.6 | 256.3 | 19.8    | -4084.3    |
+| Model 3       | 8209.7 | 256.2 | 16.2    | -4104.8    |
 
 | Models | Diff|
 |---|---|
-|Full - 3| -13.4|
-|Full - 2| 0 |
-|2 - 3   | -13.4|
+|Full - 3| -55.1|
+|Full - 2| -14. |
+|2 - 3   | -41.1|
 
-The loss in WAIC doesn't seem substantial going from the full model to model 3 because the difference falls well within the standard error of the WAICs. Thus there isn't substantial evidence to indicate that the full model is an improvement over the simplified model. Funnily enough the full model and second model are basically identical here. 
+The loss in WAIC doesn't seem substantial going from the full model to model 3 because the difference falls well within the standard error of the WAICs. Thus there isn't substantial evidence to indicate that the full model is an improvement over the simplified model. 
 
 # Final Model
 
