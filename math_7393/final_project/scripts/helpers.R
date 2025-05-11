@@ -100,10 +100,10 @@ load_final_dataset <- function(prop=0.005) {
         apply_factor_labels() %>%
         select(-c(state, state_code, wt, mar)) %>%
         # --- SCALE NUMERIC COLUMNS ---
-        mutate(
-            agi = scale(agi),
-            spm_povthreshold = scale(spm_povthreshold)
-        ) %>%
+        # mutate(
+        #     agi = scale(agi),
+        #     spm_povthreshold = scale(spm_povthreshold)
+        # ) %>%
         # --- STRATIFICATION AND DUMMY VARIABLE CREATION ---
         stratified_sample(cat_columns = cat_columns, prop=0.005) %>%
         # Save dummies for after stratification as they greatly increase dimensionality
@@ -113,6 +113,6 @@ load_final_dataset <- function(prop=0.005) {
             remove_first_dummy = TRUE,
             ignore_na = TRUE
         ) %>%
-        clean_names() %>%
-        select(-c(sex_female, hispanic, moop_other, hi_premium, age))
+        clean_names() #%>%
+        #select(-c(sex_female, hispanic, moop_other, hi_premium, age))
 }

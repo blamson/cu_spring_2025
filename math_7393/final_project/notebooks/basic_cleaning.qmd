@@ -20,9 +20,9 @@ library(readr)
 # Data Ingestion
 
 ```{r}
-raw_data <- "data/spm_pu_2022.sas7bdat"
+raw_data <- "../data/spm_pu_2022.sas7bdat"
 if (file.exists(raw_data)) {
-    df <- haven::read_sas("data/spm_pu_2022.sas7bdat")
+    df <- haven::read_sas(raw_data)
 } else {
     print("Go download the data silly")
 }

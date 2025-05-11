@@ -42,14 +42,17 @@ race_columns <- columns %>%
 
 ```{r, include=FALSE}
 glmod_logit <- stan_glm(
-  formula = reformulate(
-    c(
-      "married", "agi","spm_povthreshold",
-      education_columns, region_columns, race_columns
-    ),
-    response = "spm_poor"
-  ), 
-  data=df, iter=10000, chains=4, seed=100, cores=4
+    reformulate(
+        c(
+            "age", "married", "agi",
+            "spm_povthreshold", "hispanic", "hi_premium",
+            "moop_other", "sex_female",
+            education_columns, region_columns, race_columns
+        ), 
+        response = "spm_poor"
+    ), 
+    family = binomial(link = "logit"),
+    data=df, iter=5000, chains=4, seed=100, cores=4
 )
 ```
 

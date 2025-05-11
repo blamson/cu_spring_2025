@@ -81,3 +81,25 @@ df %>%
     theme_minimal() +
     theme(legend.position = "right")
 ```
+
+```{r}
+df %>%
+    ggplot(aes(
+        x=age, 
+        #y=after_stat(count)/sum(after_stat(count)),
+        color=factor(spm_poor == 1)
+    )) +
+    # geom_histogram(color="black", bins=75) +
+    geom_density() +
+    labs(
+        x = "Age", 
+        y = "Density", 
+        title = "Density - Age Demographics",
+        color = "Poverty\nClassification",
+        caption="Note: Minimum Age = 25"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right") +
+    scale_x_continuous(breaks = seq(0, 100, 10))
+```
+

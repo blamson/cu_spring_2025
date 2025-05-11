@@ -14,7 +14,8 @@ Quick reference for variable selection tips
 source("../scripts/helpers.R")
 packages <- c(
     "ggplot2", "dplyr", "readr", "fastDummies", "janitor", "tidyr",
-    "rstanarm",  "qgraph", "corrr", "loo", "bayesplot", "tidybayes"
+    "rstanarm",  "qgraph", "corrr", "loo", "bayesplot", "tidybayes",
+    "latex2exp"
 )
 load_and_install_packages(packages)
 ```
@@ -44,12 +45,12 @@ df <- readr::read_csv("../data/poverty_data.csv.gz") %>%
     apply_factor_labels() %>%
     select(-c(state, state_code, wt, mar)) %>%
     # --- SCALE NUMERIC COLUMNS ---
-    mutate(
-        hi_premium = scale(hi_premium),
-        moop_other = scale(moop_other),
-        agi = scale(agi),
-        spm_povthreshold = scale(spm_povthreshold)
-    ) %>%
+    # mutate(
+    #     hi_premium = scale(hi_premium),
+    #     moop_other = scale(moop_other),
+    #     agi = scale(agi),
+    #     spm_povthreshold = scale(spm_povthreshold)
+    # ) %>%
     # --- STRATIFICATION AND DUMMY VARIABLE CREATION ---
     stratified_sample(cat_columns = cat_columns, prop=0.005) %>%
     # Save dummies for after stratification as they greatly increase dimensionality
@@ -89,10 +90,15 @@ glmod_logit_full <- stan_glm(
         ), 
         response = "spm_poor"
     ), 
-    prior=lasso(),
-    data=df, iter=10000, chains=4, seed=100, cores=4
+    family = binomial(link = "logit"),
+    data=df, iter=5000, chains=4, seed=100, cores=4
 )
 ```
+
+```{r}
+prior_summary(glmod_logit_full)
+```
+
 
 ```{r}
 modsum <- summary(glmod_logit_full)
@@ -130,14 +136,11 @@ glmod_logit_2 <- update(
   glmod_logit_full,
   formula = reformulate(
     c(
-      "married", "agi",
-      "spm_povthreshold", "hispanic",
-      "moop_other", "sex_female",
+      "married", "hispanic", "sex_female",
       education_columns, region_columns, race_columns
     ),
     response = "spm_poor"
-  )#,
-  #prior = NULL  # Optional: removes the lasso prior
+  )
 )
 ```
 
@@ -165,13 +168,11 @@ glmod_logit_3 <- update(
   glmod_logit_full,
   formula = reformulate(
     c(
-      "married", "agi",
-      "spm_povthreshold",
+      "married", "sex_female",
       education_columns, region_columns, race_columns
     ),
     response = "spm_poor"
-  ),
-  prior = NULL  # Optional: removes the lasso prior
+  )
 )
 ```
 
@@ -179,7 +180,7 @@ glmod_logit_3 <- update(
 posterior_samples <- as.matrix(glmod_logit_3)
 
 mcmc_intervals(
-    exp(posterior_samples)[,2:14], 
+    exp(posterior_samples), 
     pars = setdiff(names(coef(glmod_logit_3)), "(Intercept)")
 ) +
     ggtitle("Posterior intervals for odds ratios") +
@@ -250,6 +251,24 @@ rm(ll_3)
 
 The loss in WAIC doesn't seem substantial going from the full model to model 3 because the difference falls well within the standard error of the WAICs. Thus there isn't substantial evidence to indicate that the full model is an improvement over the simplified model. Funnily enough the full model and second model are basically identical here. 
 
-# Final Model
+$R_b^2$
 
-So our final model has the covariates: married, agi, pov_threshold, region, race, education.
+```{r}
+model1_rb2 <- bayes_R2(glmod_logit_full)
+model2_rb2 <- bayes_R2(glmod_logit_2)
+model3_rb2 <- bayes_R2(glmod_logit_3)
+```
+
+```{r}
+ggplot() +
+    geom_density(aes(x=model1_rb2, color = "model 1"), linewidth=1.1) +
+    geom_density(aes(x=model2_rb2, color = "model 2"), linewidth=1.1) +
+    geom_density(aes(x=model3_rb2, color = "model 3"), linewidth=1.1) +
+    labs(
+        x = TeX(r'($R_b^2$)'),
+        color = "",
+        title = "Comparing Model Performance"
+    ) +
+    theme_minimal()
+```
+
